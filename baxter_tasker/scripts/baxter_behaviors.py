@@ -164,7 +164,13 @@ class BaxterBehaviors():
 #         entries["Reset Items"] = self.bs.resetItems
         self.mm.addGenericMenu(targets,self.mm.cur_page,"Select your desired scenario", entries)
         self.mm.loadMenu(targets)
-              
+
+    def locate(self,**kwargs):
+        """
+            Locates the blocks on the grid
+        """
+        self.locator.main()
+
     def enterPredicates(self,**kwargs):
         """
             Creates a menu of all functions in baxter_learner.py that are in __predicates

@@ -563,6 +563,7 @@ class BaxterMenuEntries:
         """
         entries = {
                    'Teach Menu': [self.__mm.loadDefaultMenu,"teachMenu"],
+                   'Locate': self.__mm.bb.locate,
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
 #                   'Show Camera': self.__mm.bb.showCamera,

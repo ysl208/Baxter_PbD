@@ -70,7 +70,7 @@ class BaxterLocator:
         distance = 0.367
         self.limb           = arm
         self.limb_interface = baxter_interface.Limb(self.limb)
-
+        self.baxter = baxter
         if arm == "left":
             self.other_limb = "right"
         else:
@@ -859,41 +859,41 @@ class BaxterLocator:
         self.find_places(corners)
 
     def detect_square(self, square):
-            colour_centre = (0,0)
-            # compute the rotated bounding box of the largest contour
-            rect = cv2.minAreaRect(square)
-            box = numpy.int0(cv2.cv.BoxPoints(rect))
+        colour_centre = (0,0)
+        # compute the rotated bounding box of the largest contour
+        rect = cv2.minAreaRect(square)
+        box = numpy.int0(cv2.cv.BoxPoints(rect))
 
-            # draw a bounding box arounded the detected square
-            cv2.drawContours(self.cv_image, [box], -1, (0, 255, 0), 1)
-            cv2.imshow("Detected square", self.cv_image)
-            l = zip(*box)
-            centroid_x = int(sum(l[0])/len(l[0]))
-            centroid_y = int(sum(l[1])/len(l[1]))
-#            pdb.set_trace()
-            approx = cv2.approxPolyDP(square,0.01*cv2.arcLength(square,True),True)
-            print approx
-            # check the detected square has the right size
-            print (box[0]-box[1])[1]
-            print (box[0]-box[3])[0]
-            print abs((box[0]-box[1])[1]/(box[0]-box[3])[0])
-            print abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])
-            if abs(abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])) < 50:
-		    colour_centre = (centroid_x,centroid_y)
-		    cv_image = cv.fromarray(self.cv_image)
+        # draw a bounding box arounded the detected square
+        cv2.drawContours(self.cv_image, [box], -1, (0, 255, 0), 1)
+        cv2.imshow("Detected square", self.cv_image)
+        l = zip(*box)
+        centroid_x = int(sum(l[0])/len(l[0]))
+        centroid_y = int(sum(l[1])/len(l[1]))
+#        pdb.set_trace()
+        approx = cv2.approxPolyDP(square,0.01*cv2.arcLength(square,True),True)
+        print approx
+        # check the detected square has the right size
+        print (box[0]-box[1])[1]
+        print (box[0]-box[3])[0]
+        print abs((box[0]-box[1])[1]/(box[0]-box[3])[0])
+        print abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])
+        if abs(abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])) < 50:
+            colour_centre = (centroid_x,centroid_y)
+            cv_image = cv.fromarray(self.cv_image)
 
-		    # draw ball tray boundry
-		    cv.Circle(cv_image, colour_centre, 5, (0, 250, 0), -1)
-		    cv.ShowImage("Detected", cv_image)
-		    s = "Detected block"
-		    self.display_screen(self.cv_image, s)
-		    #cv2.imshow("Detected2", self.cv_image)
-		    cv.WaitKey(3)
+            # draw ball tray boundry
+            cv.Circle(cv_image, colour_centre, 5, (0, 250, 0), -1)
+            cv.ShowImage("Detected", cv_image)
+            s = "Detected block"
+            self.display_screen(self.cv_image, s)
+            #cv2.imshow("Detected2", self.cv_image)
+            cv.WaitKey(3)
 
-		    if self.save_images:
-		        file_name = self.image_dir + "colour_boundary.jpg"
-		        cv.SaveImage(file_name, cv_image)
-            return colour_centre
+            if self.save_images:
+                file_name = self.image_dir + "colour_boundary.jpg"
+                cv.SaveImage(file_name, cv_image)
+        return colour_centre
 
     def detect_colour(self, iteration, colour):
         cv_image = cv.fromarray(self.cv_image)
@@ -1056,7 +1056,6 @@ class BaxterLocator:
             s = "Moving to block to target location"
             self.display_screen(self.cv_image, s)
             print s
-#            pdb.set_trace()
             self.update_pose(0,0,0.19)
 
             # speed up again
@@ -1205,75 +1204,75 @@ class BaxterLocator:
         return block
 
 
-# read the setup parameters from setup.dat
-def get_setup():
-    global image_directory
-    file_name = image_directory + "setup.dat"
+    # read the setup parameters from setup.dat
+    def get_setup(self):
+        global image_directory
+        file_name = self.baxter.datapath + "setup.dat"
 
-    try:
-        f = open(file_name, "r")
-    except ValueError:
-        sys.exit("ERROR: golf_setup must be run before golf")
-
-    # find limb
-    s = string.split(f.readline())
-    if len(s) >= 3:
-        if s[2] == "left" or s[2] == "right":
-            limb = s[2]
-        else:
-            sys.exit("ERROR: invalid limb in %s" % file_name)
-    else:
-        sys.exit("ERROR: missing limb in %s" % file_name)
-
-    # find distance to table
-    s = string.split(f.readline())
-    if len(s) >= 3:
         try:
-            distance = float(s[2])
+            f = open(file_name, "r")
         except ValueError:
-            sys.exit("ERROR: invalid distance in %s" % file_name)
-    else:
-        sys.exit("ERROR: missing distance in %s" % file_name)
+            sys.exit("ERROR: golf_setup must be run before golf")
 
-    return limb, distance
+        # find limb
+        s = string.split(f.readline())
+        if len(s) >= 3:
+            if s[2] == "left" or s[2] == "right":
+                limb = s[2]
+            else:
+                sys.exit("ERROR: invalid limb in %s" % file_name)
+        else:
+            sys.exit("ERROR: missing limb in %s" % file_name)
 
-def main():
-    # get setup parameters
-    limb, distance = get_setup()
-    print "limb     = ", limb
-    print "distance = ", distance
+        # find distance to table
+        s = string.split(f.readline())
+        if len(s) >= 3:
+            try:
+                distance = float(s[2])
+            except ValueError:
+                sys.exit("ERROR: invalid distance in %s" % file_name)
+        else:
+            sys.exit("ERROR: missing distance in %s" % file_name)
 
-    # create locate class instance
-    locator = BaxterLocator(limb, distance)
+        return limb, distance
 
-    # open the gripper
-    #locator.gripper.open()
+    def main(self, **kwargs):
+        # get setup parameters
+        limb, distance = self.get_setup()
+        print "limb     = ", limb
+        print "distance = ", distance
 
-    # move close to the ball tray
-    locator.pose = (locator.ball_tray_x,
-                    locator.ball_tray_y,
-                    locator.ball_tray_z,
-                    locator.roll,
-                    locator.pitch,
-                    locator.yaw)
-    locator.baxter_ik_move(locator.limb, locator.pose)
+        # create locate class instance
+        #locator = BaxterLocator()
 
-    # find the ball tray
-    #locator.find_ball_tray()
-    rospy.loginfo("Enter the colour for the block:")
-    #colour = 'yellow'
+        # open the gripper
+        #self.gripper.open()
 
-    colour = sys.stdin.readline().strip()
-    locator.find_tetris_block(colour)
-    print "Found Tetris block"
-    # find all the golf balls and place them in the ball tray
-    print locator.pose
-    raw_input("Pick and Place: Press Enter to continue: ")
-    offset_x = -0.05
-    offset_y = -0.05
-    angle = -90
-    offset_angle = angle * (math.pi / 180)
-    locator.pick_and_place(offset_x, offset_y, offset_angle)
+        # move close to the ball tray
+        self.pose = (self.ball_tray_x,
+                    self.ball_tray_y,
+                    self.ball_tray_z,
+                    self.roll,
+                    self.pitch,
+                    self.yaw)
+        self.baxter_ik_move(self.limb, self.pose)
+
+        # find the ball tray
+        #self.find_ball_tray()
+        rospy.loginfo("Enter the colour for the block:")
+        #colour = 'yellow'
+
+        colour = sys.stdin.readline().strip()
+        self.find_tetris_block(colour)
+        print "Found Tetris block"
+        # find all the golf balls and place them in the ball tray
+        print self.pose
+        raw_input("Pick and Place: Press Enter to continue: ")
+        offset_x = -0.05
+        offset_y = -0.05
+        angle = -90
+        offset_angle = angle * (math.pi / 180)
+        self.pick_and_place(offset_x, offset_y, offset_angle)
 
 if __name__ == "__main__":
     main()

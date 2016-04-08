@@ -120,7 +120,8 @@ class golf_setup():
     # save setup values
     def save(self):
         # open setup file
-        f = open("setup.dat", "w")
+        datapath=str(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  + "/data/")
+        f = open(datapath + "setup.dat", "w")
         s = 'limb = %s\n' % self.limb
         f.write(s)
         s = 'distance = %s\n' % self.distance
