@@ -62,10 +62,11 @@ rospy.init_node("pick_and_place", anonymous = True)
 image_directory = ""
 
 # locate class
-class BaxterLocator():
-    def __init__(self, arm="right", distance=0.367):
+class BaxterLocator:
+    def __init__(self, baxter):
         global image_directory
         # arm ("left" or "right")
+        arm="right", distance=0.367
         self.limb           = arm
         self.limb_interface = baxter_interface.Limb(self.limb)
 

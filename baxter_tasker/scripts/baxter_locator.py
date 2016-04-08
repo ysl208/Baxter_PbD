@@ -56,7 +56,7 @@ import std_srvs.srv
 from baxter_core_msgs.srv import SolvePositionIK, SolvePositionIKRequest
 
 # initialise ros node
-rospy.init_node("pick_and_place", anonymous = True)
+#rospy.init_node("pick_and_place", anonymous = True)
 
 # directory used to save analysis images
 image_directory = ""
@@ -66,7 +66,8 @@ class BaxterLocator:
     def __init__(self, baxter):
         global image_directory
         # arm ("left" or "right")
-        arm="right", distance=0.367
+        arm = "right"
+        distance = 0.367
         self.limb           = arm
         self.limb_interface = baxter_interface.Limb(self.limb)
 
