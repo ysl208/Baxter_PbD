@@ -1,0 +1,7 @@
+(:action arm_down 
+	:parameters (?p0 - position ?g0 - gripper ?b0 - block )
+	:precondition (and 		(clear ?p ?0 - position )
+		(not(free ?g ?0 - gripper ))
+)
+	:effect (		(clear ?p ?0 - position )
+))

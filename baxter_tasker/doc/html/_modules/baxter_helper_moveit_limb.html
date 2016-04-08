@@ -1,0 +1,492 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_moveit_limb</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_moveit_limb</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span><span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">control_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FollowJointTrajectoryAction</span><span class="p">,</span>
+    <span class="n">FollowJointTrajectoryActionGoal</span><span class="p">,</span>
+    <span class="n">FollowJointTrajectoryActionResult</span><span class="p">,</span>
+    <span class="n">FollowJointTrajectoryGoal</span><span class="p">,</span>
+    <span class="n">JointTolerance</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">trajectory_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JointTrajectoryPoint</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">actionlib_msgs.msg</span> <span class="kn">import</span> <span class="n">GoalID</span>           
+<span class="kn">from</span> <span class="nn">moveit_msgs.srv</span> <span class="kn">import</span> <span class="n">GetPositionIK</span><span class="p">,</span><span class="n">GetPositionFK</span>
+<span class="kn">from</span> <span class="nn">baxter_helper_abstract_limb</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">baxter_helper_simple_limb</span> <span class="kn">import</span> <span class="n">SimpleLimb</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span><span class="n">copy</span>
+
+
+
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">moveit_commander</span> 
+<span class="kn">from</span> <span class="nn">hr_helper.singleton</span> <span class="kn">import</span> <span class="n">Singleton</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Limb that uses MoveIt API   </span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+    
+<div class="viewcode-block" id="MoveItLimb"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb">[docs]</a><span class="k">class</span> <span class="nc">MoveItLimb</span><span class="p">(</span><span class="n">SimpleLimb</span><span class="p">,</span><span class="n">AbstractLimb</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">BaxterException</span><span class="p">,</span><span class="s">&quot;Error non existing side: </span><span class="si">%s</span><span class="s">, please provide left or right&quot;</span><span class="o">%</span><span class="n">side</span>
+        <span class="n">SimpleLimb</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="o">=</span><span class="n">side</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">=</span><span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SPEED</span><span class="o">=</span><span class="mf">0.3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_PID_KP</span><span class="o">=</span><span class="mf">2.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simple</span><span class="o">=</span><span class="n">SimpleLimb</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMoveGroup</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_name</span><span class="o">=</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_arm&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_planning_time</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">ns</span><span class="o">=</span><span class="s">&quot;/robot/limb/</span><span class="si">%s</span><span class="s">/follow_joint_trajectory&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_traj_goal</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="n">ns</span><span class="o">+</span><span class="s">&quot;/goal&quot;</span><span class="p">,</span><span class="n">FollowJointTrajectoryActionGoal</span><span class="p">)</span>           
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_traj_cancel</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="n">ns</span><span class="o">+</span><span class="s">&quot;/cancel&quot;</span><span class="p">,</span><span class="n">GoalID</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_traj_result</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="n">ns</span><span class="o">+</span><span class="s">&quot;/result&quot;</span><span class="p">,</span><span class="n">FollowJointTrajectoryActionResult</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">callback_trajectory_result</span><span class="p">)</span>            
+        <span class="bp">self</span><span class="o">.</span><span class="n">fk_service</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s">&quot;/compute_fk&quot;</span><span class="p">,</span><span class="n">GetPositionFK</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ik_service</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s">&quot;/compute_ik&quot;</span><span class="p">,</span><span class="n">GetPositionIK</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_goal_id</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="o">=</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_error</span><span class="o">=</span><span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">get_joints</span><span class="p">()</span>
+        
+<div class="viewcode-block" id="MoveItLimb.getMoveGroup"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.getMoveGroup">[docs]</a>    <span class="k">def</span> <span class="nf">getMoveGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Gets the MoveIt interface to control an arm</span>
+<span class="sd">            :param side: The arm side (&quot;left&quot; or &quot;right&quot;)</span>
+<span class="sd">            :return: Return the move group</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">moveit_commander</span><span class="o">.</span><span class="n">MoveGroupCommander</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_arm&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;MoveIt not found. Is the trajectory server and MoveIt running? </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="nb">exit</span><span class="p">()</span> 
+</div>
+<div class="viewcode-block" id="MoveItLimb.callback_trajectory_result"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.callback_trajectory_result">[docs]</a>    <span class="k">def</span> <span class="nf">callback_trajectory_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This callback function is invoked after a trajectory has been completed</span>
+<span class="sd">            :param msg: The status and result published by the trajectory server </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         rospy.loginfo(&quot;Trajectory action server returned status %d&quot;%msg.status.status)</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status</span><span class="o">!=</span><span class="mi">3</span><span class="p">:</span> <span class="c"># Error            </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result_error</span><span class="o">=</span><span class="bp">True</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Trajectory Result </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">msg</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">error_code</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Trajectory action server returned status </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">msg</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result_error</span><span class="o">=</span><span class="bp">False</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;OK Result received from trajectory action server on </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">pass</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span><span class="o">=</span><span class="mi">0</span>
+        </div>
+<div class="viewcode-block" id="MoveItLimb.moving"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.moving">[docs]</a>    <span class="k">def</span> <span class="nf">moving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Checks if the robot is moving</span>
+<span class="sd">            :return: Return True if something is moving on this side and False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.getPose"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.getPose">[docs]</a>    <span class="k">def</span> <span class="nf">getPose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">get_current_pose</span><span class="p">()</span><span class="o">.</span><span class="n">pose</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.getAngles"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.getAngles">[docs]</a>    <span class="k">def</span> <span class="nf">getAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">js</span><span class="o">=</span><span class="n">JointState</span><span class="p">()</span>
+        <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">get_current_joint_values</span><span class="p">()</span>         
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)):</span>
+            <span class="n">js</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">js</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">js</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.cancel"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">goal_id</span><span class="o">=</span><span class="n">GoalID</span><span class="p">()</span>
+                <span class="n">goal_id</span><span class="o">.</span><span class="n">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pub_traj_cancel</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">goal_id</span><span class="p">)</span>
+            
+
+</div>
+<div class="viewcode-block" id="MoveItLimb.goToPose"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.goToPose">[docs]</a>    <span class="k">def</span> <span class="nf">goToPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">position_tolerance</span><span class="o">=</span><span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">cartesian</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;MoveItLimb </span><span class="si">%s</span><span class="s"> goToPose </span><span class="si">%s</span><span class="s"> speed </span><span class="si">%f</span><span class="s"> position_tolerance </span><span class="si">%f</span><span class="s"> orientation_tolerance </span><span class="si">%f</span><span class="s"> joint_tolerance </span><span class="si">%f</span><span class="s"> speed_tolerance </span><span class="si">%f</span><span class="s"> timeout </span><span class="si">%f</span><span class="s"> cartesian=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">getStrFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">speed</span><span class="p">,</span><span class="n">position_tolerance</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">cartesian</span><span class="p">))</span> <span class="p">)</span>
+        <span class="n">traj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">goToPose_plan</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="n">position_tolerance</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="p">,</span><span class="n">cartesian</span><span class="o">=</span><span class="n">cartesian</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">traj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="n">path_tolerance</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">PoseStamped</span><span class="p">:</span>
+                <span class="n">diff</span><span class="o">=</span><span class="n">getPoseDiff</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getPose</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">diff</span><span class="o">=</span><span class="n">getPoseDiff</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getPose</span><span class="p">())</span>            
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;MoveItLimb goToPose distance to target: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">ret</span>                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;No trajectory found or trajectory empty&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+</div>
+<div class="viewcode-block" id="MoveItLimb.goToAngles"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.goToAngles">[docs]</a>    <span class="k">def</span> <span class="nf">goToAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;MoveItLimb </span><span class="si">%s</span><span class="s"> goToAngles </span><span class="si">%s</span><span class="s"> speed </span><span class="si">%f</span><span class="s"> joint_tolerance_plan </span><span class="si">%f</span><span class="s"> joint_tolerance </span><span class="si">%f</span><span class="s"> speed_tolerance </span><span class="si">%f</span><span class="s"> timeout </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">getStrFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="n">traj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">traj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="n">path_tolerance</span><span class="p">)</span>
+            <span class="n">diff</span><span class="o">=</span><span class="n">getAnglesDiff</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getAngles</span><span class="p">())</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;MoveItLimb goToAngles distance to target: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>            
+            <span class="k">return</span> <span class="n">ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;No trajectory found&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+<span class="c">#             </span></div>
+<div class="viewcode-block" id="MoveItLimb.goToPose_plan"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.goToPose_plan">[docs]</a>    <span class="k">def</span> <span class="nf">goToPose_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">position_tolerance</span><span class="o">=</span><span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="p">,</span><span class="n">cartesian</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">clear_pose_targets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_goal_position_tolerance</span><span class="p">(</span><span class="n">position_tolerance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_goal_orientation_tolerance</span><span class="p">(</span><span class="n">orientation_tolerance</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cartesian</span><span class="p">:</span>
+            <span class="c"># MoveIt cartesian</span>
+            <span class="n">saved</span><span class="o">=</span><span class="bp">None</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">Pose</span><span class="p">:</span>
+                <span class="n">waypoints</span><span class="o">=</span><span class="p">[</span><span class="n">pose</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">saved</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">get_pose_reference_frame</span><span class="p">()</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;Switching temporarily to reference frame </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_pose_reference_frame</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="p">)</span>
+                <span class="n">waypoints</span><span class="o">=</span><span class="p">[</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="p">]</span>
+                            
+            <span class="p">(</span><span class="n">traj</span><span class="p">,</span><span class="n">fraction</span><span class="p">)</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">compute_cartesian_path</span><span class="p">(</span><span class="n">waypoints</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">saved</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_pose_reference_frame</span><span class="p">(</span><span class="n">saved</span><span class="p">)</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;Switching back to reference frame </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">saved</span><span class="p">)</span>
+                
+            <span class="k">if</span> <span class="n">fraction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Fraction of incomplete cartesian path computed: </span><span class="si">%f</span><span class="s">, aborting&quot;</span><span class="o">%</span><span class="n">fraction</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">None</span>
+                <span class="c">#~ rospy.logwarn(&quot;Fraction of incomplete cartesian path computed: %f, falling back to non-cartesian&quot;%fraction)</span>
+                <span class="c">#~ return self.goToPose_plan(pose,position_tolerance,orientation_tolerance,cartesian=False)</span>
+                
+        <span class="k">else</span><span class="p">:</span>                
+            <span class="c"># Basic MoveIt</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_pose_target</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span>
+
+            <span class="n">traj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">traj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No trajectory found </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Empty trajectory </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c">#~ print &quot;Original plan&quot;</span>
+        <span class="c">#~ print traj</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanupTrajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">traj</span>
+            
+        
+
+
+</div>
+<div class="viewcode-block" id="MoveItLimb.goToAngles_plan"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.goToAngles_plan">[docs]</a>    <span class="k">def</span> <span class="nf">goToAngles_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">clear_pose_targets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_goal_joint_tolerance</span><span class="p">(</span><span class="n">joint_tolerance_plan</span><span class="p">)</span>
+
+        <span class="n">d</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">set_joint_value_target</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="c"># Apparently OrderedDict is not properly supported anymore</span>
+        <span class="n">traj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">plan</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">traj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No trajectory found </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Empty trajectory </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c">#~ print &quot;Original plan&quot;</span>
+        <span class="c">#~ print traj</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanupTrajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">traj</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.execute"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">traj</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">traj</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applyTrajectorySpeed</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span><span class="n">speed</span><span class="p">)</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;Performing trajectory on </span><span class="si">%s</span><span class="s"> at speed </span><span class="si">%f</span><span class="s"> tolerance </span><span class="si">%f</span><span class="s"> speed_tolerance </span><span class="si">%f</span><span class="s"> timeout </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">))</span>
+        <span class="n">joint_names</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: trajectory already running&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_moving</span><span class="o">=</span><span class="mi">1</span>
+
+        <span class="n">goal</span><span class="o">=</span><span class="n">FollowJointTrajectoryActionGoal</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_goal_id</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">goal_id</span><span class="o">.</span><span class="n">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_goal_id</span><span class="p">)</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span>
+        <span class="k">if</span> <span class="n">path_tolerance</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">:</span> <span class="n">path_tolerance</span><span class="o">=</span><span class="n">DEFAULT_PATH_TOLERANCE</span><span class="o">*</span><span class="n">speed</span>
+        
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">:</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">JointTolerance</span><span class="p">()</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">name</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">position</span><span class="o">=</span><span class="n">joint_tolerance</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">velocity</span><span class="o">=</span><span class="n">speed_tolerance</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">acceleration</span><span class="o">=</span><span class="mi">0</span>
+            
+            <span class="n">goal</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_tolerance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        
+            <span class="n">pt</span><span class="o">=</span><span class="n">JointTolerance</span><span class="p">()</span>
+            <span class="n">pt</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;w2&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="n">pt</span><span class="o">.</span><span class="n">position</span><span class="o">=</span><span class="n">path_tolerance</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pt</span><span class="o">.</span><span class="n">position</span><span class="o">=</span><span class="mf">0.0</span>
+            <span class="n">goal</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+
+        <span class="n">goal</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_time_tolerance</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+                    
+        <span class="c"># Send goal and wait for trajectory finished</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pub_traj_goal</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>                
+        <span class="bp">self</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_error</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.applyTrajectorySpeed"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.applyTrajectorySpeed">[docs]</a>    <span class="k">def</span> <span class="nf">applyTrajectorySpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">traj</span><span class="p">,</span><span class="n">spd</span><span class="p">):</span>
+        <span class="n">spd</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">spd</span><span class="p">)</span>
+        <span class="n">n_joints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">)</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_points</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">time_from_start</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">!=</span><span class="nb">float</span><span class="p">:</span>
+                <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span>
+            <span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="n">spd</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MoveItLimb.cleanupTrajectory"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.cleanupTrajectory">[docs]</a>    <span class="k">def</span> <span class="nf">cleanupTrajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">traj</span><span class="p">):</span>
+        <span class="n">n_joints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">)</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+            <span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">velocities</span><span class="o">=</span><span class="p">[]</span>
+            <span class="n">traj</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">accelerations</span><span class="o">=</span><span class="p">[]</span>            
+
+
+
+</div>
+<div class="viewcode-block" id="MoveItLimb.getAnglesFromPose"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.getAnglesFromPose">[docs]</a>    <span class="k">def</span> <span class="nf">getAnglesFromPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calls inverse kinematics to obtain joint angles from a cartesian pose, return None if failed &quot;&quot;&quot;</span>
+        <span class="n">req</span><span class="o">=</span><span class="n">GetPositionIK</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">Pose</span><span class="p">:</span>
+            <span class="n">ps</span><span class="o">=</span><span class="n">PoseStamped</span><span class="p">()</span>
+            <span class="n">ps</span><span class="o">.</span><span class="n">pose</span><span class="o">=</span><span class="n">pose</span>
+            <span class="n">ps</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;/base&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ps</span><span class="o">=</span><span class="n">pose</span>
+            
+        <span class="n">req</span><span class="o">.</span><span class="n">group_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group_name</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">pose_stamped</span><span class="o">=</span><span class="n">ps</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">robot_state</span><span class="o">=</span><span class="n">RobotState</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">constraints</span><span class="o">=</span><span class="n">Constraints</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">avoid_collisions</span><span class="o">=</span><span class="bp">True</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">ik_link_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">get_end_effector_link</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">ik_link_names</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">pose_stamped_vector</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">timeout</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">attempts</span><span class="o">=</span><span class="mi">3</span>
+        
+        <span class="n">resp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ik_service</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">=</span><span class="n">resp</span><span class="o">.</span><span class="n">solution</span><span class="o">.</span><span class="n">joint_state</span>
+        <span class="n">ln</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">lp</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">position</span>
+        <span class="n">zn</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">zp</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">ln</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">ln</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">joints</span><span class="p">:</span>
+                <span class="n">zn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ln</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">zp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lp</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">zn</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">position</span><span class="o">=</span><span class="n">zp</span>                
+        <span class="k">return</span> <span class="n">result</span>
+
+    </div>
+<div class="viewcode-block" id="MoveItLimb.getPoseFromAngles"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItLimb.getPoseFromAngles">[docs]</a>    <span class="k">def</span> <span class="nf">getPoseFromAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">):</span>
+        <span class="n">rs</span><span class="o">=</span><span class="n">RobotState</span><span class="p">()</span>
+        <span class="n">rs</span><span class="o">.</span><span class="n">joint_state</span><span class="o">=</span><span class="n">angles</span>
+        <span class="n">header</span><span class="o">=</span><span class="n">Header</span><span class="p">()</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;/base&quot;</span>
+        <span class="n">resp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fk_service</span><span class="p">(</span><span class="n">header</span><span class="p">,[</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">_gripper&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">],</span><span class="n">rs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">pose_stamped</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pose</span>
+                
+
+
+</div></div>
+<div class="viewcode-block" id="MoveItHelper"><a class="viewcode-back" href="../baxter_helper_moveit_limb.html#baxter_helper_moveit_limb.MoveItHelper">[docs]</a><span class="k">class</span> <span class="nc">MoveItHelper</span><span class="p">:</span>
+    <span class="n">__metaclass__</span><span class="o">=</span><span class="n">Singleton</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Starting MoveIt Commander&quot;</span><span class="p">)</span>
+        <span class="n">moveit_commander</span><span class="o">.</span><span class="n">roscpp_initialize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_removeLaunchArgs</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">))</span>
+        <span class="n">moveit_commander</span><span class="o">.</span><span class="n">MoveGroupCommander</span><span class="p">(</span><span class="s">&quot;left_arm&quot;</span><span class="p">)</span> <span class="c"># just to check for correct initialization</span>
+    
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Shutting down MoveIt Commander&quot;</span><span class="p">)</span>
+        <span class="n">moveit_commander</span><span class="o">.</span><span class="n">roscpp_shutdown</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">_removeLaunchArgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">args</span><span class="p">):</span>    
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;__name:=&quot;</span><span class="p">)]</span>
+    
+    </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

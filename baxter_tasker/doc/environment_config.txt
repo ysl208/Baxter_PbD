@@ -1,0 +1,47 @@
+Useful Environment Configuration
+================================
+
+Some aliases are very useful for baxter, because they are required regularly and can 
+be used in all directories.
+
+The most important is for instance to enable the robot, so you could make a shortcut 
+in the terminal to enable and disable the robot::
+
+	echo 'alias be="rostopic pub -1 /robot/set_super_enable std_msgs/Bool True"' >> ~/.bashrc
+	echo 'alias bd="rostopic pub -1 /robot/set_super_enable std_msgs/Bool False"' >> ~/.bashrc
+
+Do not forget to restart the terminal or source the ~/.bashrc file after you made changes to it.
+
+The same you could do for regularly used launch-files::
+	
+	echo 'alias bt="roslaunch baxter_tasker baxter_tasker_main.launch"' >> ~/.bashrc
+
+Or also shell scripts(replace "ros_ws" with your catkin or ROS workspace)::
+
+	echo 'alias baxter=' ( cd ~/ros_ws ; ./baxter.sh ) '' >> ~/.bashrc
+
+Now you can call your baxter script in all directories with the simple command "baxter"
+
+If you have c++ packages that have to be build you will often use the catkin_make command.
+There is a kind of workaround to invoke the make command as it was in rosbuild. Therefore add 
+another command to call a script file::
+
+	alias smake=~/smake.sh
+
+Now go to you home directory and create this file::
+
+	cd
+	gedit smake.sh
+
+and paste the following content to this file::
+
+	package=${PWD##*/}
+	printf 'Selected Package: %s\n' $package
+	full_path=${PWD}
+	printf 'Current Path: %s\n' $full_path
+	cd ~/ros_ws
+	catkin_make --pkg $package
+	cd $full_path
+
+If you call "smake" now in the root of a package, it does more or less the same as the rosmake command
+for catkin.

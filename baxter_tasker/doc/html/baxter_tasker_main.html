@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_tasker_main Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_urdf_creator Module" href="baxter_urdf_creator.html" />
+    <link rel="prev" title="baxter_scene Module" href="baxter_scene.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_urdf_creator.html" title="baxter_urdf_creator Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_scene.html" title="baxter_scene Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_tasker_main">
+<span id="baxter-tasker-main-module"></span><h1>baxter_tasker_main Module<a class="headerlink" href="#module-baxter_tasker_main" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="baxter_tasker_main.DEFAULT_EXTENSION">
+<tt class="descclassname">baxter_tasker_main.</tt><tt class="descname">DEFAULT_EXTENSION</tt><em class="property"> = '.task.py'</em><a class="headerlink" href="#baxter_tasker_main.DEFAULT_EXTENSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main class for the baxter tasker that creates the GUI and objects for the robot.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_tasker_main.MainWindow">
+<em class="property">class </em><tt class="descclassname">baxter_tasker_main.</tt><tt class="descname">MainWindow</tt><big>(</big><em>master</em>, <em>tasker</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main window for baxter tasker. It links the buttons on the robot and the GUI to their corresponding behaviors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>master</strong> (<em>Tk</em>) &#8211; Handle to the Tkinter object</li>
+<li><strong>tasker</strong> (<a class="reference internal" href="baxter_helper_tasker.html#baxter_helper_tasker.Tasker" title="baxter_helper_tasker.Tasker"><em>baxter_helper_tasker.Tasker</em></a>) &#8211; Handle to the task management. Contains also the robot object that can be accessed in the GUI</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.addTask">
+<tt class="descname">addTask</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.addTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.addTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an empty task</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.appendToTask">
+<tt class="descname">appendToTask</tt><big>(</big><em>txt</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.appendToTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.appendToTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends text to the currently selected editor window in the GUI. Can be used by all behaviors to easily store robot data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>txt</strong> &#8211; Text to be written to the editor window</li>
+<li><strong>txt</strong> &#8211; str</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.back">
+<tt class="descname">back</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.back"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.back" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback for the back (arrow) buttons on the elbows. Shows the previous menu on the robot display</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The side that has been pushed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.buildMenu">
+<tt class="descname">buildMenu</tt><big>(</big><em>root</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.buildMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.buildMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the menu bar</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> (<em>Tk</em>) &#8211; Tkinter interface</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.confirm">
+<tt class="descname">confirm</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.confirm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.confirm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback for a button push for the wheel buttons on the elbows. Calls the current menu entry on the robot display</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The side that has been pushed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.cycleMode">
+<tt class="descname">cycleMode</tt><big>(</big><em>increase=True</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.cycleMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.cycleMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects the next or previous entry in the menu on the display. Called by the wheel method when the wheel is turned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>increase</strong> &#8211; Move to the next entry?</li>
+<li><strong>increase</strong> &#8211; bool</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.deleteTask">
+<tt class="descname">deleteTask</tt><big>(</big><em>event</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.deleteTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.deleteTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a task from the current menu. (Does not delete the file)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.executeTask">
+<tt class="descname">executeTask</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.executeTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.executeTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes selected tasks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.exit">
+<tt class="descname">exit</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.exit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the robots movement and</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.getSelectedKeys">
+<tt class="descname">getSelectedKeys</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.getSelectedKeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.getSelectedKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the selected tasks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.gripButton">
+<tt class="descname">gripButton</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.gripButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.gripButton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback when the oval (grip) button on the hand cuff is pressed. Opens or closes the gripper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> &#8211; Side of the gripper to be activated</li>
+<li><strong>side</strong> &#8211; str</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.home">
+<tt class="descname">home</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.home"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.home" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback for the home buttons on the elbows. Directly shows the root menu on the robot display</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The side that has been pushed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.loadAllTasks">
+<tt class="descname">loadAllTasks</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.loadAllTasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.loadAllTasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all tasks in the data/tasks directory of the package</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.loadTask">
+<tt class="descname">loadTask</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.loadTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.loadTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback from the menu to load a task. Opens a file dialog</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.loadTaskFile">
+<tt class="descname">loadTaskFile</tt><big>(</big><em>file</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.loadTaskFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.loadTaskFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the task file that corresponds to the path from the harddisk into the GUI</p>
+<p>:param <a class="reference external" href="file:path">file:path</a> and name to the task file
+:type <a class="reference external" href="file:str">file:str</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.posButton">
+<tt class="descname">posButton</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.posButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.posButton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback for the round button on the hand cuff. This button is not assigned yet. Add your code here for additional functionality</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> &#8211; The side where the button was pressed</li>
+<li><strong>side</strong> &#8211; str</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.refresh">
+<tt class="descname">refresh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refreshes the task list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.saveTasks">
+<tt class="descname">saveTasks</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.saveTasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.saveTasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves all tasks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.selectTask">
+<tt class="descname">selectTask</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.selectTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.selectTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Selects a task</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.updateTask">
+<tt class="descname">updateTask</tt><big>(</big><em>event=None</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.updateTask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.updateTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the tasks list and colorizes the python code</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_tasker_main.MainWindow.wheel">
+<tt class="descname">wheel</tt><big>(</big><em>side</em>, <em>position</em><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#MainWindow.wheel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.MainWindow.wheel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback for the wheel buttons on the elbows are rotated. Checks in which direction the wheel was turned</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The side that has been altered</li>
+<li><strong>position</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The new position of the wheel [0-255]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_tasker_main.startGUI">
+<tt class="descclassname">baxter_tasker_main.</tt><tt class="descname">startGUI</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_tasker_main.html#startGUI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_tasker_main.startGUI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the main baxter_tasker</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_scene.html"
+                        title="previous chapter">baxter_scene Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_urdf_creator.html"
+                        title="next chapter">baxter_urdf_creator Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_urdf_creator.html" title="baxter_urdf_creator Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_scene.html" title="baxter_scene Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

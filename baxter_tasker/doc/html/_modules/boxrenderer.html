@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>boxrenderer</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for boxrenderer</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageFont</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span> 
+
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">baxter_image_composer</span> <span class="kn">import</span> <span class="n">ImageComposer</span><span class="p">,</span><span class="n">ImageComposerElement</span>
+
+<div class="viewcode-block" id="AbstractBoxRenderer"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer">[docs]</a><span class="k">class</span> <span class="nc">AbstractBoxRenderer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bgfile</span><span class="p">,</span><span class="n">switchfile</span><span class="p">,</span><span class="n">markfile</span><span class="p">,</span><span class="n">notpickedfile</span><span class="p">,</span><span class="n">nothandedfile</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bgfile</span><span class="o">=</span><span class="n">bgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switchfile</span><span class="o">=</span><span class="n">switchfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">markfile</span><span class="o">=</span><span class="n">markfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notpickedfile</span><span class="o">=</span><span class="n">notpickedfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nothandedfile</span><span class="o">=</span><span class="n">nothandedfile</span>
+
+        <span class="n">bg</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">bgfile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">=</span><span class="n">ImageComposer</span><span class="p">(</span><span class="s">&quot;black&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">bg</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;background&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bgfile</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AbstractBoxRenderer.clear"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.clear">[docs]</a>    <span class="k">def</span>  <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;background&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bgfile</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.addItem"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.addItem">[docs]</a>    <span class="k">def</span>  <span class="nf">addItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">coord</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getCoord</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">),</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">switchfile</span><span class="p">,</span><span class="o">*</span><span class="n">coord</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.setMark"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.setMark">[docs]</a>    <span class="k">def</span> <span class="nf">setMark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">coord</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getCoord</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;mark&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markfile</span><span class="p">,</span><span class="o">*</span><span class="n">coord</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.setNotPicked"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.setNotPicked">[docs]</a>    <span class="k">def</span> <span class="nf">setNotPicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">coord</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getCoord</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;notpicked&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">),</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">notpickedfile</span><span class="p">,</span><span class="o">*</span><span class="n">coord</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="AbstractBoxRenderer.setNotHanded"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.setNotHanded">[docs]</a>    <span class="k">def</span> <span class="nf">setNotHanded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">coord</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getCoord</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;notpicked&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">),</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nothandedfile</span><span class="p">,</span><span class="o">*</span><span class="n">coord</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="AbstractBoxRenderer.unsetMark"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.unsetMark">[docs]</a>    <span class="k">def</span> <span class="nf">unsetMark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">unset</span><span class="p">(</span><span class="s">&quot;mark&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.removeItem"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.removeItem">[docs]</a>    <span class="k">def</span> <span class="nf">removeItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">unset</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.save"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">file</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AbstractBoxRenderer.getItems"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.getItems">[docs]</a>    <span class="k">def</span> <span class="nf">getItems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">items</span>
+        </div>
+<div class="viewcode-block" id="AbstractBoxRenderer.fill"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.AbstractBoxRenderer.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>        
+        <span class="n">items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getItems</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            
+</div></div>
+<div class="viewcode-block" id="BoxRenderer1"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer1">[docs]</a><span class="k">class</span> <span class="nc">BoxRenderer1</span><span class="p">(</span><span class="n">AbstractBoxRenderer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">AbstractBoxRenderer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="BoxRenderer1.getCoord"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer1.getCoord">[docs]</a>    <span class="k">def</span> <span class="nf">getCoord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">xoff</span><span class="o">=</span><span class="mi">90</span>
+        <span class="n">yoff</span><span class="o">=-</span><span class="mi">100</span>
+        <span class="n">zeroX</span><span class="o">=</span><span class="mi">215</span>
+        <span class="n">zeroY</span><span class="o">=</span><span class="mi">405</span>     
+        
+        <span class="n">x</span><span class="o">=</span><span class="n">number</span><span class="o">%</span><span class="mi">7</span>
+        <span class="n">y</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">zeroX</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="n">xoff</span><span class="p">,</span><span class="n">zeroY</span><span class="o">+</span><span class="n">y</span><span class="o">*</span><span class="n">yoff</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BoxRenderer1.getItems"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer1.getItems">[docs]</a>    <span class="k">def</span> <span class="nf">getItems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">items</span>
+</div></div>
+<div class="viewcode-block" id="BoxRenderer3"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer3">[docs]</a><span class="k">class</span> <span class="nc">BoxRenderer3</span><span class="p">(</span><span class="n">AbstractBoxRenderer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">AbstractBoxRenderer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="BoxRenderer3.getCoord"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer3.getCoord">[docs]</a>    <span class="k">def</span> <span class="nf">getCoord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">number</span><span class="p">):</span>
+        <span class="n">xoff</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">yoff</span><span class="o">=</span><span class="mi">72</span>
+        <span class="n">zeroX</span><span class="o">=</span><span class="mi">184</span>
+        <span class="n">zeroY</span><span class="o">=</span><span class="mi">95</span>     
+        
+        <span class="n">x</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">y</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">zeroX</span><span class="o">+</span><span class="n">x</span><span class="o">*</span><span class="n">xoff</span><span class="p">,</span><span class="n">zeroY</span><span class="o">+</span><span class="n">y</span><span class="o">*</span><span class="n">yoff</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BoxRenderer3.getItems"><a class="viewcode-back" href="../boxrenderer.html#boxrenderer.BoxRenderer3.getItems">[docs]</a>    <span class="k">def</span> <span class="nf">getItems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">br</span><span class="o">=</span><span class="n">BoxRenderer1</span><span class="p">(</span><span class="s">&quot;../data/box1.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/element1.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/mark1.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/notpicked1.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/nothanded1.png&quot;</span><span class="p">)</span>
+    <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">setMark</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">setNotPicked</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">setNotHanded</span><span class="p">(</span><span class="mi">21</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp1-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+
+
+    <span class="n">br</span><span class="o">=</span><span class="n">BoxRenderer3</span><span class="p">(</span><span class="s">&quot;../data/box3.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/element3.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/mark3.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/notpicked3.png&quot;</span><span class="p">,</span><span class="s">&quot;../data/nothanded3.png&quot;</span><span class="p">)</span>
+    <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp3-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">);</span>    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp3-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp3-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">br</span><span class="o">.</span><span class="n">setMark</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">br</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp3-</span><span class="si">%d</span><span class="s">.png&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

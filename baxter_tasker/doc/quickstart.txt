@@ -1,0 +1,34 @@
+Quickstart
+==========
+
+Run the baxter shell script to source the packages and setup the ROS environment. ::
+
+	$ cd ~/ros_ws/
+	$ ./baxter.sh
+
+From now on you need at least 2 terminals.
+If you have installed the 3d environment, called MoveIt, then we have to start
+this environment first. The next command starts MoveIt, RViz and the trajectory
+action server for the robot. The action server handles all trajectory requests
+to execute	a move, evading all obstacles in your 3D scene. ::
+
+	$ roslaunch baxter_tasker moveit_baxter.launch
+		
+Sometimes RViz crashes. In this case press Ctrl+C and start the launchfile again. 
+		
+In case you have limited resources you could instead start everything without RViz by: ::
+
+	$ roslaunch baxter_tasker moveit_baxter_norviz.launch
+
+For testing moveit, it is recommened to run the monitor now, which can be used for fast 
+evaluation of arm trajectories. If you see values for both arms then your moveit is working. 
+You can start the monitor by: ::
+
+	$ roslaunch baxter_tasker monitor.launch
+
+If everything went fine so far, can start the baxter_tasker software. This starts you
+the GUI on the computer and on baxter and enables the easy access to all sensors. Start
+it by typing the following in another terminal: ::
+
+	$ roslaunch baxter_tasker baxter_tasker_main.launch
+	

@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>generate_plans Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="gripper Module" href="gripper.html" />
+    <link rel="prev" title="boxrenderer Module" href="boxrenderer.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gripper.html" title="gripper Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="boxrenderer.html" title="boxrenderer Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-generate_plans">
+<span id="generate-plans-module"></span><h1>generate_plans Module<a class="headerlink" href="#module-generate_plans" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="generate_plans.PlanGenerator">
+<em class="property">class </em><tt class="descclassname">generate_plans.</tt><tt class="descname">PlanGenerator</tt><big>(</big><em>baxter</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>The PlanGenerator class is used to generate the plans between defined positions. 
+Currently there are 6 positions or angles for each side defined:</p>
+<ul>
+<li><p class="first">L - Low position: The gripping position of the object in a box</p>
+</li>
+<li><dl class="first docutils">
+<dt>H - High position: The position above L. </dt>
+<dd><p class="first last">Distance to L depends on the offset from the box to the object and the gripping depth</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">F - Front position: Similar to L but used for placing the item. It is the same for all items.</p>
+</li>
+<li><p class="first">P - Prepare position: The position above F, depending on the offset between F and the dimensions of the box</p>
+</li>
+<li><p class="first">I - Initial position: Initial position of an arm. Often used as starting point</p>
+</li>
+<li><p class="first">O - Hand Over position: Specific position to pass items from one hand to the other.</p>
+</li>
+</ul>
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.generateAllPlans">
+<tt class="descname">generateAllPlans</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.generateAllPlans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.generateAllPlans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates all plans - non blocking - stoppable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.generateConsignment2Plans">
+<tt class="descname">generateConsignment2Plans</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.generateConsignment2Plans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.generateConsignment2Plans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plans for the consignment2 scenario</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; creates plans for the given side</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.generatePlans">
+<tt class="descname">generatePlans</tt><big>(</big><em>side</em>, <em>box</em>, <em>grip_point</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.generatePlans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.generatePlans" title="Permalink to this definition">¶</a></dt>
+<dd><p>General function for plan generation, currently used by the consignment scenario.</p>
+<p>Creates the plans and most of the time also the reversed plans for:</p>
+<ul class="simple">
+<li>LH</li>
+<li>IH</li>
+<li>HO</li>
+<li>FP</li>
+<li>OP</li>
+<li>IP</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getFP">
+<tt class="descname">getFP</tt><big>(</big><em>side</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getFP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getFP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans F to P and P to F and saves the angles of the P &#8220;position&#8221; for the box</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are placed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getHO">
+<tt class="descname">getHO</tt><big>(</big><em>side</em>, <em>box</em>, <em>angles_H</em>, <em>grip_side='top'</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getHO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getHO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans H to O and O to H</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are located</li>
+<li><strong>angles</strong> (<em>list(dict({str,float}))</em>) &#8211; angles of the H position of each item in the source box</li>
+<li><strong>grip_side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; depending on the grip side the 3D Model changes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getHP">
+<tt class="descname">getHP</tt><big>(</big><em>side</em>, <em>box</em>, <em>angles</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getHP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getHP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans H to P and P to H</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are placed</li>
+<li><strong>angles</strong> (<em>list(dict({str,float}))</em>) &#8211; angles of the H position of each item in the source box</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getIH">
+<tt class="descname">getIH</tt><big>(</big><em>side</em>, <em>box</em>, <em>angles</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getIH"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getIH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans I to H</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are placed</li>
+<li><strong>angles</strong> (<em>list(dict({str,float}))</em>) &#8211; angles of the H position of each item in the source box</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getIP">
+<tt class="descname">getIP</tt><big>(</big><em>side</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getIP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getIP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans I to P and P to I</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are placed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getLH">
+<tt class="descname">getLH</tt><big>(</big><em>side</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getLH"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getLH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans L to H and H to L and returns the angles of the H &#8220;positions&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are located</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">angles of the computed H positions</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list(dict({str:float}))</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.getOP">
+<tt class="descname">getOP</tt><big>(</big><em>side</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.getOP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.getOP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the plans O to P and P to O</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<em>str,</em>) &#8211; Box where the items are placed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.goToHighDestinationPose">
+<tt class="descname">goToHighDestinationPose</tt><big>(</big><em>side</em>, <em>box</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.goToHighDestinationPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.goToHighDestinationPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves the arm to the P angles computed by getFP</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm side</li>
+<li><strong>box</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Box where the items are placed</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if the motion was successful</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.moveAwayOtherArm">
+<tt class="descname">moveAwayOtherArm</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.moveAwayOtherArm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.moveAwayOtherArm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves the other arm away to not interfere with the planning procedure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The arm that is used. It is not the arm that is move away!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.removeAllItems">
+<tt class="descname">removeAllItems</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.removeAllItems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.removeAllItems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all items inside the boxes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="generate_plans.PlanGenerator.restoreAllItems">
+<tt class="descname">restoreAllItems</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/generate_plans.html#PlanGenerator.restoreAllItems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#generate_plans.PlanGenerator.restoreAllItems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores the items of all boxes</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="boxrenderer.html"
+                        title="previous chapter">boxrenderer Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gripper.html"
+                        title="next chapter">gripper Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gripper.html" title="gripper Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="boxrenderer.html" title="boxrenderer Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,709 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_menu</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_menu</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">PIL</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageFont</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<div class="viewcode-block" id="BaxterMenuComposer"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer">[docs]</a><span class="k">class</span> <span class="nc">BaxterMenuComposer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the image that is shown on the display of the robot and on the local workstation</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">display</span><span class="p">,</span><span class="n">textDisplay</span><span class="p">,</span><span class="n">datapath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param display: object from BaxterDisplay to send images to the robot display</span>
+<span class="sd">            :type display: BaxterDisplay</span>
+<span class="sd">            :param textDisplay: object from BaxterTextDisplayer to enable and disable the autorefresh</span>
+<span class="sd">            :type textDisplay: BaxterTextDisplayer</span>
+<span class="sd">            :param datapath: path for datafiles</span>
+<span class="sd">            :type datapath: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display</span> <span class="o">=</span> <span class="n">display</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span> <span class="o">=</span> <span class="n">textDisplay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmp_menu_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;menu.jpg&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_offset</span> <span class="o">=</span> <span class="mi">150</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="o">=</span><span class="mi">1024</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="o">=</span><span class="mi">600</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">char_width</span><span class="o">=</span><span class="mi">16</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">char_height</span><span class="o">=</span><span class="mi">32</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">char_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_height</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">char_height</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">font</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;font/UbuntuMono-R.ttf&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">char_height</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">font_title</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;font/UbuntuMono-R.ttf&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_spacing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">char_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">True</span>
+        
+<div class="viewcode-block" id="BaxterMenuComposer.loadEntries"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer.loadEntries">[docs]</a>    <span class="k">def</span> <span class="nf">loadEntries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Preloads a new menu</span>
+<span class="sd">            </span>
+<span class="sd">            :param title: The text in the title bar of the menu</span>
+<span class="sd">            :type title: str</span>
+<span class="sd">            :param entries: A list of the button names</span>
+<span class="sd">            :type entries: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">=</span> <span class="n">entries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="p">[</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__computeDimensions</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">display_offset</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__computeDimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">num_entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the dimensions (rows and cols) of the buttons based on the number of entries</span>
+<span class="sd">            </span>
+<span class="sd">            :param num_entries: Number of menu entries</span>
+<span class="sd">            :type num_entries: int</span>
+<span class="sd">            :return: list of number of rows and columns</span>
+<span class="sd">            :rtype: [int,int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_entries</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tmp</span><span class="o">==</span><span class="n">tmp2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">tmp2</span><span class="p">,</span><span class="n">tmp2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[[</span><span class="n">tmp2</span><span class="p">,</span> <span class="n">tmp2</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">num_entries</span><span class="o">&gt;</span><span class="n">tmp2</span><span class="o">*</span><span class="n">tmp2</span><span class="o">+</span><span class="n">tmp2</span><span class="p">],</span><span class="n">tmp2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        
+<div class="viewcode-block" id="BaxterMenuComposer.show"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Sends the last menu to the robot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span><span class="o">.</span><span class="n">autorefresh</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span><span class="o">.</span><span class="n">autorefresh</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__saveImage</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">display</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>       
+                <span class="bp">self</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_menu_path</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">False</span>
+                </div>
+<div class="viewcode-block" id="BaxterMenuComposer.hide"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer.hide">[docs]</a>    <span class="k">def</span> <span class="nf">hide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Hides the GUI</span>
+<span class="sd">            </span>
+<span class="sd">            :param update: If True, it enables the text display</span>
+<span class="sd">            :type update: bool </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span><span class="o">.</span><span class="n">autorefresh</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">textDisplay</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">autoRefresh</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">True</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__computeRectangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the corners of the rectangle of the selected element</span>
+<span class="sd">            </span>
+<span class="sd">            :param entry: Element that corners should be computed</span>
+<span class="sd">            :type entry: str</span>
+<span class="sd">            :return: tuple of two point tuples e.g.((p1x,p1y),(p2x,p2y))</span>
+<span class="sd">            :rtype: tuple(tuple(int,int),tuple(int,int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span>
+        <span class="n">p1x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">10</span>
+        <span class="n">p1y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span><span class="o">/</span><span class="mi">10</span>
+        <span class="n">p2x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">10</span>
+        <span class="n">p2y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span><span class="o">/</span><span class="mi">10</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">p1x</span><span class="p">,</span><span class="n">p1y</span><span class="p">),(</span><span class="n">p2x</span><span class="p">,</span><span class="n">p2y</span><span class="p">))</span>
+        
+    <span class="k">def</span> <span class="nf">__addTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Draws the title inside the image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">10</span>
+        <span class="n">y_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_offset</span><span class="o">/</span><span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,(</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span><span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__drawMenuEntries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a new image containing all previously defined entries</span>
+<span class="sd">        &quot;&quot;&quot;</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="p">),</span> <span class="s">&quot;#313133&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">x_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">y_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">display_offset</span>
+        
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_pos</span><span class="p">,</span><span class="n">y_pos</span><span class="p">]</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">__drawBackground</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="n">button_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">*</span><span class="mi">4</span><span class="o">/</span><span class="mi">5</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">char_width</span> <span class="o">&lt;</span> <span class="n">button_width</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">x_pos</span><span class="o">-</span><span class="n">chars</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">char_width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">y_pos</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">char_height</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">entry</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">split_entries</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">split_entries</span><span class="p">)</span><span class="o">/-</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">split_entry</span> <span class="ow">in</span> <span class="n">split_entries</span><span class="p">:</span>
+<span class="c">#                     print &quot;new y pos&quot;,y_pos+i*self.char_height, &quot;old y pos&quot;, y_pos, &quot;offset&quot;, i*self.char_height</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">x_pos</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">split_entry</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">char_width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">y_pos</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">char_height</span><span class="p">),</span><span class="n">split_entry</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="p">)</span>
+                    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="n">x_pos</span> <span class="o">+=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span>
+            <span class="k">if</span> <span class="n">x_pos</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="p">:</span>
+                <span class="n">x_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_spacing</span><span class="o">/</span><span class="mi">2</span>
+                <span class="n">y_pos</span> <span class="o">+=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_spacing</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">draw</span>
+
+    <span class="k">def</span> <span class="nf">__drawBackground</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Draws a filled rectangle into the image (corresponds to a button)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__computeRectangle</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span> <span class="n">fill</span><span class="o">=</span> <span class="s">&#39;#c45221&#39;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="BaxterMenuComposer.resetSelection"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer.resetSelection">[docs]</a>    <span class="k">def</span> <span class="nf">resetSelection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Resets the selected element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__drawMenuEntries</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__addTitle</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuComposer.select"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuComposer.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Draws a rectangle around an element to mark it as the active element</span>
+<span class="sd">            </span>
+<span class="sd">            :param entry: Element that has to be marked with a green rectangle </span>
+<span class="sd">            :type entry: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetSelection</span><span class="p">()</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__computeRectangle</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">outline</span><span class="o">=</span><span class="s">&quot;#00ff00&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(((</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">2</span><span class="p">),(</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">2</span><span class="p">)),</span> <span class="n">outline</span><span class="o">=</span><span class="s">&quot;#00ff00&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(((</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">),(</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span> <span class="n">outline</span><span class="o">=</span><span class="s">&quot;#00ff00&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__saveImage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Saves the current created image object to a file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_menu_path</span><span class="p">)</span>
+</div>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span>
+<div class="viewcode-block" id="BaxterMenuManager"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager">[docs]</a><span class="k">class</span> <span class="nc">BaxterMenuManager</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Manages the menus behind the GUI.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">composer</span><span class="p">,</span><span class="n">moveit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param composer: object to draw and select new entries</span>
+<span class="sd">            :type composer: BaxterMenuComposer</span>
+<span class="sd">            :param moveit: Flag if moveit is used to have different options for moveit</span>
+<span class="sd">            :type moveit: bool  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">=</span> <span class="n">composer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moveit</span> <span class="o">=</span> <span class="n">moveit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">page</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">me</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_box</span> <span class="o">=</span> <span class="bp">None</span>
+        
+<div class="viewcode-block" id="BaxterMenuManager.addBaxterBehavior"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addBaxterBehavior">[docs]</a>    <span class="k">def</span> <span class="nf">addBaxterBehavior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bb</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds a BaxterBehavior class that all methods in the added class can be called</span>
+<span class="sd">            from the menu</span>
+<span class="sd">            </span>
+<span class="sd">            :param bb: Custom class that contains specific methods used by the menu </span>
+<span class="sd">            :type bb: BaxterBehaviors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bb</span> <span class="o">=</span> <span class="n">bb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">me</span> <span class="o">=</span> <span class="n">BaxterMenuEntries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">moveit</span><span class="p">)</span> <span class="c">#add static menus</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Add a new entry, its callback and a default value to the available handlers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">event</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+        <span class="c">#print &quot;handlers&quot;,self.handlers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">default</span> 
+        <span class="c">#print &quot;default values&quot;,self.default_values </span>
+         
+    <span class="k">def</span> <span class="nf">__unregister</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes an entry from the handlers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">event</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="n">event</span><span class="p">]</span>
+         
+        
+<div class="viewcode-block" id="BaxterMenuManager.callMenuEntry"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.callMenuEntry">[docs]</a>    <span class="k">def</span> <span class="nf">callMenuEntry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calls a menu entry by its name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="c">#print &quot;name&quot;,name,&quot;handler&quot;,handler</span>
+            <span class="n">handler</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="BaxterMenuManager.addGenericMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addGenericMenu">[docs]</a>    <span class="k">def</span> <span class="nf">addGenericMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds a freshly created menu to the availble menu pages</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the menu page</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param parent: Name of the parent menu</span>
+<span class="sd">            :type parent: str</span>
+<span class="sd">            :param title: Text in the title bar of the menu</span>
+<span class="sd">            :type title: str</span>
+<span class="sd">            :param entries: Entries in a dictionary with their name and callback</span>
+<span class="sd">            :type entries: dict({str:callback}) or dict({str:list(callback,default_value)}) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         print &quot;ADD GENERIC MENU&quot;</span>
+        <span class="c">#print self.inactive_pages.keys()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">parent</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">entries</span><span class="p">]</span>
+        <span class="c">#print entries</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__loadRegister</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the callable entries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">entry</span><span class="p">,</span><span class="n">cb</span> <span class="ow">in</span> <span class="n">entries</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__register</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span><span class="n">cb</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">cb</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__register</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span><span class="n">cb</span><span class="p">)</span>
+                                 
+    <span class="k">def</span> <span class="nf">__unloadRegister</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Unloads callable entries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print &quot;UNLOAD REGISTER&quot;</span>
+        <span class="c">#print entries</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span>
+        <span class="c">#print &quot;REMAINING HANDLERS&quot;</span>
+        <span class="c">#print self.handlers</span>
+    
+    <span class="k">def</span> <span class="nf">__unloadMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Unloads a menu and stores the current page in inactive pages to avoid name clashes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c">#print &quot;current page&quot;, self.cur_page</span>
+            <span class="c">#print self.page.keys()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__unloadRegister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">]</span>
+        
+<div class="viewcode-block" id="BaxterMenuManager.changeMenuTitle"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.changeMenuTitle">[docs]</a>    <span class="k">def</span> <span class="nf">changeMenuTitle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">title</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Changes the title text of the current menu</span>
+<span class="sd">            </span>
+<span class="sd">            :param title: New text that should be display in the title bar</span>
+<span class="sd">            :type title: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">loadEntries</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">])</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuManager.addEntriesToCurrentMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addEntriesToCurrentMenu">[docs]</a>    <span class="k">def</span> <span class="nf">addEntriesToCurrentMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds additional entries to the current menu</span>
+<span class="sd">            </span>
+<span class="sd">            :param entries: Entry with name and callback to add to the current menu.</span>
+<span class="sd">            :type entries: dict({str:callback}) or dict({str:list(callback,default_value)}) </span>
+<span class="sd">             </span>
+<span class="sd">            The callback could also be a list of the callback and a custom default value that is saved to this entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;adding additional menu entries&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">callback</span> <span class="ow">in</span> <span class="n">entries</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__loadRegister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">loadEntries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="BaxterMenuManager.removeEntriesFromCurrentMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.removeEntriesFromCurrentMenu">[docs]</a>    <span class="k">def</span> <span class="nf">removeEntriesFromCurrentMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes entries form the current menu</span>
+<span class="sd">            </span>
+<span class="sd">            :param names: Name(s) of the entries to remove from the current menu</span>
+<span class="sd">            :type names: list or str</span>
+<span class="sd">            :attention: Do not remove the last element!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         print &quot;removing  menu entries&quot;, names</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+<span class="c">#         print self.page[self.cur_page][2].keys()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+<span class="c">#             print name</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+<span class="c">#                 print &quot;deleting page: &quot;, name</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__unloadRegister</span><span class="p">({</span><span class="n">name</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">name</span><span class="p">]})</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">name</span><span class="p">]</span>
+<span class="c">#         print self.page[self.cur_page][2].keys()</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">loadEntries</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="c">#not totally safe, in case there are not elements in the menu. this would require to load some other page (previous?)</span>
+    </div>
+<div class="viewcode-block" id="BaxterMenuManager.loadMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.loadMenu">[docs]</a>    <span class="k">def</span> <span class="nf">loadMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Unloads the current menu, saves, loads the new menu options and displays it</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: New menu to load</span>
+<span class="sd">            :type name: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print &quot;loadMenu:&quot;,name, &quot;cur menu:&quot;,self.cur_page</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">:</span>
+            <span class="c">#print &quot;no sense to load the active menu. skipping&quot;</span>
+            <span class="k">return</span>
+<span class="c">#         print &quot;inactive pages are:&quot;,self.inactive_pages.keys()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substep</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c">#load new page if it is not in pages</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__loadRegister</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">inactive_pages</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="c"># load new modes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="c">#         print &quot;modes&quot;,self.modes</span>
+        <span class="c">#print &quot;New menu named&quot;,name, &quot;called from&quot;,self.cur_page, &quot;has modes:&quot;,self.modes,</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emptyMenu</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Warning: Page to load was empty. Reloading current page.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="c">#store current page in inactive menu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__unloadMenu</span><span class="p">()</span>
+        <span class="c">#print &quot;active pages are&quot;,self.page.keys()</span>
+        <span class="c">#print &quot;active modes are&quot;, self.modes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">loadEntries</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    </div>
+<div class="viewcode-block" id="BaxterMenuManager.loadDefaultMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.loadDefaultMenu">[docs]</a>    <span class="k">def</span> <span class="nf">loadDefaultMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the menu given in the default value </span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="c">#print &quot;load menu with kwargs&quot;,kwargs</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">menu_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">menu_to_load</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="n">menu_to_load</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;default value was </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">menu_to_load</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;could not load default menu </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuManager.loadPreviousMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.loadPreviousMenu">[docs]</a>    <span class="k">def</span> <span class="nf">loadPreviousMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the previous menu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substep</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="c">#         print &quot;loading previous menu %s, from current menu %s&quot;%(parent,self.cur_page)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">)</span>
+            </div>
+<div class="viewcode-block" id="BaxterMenuManager.confirm"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.confirm">[docs]</a>    <span class="k">def</span> <span class="nf">confirm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Shows a confirmation message on the screen and reloads the current menu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addConfirmation</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;confirmation&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuManager.neglect"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.neglect">[docs]</a>    <span class="k">def</span> <span class="nf">neglect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Shows a failure message on the screen and reloads the current menu </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addNeglection</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;neglection&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="BaxterMenuManager.emptyMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.emptyMenu">[docs]</a>    <span class="k">def</span> <span class="nf">emptyMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads an empty menu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addEmpty</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;empty&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuManager.addEmpty"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addEmpty">[docs]</a>    <span class="k">def</span> <span class="nf">addEmpty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Nothing&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">nothing</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;empty&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">,</span><span class="s">&quot;This menu is empty&quot;</span><span class="p">,</span><span class="n">entries</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="BaxterMenuManager.addConfirmation"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addConfirmation">[docs]</a>    <span class="k">def</span> <span class="nf">addConfirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Input confirmed&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">nothing</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;confirmation&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">,</span><span class="s">&quot;Success&quot;</span><span class="p">,</span><span class="n">entries</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuManager.addNeglection"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addNeglection">[docs]</a>    <span class="k">def</span> <span class="nf">addNeglection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;FAIL - There was a problem&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">nothing</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;neglection&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_page</span><span class="p">,</span><span class="s">&quot;Fail&quot;</span><span class="p">,</span><span class="n">entries</span><span class="p">)</span>
+            </div>
+<div class="viewcode-block" id="BaxterMenuManager.addGenericFunction"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addGenericFunction">[docs]</a>    <span class="k">def</span> <span class="nf">addGenericFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This could link a string to a specific function</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: New name of the methods</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param func: Existing methods or callback</span>
+<span class="sd">            :type func: callback  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;could not set generic function with name </span><span class="si">%s</span><span class="s">, error: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__getMenuList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Gets the list of all not private members/methods in BaxterMenuEntries</span>
+<span class="sd">            </span>
+<span class="sd">            :return: List of all methods</span>
+<span class="sd">            :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">me</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Menu entries are not loaded yet&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">menus</span> <span class="o">=</span> <span class="n">getmembers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">)</span>
+        <span class="n">menus</span><span class="o">=</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">menus</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;_&quot;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">menus</span>
+              
+<div class="viewcode-block" id="BaxterMenuManager.addAllMenus"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuManager.addAllMenus">[docs]</a>    <span class="k">def</span> <span class="nf">addAllMenus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds all static menus from BaxterMenuEntries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">menus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getMenuList</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">menus</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;List of menus to load is empty&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">,</span><span class="n">m</span><span class="p">)()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">menus</span><span class="p">]</span>
+        
+        
+        </div></div>
+<div class="viewcode-block" id="BaxterMenuEntries"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuEntries">[docs]</a><span class="k">class</span> <span class="nc">BaxterMenuEntries</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class contains all fixed menus that are not changing during the execution. </span>
+<span class="sd">        Therefore they can be already defined beforehand</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mm</span><span class="p">,</span><span class="n">moveit</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span> <span class="o">=</span> <span class="n">mm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__moveit</span> <span class="o">=</span> <span class="n">moveit</span>
+    
+<span class="c">############## ADD YOU DEFAULT MENU PAGES HERE</span>
+<span class="c"># each menu consists of:</span>
+<span class="c"># dict0: dictionary of your actual buttons in your menu</span>
+<span class="c">#    string0: name of the button</span>
+<span class="c">#    list/method1: list or method that should be called</span>
+<span class="c">#        method0: method to be called</span>
+<span class="c">#        string1: default value</span>
+<span class="c"># To add the entries to a generic menu, you have to define:</span>
+<span class="c"># string0: menu name</span>
+<span class="c"># string1: parent menu</span>
+<span class="c"># string2: menu title description</span>
+<span class="c"># dict3: entries</span>
+<span class="c"># </span>
+<span class="c"># e.g.:</span>
+<div class="viewcode-block" id="BaxterMenuEntries.addMain"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuEntries.addMain">[docs]</a>    <span class="k">def</span> <span class="nf">addMain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates the main menu which is very important as it is loaded on startup</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span>
+                   <span class="s">&#39;Teach Menu&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">loadDefaultMenu</span><span class="p">,</span><span class="s">&quot;teachMenu&quot;</span><span class="p">],</span>
+                   <span class="s">&#39;Run Scenarios&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                   <span class="s">&#39;Select Arms&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">selectArms</span><span class="p">,</span>
+                   <span class="s">&#39;Show Camera&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">showCamera</span><span class="p">,</span>
+                   <span class="s">&#39;Go To Init&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">goToInit</span><span class="p">,</span>
+                   
+                   <span class="p">}</span> 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__moveit</span><span class="p">:</span>
+            <span class="n">entries</span><span class="p">[</span><span class="s">&#39;Manage Boxes&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">loadDefaultMenu</span><span class="p">,</span><span class="s">&quot;addBox&quot;</span><span class="p">]</span>
+            <span class="n">entries</span><span class="p">[</span><span class="s">&#39;Select Gripper&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">gripperType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span><span class="s">&quot;Baxter Main Menu&quot;</span><span class="p">,</span><span class="n">entries</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuEntries.addTeachMenu"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuEntries.addTeachMenu">[docs]</a>    <span class="k">def</span> <span class="nf">addTeachMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates the menu to teach simple trajectories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span>
+                   <span class="s">&quot;Learn&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">teach</span><span class="p">,</span>
+                   <span class="s">&quot;Play&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">,</span><span class="bp">False</span><span class="p">],</span>
+                   <span class="s">&quot;Play Looped&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">,</span><span class="bp">True</span><span class="p">],</span>
+                   <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;teachMenu&quot;</span><span class="p">,</span><span class="s">&quot;main&quot;</span><span class="p">,</span><span class="s">&quot;Learn your path and play it&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="BaxterMenuEntries.addBox"><a class="viewcode-back" href="../baxter_helper_menu.html#baxter_helper_menu.BaxterMenuEntries.addBox">[docs]</a>    <span class="k">def</span> <span class="nf">addBox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates the menu to setup predefined boxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&quot;Select Box Type&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">selectBoxType</span><span class="p">,</span>
+                    <span class="s">&quot;Done&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">computeAndInsertBox</span><span class="p">,</span>
+                    <span class="p">}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">entries</span><span class="p">[</span><span class="s">&quot;Point &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">addFramePoint</span> <span class="c"># !!dont change the name of this menu entry!!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;addBox&quot;</span><span class="p">,</span><span class="s">&quot;main&quot;</span><span class="p">,</span><span class="s">&quot;Select 2 points, a box type and confirm&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__someFunction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            If you need additional functions here, declare them private by two preceding underscores (&quot;__&quot;),</span>
+<span class="sd">            otherwise it will be parsed as menu.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#if you need additional methods then start the name by a preceding &quot;__&quot; and it will be ignore by the parser that loads the menus</span>
+        <span class="k">pass</span>
+    
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>  
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s">&#39;MenuComposerDemo&#39;</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">=</span><span class="n">roslib</span><span class="o">.</span><span class="n">packages</span><span class="o">.</span><span class="n">get_pkg_dir</span><span class="p">(</span><span class="s">&#39;baxter_tasker&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;/data/&quot;</span>
+    <span class="n">menu</span> <span class="o">=</span> <span class="n">BaxterMenuComposer</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span><span class="n">datapath</span><span class="p">)</span>
+    
+    <span class="n">menu</span><span class="o">.</span><span class="n">loadEntries</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Enter your title here&quot;</span><span class="p">,</span><span class="n">entries</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;Function A&quot;</span><span class="p">,</span><span class="s">&quot;Function B&quot;</span><span class="p">])</span>
+    <span class="n">menu</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s">&quot;Function A&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

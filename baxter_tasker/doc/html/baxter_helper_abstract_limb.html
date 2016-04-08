@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_abstract_limb Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper_frame Module" href="baxter_helper_frame.html" />
+    <link rel="prev" title="baxter_helper Module" href="baxter_helper.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_frame.html" title="baxter_helper_frame Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper.html" title="baxter_helper Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_helper_abstract_limb">
+<span id="baxter-helper-abstract-limb-module"></span><h1>baxter_helper_abstract_limb Module<a class="headerlink" href="#module-baxter_helper_abstract_limb" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baxter_helper_abstract_limb.AbstractLimb">
+<em class="property">class </em><tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">AbstractLimb</tt><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.cancel">
+<tt class="descname">cancel</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel the current motion</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.getAngles">
+<tt class="descname">getAngles</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.getAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.getAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current joint state as  sensor_msgs/JointState
+:return (sensor_msgs.msg.JointState): Current angles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.getAnglesFromPose">
+<tt class="descname">getAnglesFromPose</tt><big>(</big><em>pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.getAnglesFromPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.getAnglesFromPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls inverse kinematics to obtain joint angles from a cartesian pose, return None if failed
+:param pose (geometry_msgs.msg.Pose):  target position as geometry_msgs/Pose         
+:return (sensor_msgs.msg.JointState): Joint angles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.getPose">
+<tt class="descname">getPose</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.getPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.getPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current cartesian pose as geometry_msgs/Pose
+:return (geometry_msgs.msg.Pose): Current pose</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.getPoseFromAngles">
+<tt class="descname">getPoseFromAngles</tt><big>(</big><em>angles</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.getPoseFromAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.getPoseFromAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls forward kinematics to obtain cartesian pose from joint angles, return None if failed
+:param angles (sensor_msgs.msg.JointState):  target joint position as sensor_msgs/JointState
+:return (geometry_msgs.msg.Pose): Cartesian pose</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.goToAngles">
+<tt class="descname">goToAngles</tt><big>(</big><em>angles</em>, <em>speed=1</em>, <em>joint_tolerance_plan=0.01</em>, <em>joint_tolerance=0.008726646</em>, <em>speed_tolerance=0.03</em>, <em>timeout=15</em>, <em>path_tolerance=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.goToAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.goToAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go to a angular joint state provided as sensor_msgs/JointState, blocking, returns True if all went fine (trajectory found), false otherwise
+:param angles (sensor_msgs.msg.JointState):  target joint position as sensor_msgs/JointState
+:param speed (float): a float multiplicator of the default baxter speed
+:param joint_tolerance_plan (float): joint angle tolerance in radians target joint angles (used in planning pipeline)
+:param joint_tolerance (float): joint angle tolerance in radians for the target joint angles (used for execution)
+:param speed_tolerance (float): speed tolerance in rad/s-1 for the controller to stop (used for execution)
+:param timeout (float): timeout in seconds before giving on the control
+:param path_tolerance (float): maximum joint angular distance during execution to consider a failure during trajectory execution                    
+:return (bool): Success flag</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.goToPose">
+<tt class="descname">goToPose</tt><big>(</big><em>pose</em>, <em>speed=1</em>, <em>position_tolerance=0.01</em>, <em>orientation_tolerance=0.01</em>, <em>joint_tolerance=0.008726646</em>, <em>speed_tolerance=0.03</em>, <em>timeout=15</em>, <em>cartesian=False</em>, <em>path_tolerance=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.goToPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.goToPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go to a cartesian pose provided as geometry_msgs/Pose for the defined eef , blocking , returns True if all went fine (trajectory found), false otherwise
+:param pose (geometry_msgs.msg.Pose):  target position as geometry_msgs/Pose 
+:param speed (float): a float multiplicator of the default baxter speed
+:param position_tolerance (float): position tolerance in meters for the target pose (used in planning pipeline)
+:param orientation_tolerance (float): orientation tolerance in radians for the target pose (used in planning pipeline)
+:param joint_tolerance (float): joint tolerance in radians for the target joint angles (used for execution)
+:param speed_tolerance (float): speed tolerance in rad/s-1 for the controller to stop (used for execution)
+:param timeout (float): timeout in seconds before giving on the control
+:param cartesian (bool): boolean to compute a cartesian path
+:param path_tolerance (float): maximum joint angular distance during execution to consider a failure during trajectory execution
+:return (bool): Success flag</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.moving">
+<tt class="descname">moving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.moving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.moving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether the arm is currently moving
+:return (bool): Currently moving flag</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.waitForMoving">
+<tt class="descname">waitForMoving</tt><big>(</big><em>timeout=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.waitForMoving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.waitForMoving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for motion to start or timeout expires, blocking, return True if motion started, False otherwise
+:param timeout (float):  timeout in seconds
+:return (bool): True is the robot is moving</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_abstract_limb.AbstractLimb.waitForStopped">
+<tt class="descname">waitForStopped</tt><big>(</big><em>timeout=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#AbstractLimb.waitForStopped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.AbstractLimb.waitForStopped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait for motion to stop or timeout expires, blocking, return True if motion stopped, False otherwise 
+:param timeout (float):  timeout in seconds
+:return (bool): True if the robot is stopped</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.createDir">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">createDir</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#createDir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.createDir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Created a directory if it does not exist
+:param path (string): Path for the directories to be created, or verified</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getAnglesDiff">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getAnglesDiff</tt><big>(</big><em>joint_angles_1</em>, <em>joint_angles_2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getAnglesDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getAnglesDiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of the difference between two joint state angles
+:param joint_angles_1 (sensor_msgs.msg.JointState): first angles of type sensor_msgs.msg.JointState()
+:param joint_angles_2 (sensor_msgs.msg.JointState): second angles of type sensor_msgs.msg.JointState() 
+:return (dict): Dictionary of angle differences</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getAnglesError">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getAnglesError</tt><big>(</big><em>joint_angles_1</em>, <em>joint_angles_2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getAnglesError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getAnglesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the accumulated error from the difference of two joint states angles
+:param joint_angles_1 (sensor_msgs.msg.JointState): first angles of type sensor_msgs.msg.JointState()
+:param joint_angles_2 (sensor_msgs.msg.JointState): second angles of type sensor_msgs.msg.JointState() 
+:return (float): Accumulated error</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getAnglesFromDict">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getAnglesFromDict</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getAnglesFromDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getAnglesFromDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dictionary to a angles of a JointState()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(dict)</strong> (<em>d</em>) &#8211; The dictionary to be converted</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Return (sensor_msgs.msg.JointState):</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">The angles</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getDictFromAngles">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getDictFromAngles</tt><big>(</big><em>angles</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getDictFromAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getDictFromAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts angles of a JointState() to a dictionary
+:param angles (sensor_msgs.msg.JointState): angles to be converted
+:return (dict): dictionary with angles</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getDictFromPose">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getDictFromPose</tt><big>(</big><em>pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getDictFromPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getDictFromPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Pose to a dictionary
+:param pose (geometry_msgs.msg.Pose): Pose to be converted
+:return (dict): dictionary with position and orientation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getPoseDiff">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getPoseDiff</tt><big>(</big><em>pose_1</em>, <em>pose_2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getPoseDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getPoseDiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of the difference between two Poses
+:param pose_1 (geometry_msgs.msg.Pose): first pose of type geometry_msgs.msg.Pose()
+:param pose_2 (geometry_msgs.msg.Pose): second angles of type geometry_msgs.msg.Pose() 
+:return (dict): Dictionary of pose difference</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getPoseFromDict">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getPoseFromDict</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getPoseFromDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getPoseFromDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dictionary to a Pose
+:param d (dict): The dictionary to be converted
+:return (geometry_msgs.msg.Pose): The pose from the dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getReversePlan">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getReversePlan</tt><big>(</big><em>plan</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getReversePlan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getReversePlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the reverse version of a given plan
+:param plan (moveit_msgs.msg.RobotTrajectory): The original plan
+:return (moveit_msgs.msg.RobotTrajectory): The reversed plan</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getStrFromAngles">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getStrFromAngles</tt><big>(</big><em>angles</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getStrFromAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getStrFromAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts all angles of a JointState() to a printable string
+:param angles (sensor_msgs.msg.JointState): JointState() angles to be converted
+:return (string): string of the angles</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.getStrFromPose">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">getStrFromPose</tt><big>(</big><em>pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#getStrFromPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.getStrFromPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a pose of a Pose() or PoseStamped() to a printable string
+:param pose (geometry_msgs.msg.Pose): Pose to be converted
+:return (string): string of the pose</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.loadAngles">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">loadAngles</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#loadAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.loadAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads angles from a file located in the data directory of the package
+:param name (string): Filename of the angles to load
+:return (sensor_msgs.msg.JointState): The angles as a JointState() that are going to be saved</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.loadPlan">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">loadPlan</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#loadPlan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.loadPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a plan from a file located in the data directory of the package
+:param name (string): Filename of the plan to be loaded
+:return (moveit_msgs.msg.RobotTrajectory): Returns the plan or None otherwise</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.loadPose">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">loadPose</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#loadPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.loadPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a pose from a file located in the data directory of the package
+:param name (string): Filename of the pose to load
+:return (geometry_msgs.msg.Pose): The pose as Pose() that is going to be saved</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.saveAngles">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">saveAngles</tt><big>(</big><em>name</em>, <em>angles</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#saveAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.saveAngles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves angles to a file located in the data directory of the package
+:param name (string): Filename of the angles to save
+:param angles (sensor_msgs.msg.JointState): The angles that are going to be saved</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.savePlan">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">savePlan</tt><big>(</big><em>name</em>, <em>plan</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#savePlan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.savePlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a plan to a file located in the data directory of the package. The directory is created, if it does not exist.
+:param name (string): Filename of the plan to save
+:param plan (moveit_msgs.msg.RobotTrajectory): The plan that is going to be saved</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="baxter_helper_abstract_limb.savePose">
+<tt class="descclassname">baxter_helper_abstract_limb.</tt><tt class="descname">savePose</tt><big>(</big><em>name</em>, <em>pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_abstract_limb.html#savePose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_abstract_limb.savePose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a pose to a file located in the data directory of the package
+:param name (string): Filename of the pose to save
+:param pose (geometry_msgs.msg.Pose): The pose that is going to be saved</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_helper.html"
+                        title="previous chapter">baxter_helper Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper_frame.html"
+                        title="next chapter">baxter_helper_frame Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_frame.html" title="baxter_helper_frame Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper.html" title="baxter_helper Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

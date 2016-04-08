@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_behaviors</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_behaviors</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides baxter specific behaviors to handle GUI callbacks. </span>
+<span class="sd">    All implemented function here are callable from the menu. </span>
+<span class="sd">    Otherwise you have to provide your class to the menu manager.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Pose</span><span class="p">,</span>
+    <span class="n">Point</span><span class="p">,</span>
+    <span class="n">Quaternion</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">hr_helper.tf_helper</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Int8</span>
+
+
+<span class="n">RENDER_ERRORS</span><span class="o">=</span><span class="bp">True</span>
+
+<span class="kn">from</span> <span class="nn">baxter_scenarios</span> <span class="kn">import</span> <span class="n">BaxterScenarios</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getmembers</span>
+
+<div class="viewcode-block" id="BaxterBehaviors"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors">[docs]</a><span class="k">class</span> <span class="nc">BaxterBehaviors</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The baxter behaviors implement useful stuff for the current interface</span>
+<span class="sd">     </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span> <span class="o">=</span> <span class="n">baxter</span>
+        <span class="k">if</span> <span class="n">baxter</span><span class="o">.</span><span class="n">mm</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">baxter</span><span class="o">.</span><span class="n">loadMenuManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">baxter</span><span class="o">.</span><span class="n">mm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addBaxterBehavior</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning</span><span class="o">=</span><span class="bp">True</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span> <span class="o">=</span> <span class="bp">None</span>       
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">moveit</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">generate_plans</span> <span class="kn">import</span> <span class="n">PlanGenerator</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">PlanGenerator</span><span class="p">(</span><span class="n">baxter</span><span class="p">)</span>
+<span class="c">#         self.side = &quot;left&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_arm</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;left&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span><span class="s">&quot;right&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bs</span> <span class="o">=</span> <span class="n">BaxterScenarios</span><span class="p">(</span><span class="n">baxter</span><span class="p">)</span>
+      
+<div class="viewcode-block" id="BaxterBehaviors.changeExecutionState"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.changeExecutionState">[docs]</a>    <span class="k">def</span> <span class="nf">changeExecutionState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">stop</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Sets and unsets the flag to stop all movements   </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;STOP executing behavior set to </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">stop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">stop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">stop</span><span class="p">)</span>
+      </div>
+<div class="viewcode-block" id="BaxterBehaviors.addMainWindow"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.addMainWindow">[docs]</a>    <span class="k">def</span> <span class="nf">addMainWindow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">appendToTask</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Link to main window to write text into the editor window </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span> <span class="o">=</span> <span class="n">appendToTask</span>  
+
+        </div>
+<div class="viewcode-block" id="BaxterBehaviors.addFramePoint"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.addFramePoint">[docs]</a>    <span class="k">def</span> <span class="nf">addFramePoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Saves the point on the finger tip of the gripper</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">][</span><span class="mi">6</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;step </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">step</span><span class="p">)</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">addPoint</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">step</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">confirm</span><span class="p">()</span>
+        <span class="c">#self.mm.loadMenu(self.mm.cur_page)</span>
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.nothing"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.nothing">[docs]</a>    <span class="k">def</span> <span class="nf">nothing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Does nothing. Useful if you just create menu entries with no functionality but text information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+                      </div>
+<div class="viewcode-block" id="BaxterBehaviors.showCamera"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.showCamera">[docs]</a>    <span class="k">def</span> <span class="nf">showCamera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Opens a hand camera stream and sends it to the display</span>
+<span class="sd">            </span>
+<span class="sd">           :param side: camera to be opened </span>
+<span class="sd">           :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hideGUI</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;update&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">startCamera</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_camera&quot;</span><span class="p">)</span>
+                             </div>
+<div class="viewcode-block" id="BaxterBehaviors.run"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a menu of all functions in baxter_scenarios.py that start with the name &quot;scenario&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="n">getmembers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bs</span><span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="s">&quot;scenario&quot;</span>
+        <span class="n">scenarios</span><span class="o">=</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">members</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">targets</span><span class="p">)]</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;found scenarios </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">scenarios</span><span class="p">))</span>
+        <span class="n">entries</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">:</span>
+            <span class="n">entries</span><span class="p">[</span><span class="n">scenario</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">):]]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bs</span><span class="p">,</span><span class="n">scenario</span><span class="p">)</span>
+        <span class="n">entries</span><span class="p">[</span><span class="s">&quot;Reset Items&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bs</span><span class="o">.</span><span class="n">resetItems</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_page</span><span class="p">,</span><span class="s">&quot;Select your desired scenario&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+              </div>
+<div class="viewcode-block" id="BaxterBehaviors.showGUI"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.showGUI">[docs]</a>    <span class="k">def</span> <span class="nf">showGUI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Redraws the GUI and selects the first element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    </div>
+<div class="viewcode-block" id="BaxterBehaviors.hideGUI"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.hideGUI">[docs]</a>    <span class="k">def</span> <span class="nf">hideGUI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Hides the GUI</span>
+<span class="sd">            </span>
+<span class="sd">            :param update: text display enabled?</span>
+<span class="sd">            :type update: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">update</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">update</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hide</span><span class="p">(</span><span class="n">update</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="BaxterBehaviors.back"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.back">[docs]</a>    <span class="k">def</span> <span class="nf">back</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the previous menu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="BaxterBehaviors.goToInit"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.goToInit">[docs]</a>    <span class="k">def</span> <span class="nf">goToInit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Moves both arms to the init position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.computeAndInsertBox"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.computeAndInsertBox">[docs]</a>    <span class="k">def</span> <span class="nf">computeAndInsertBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the transformation for the 2 previously saved points in relation to the base and inserts the selected box type</span>
+<span class="sd">            in the scene. This also includes additional transformations which are related to the box.</span>
+<span class="sd">            Also writes everything to the current open task in case the transformation should be saved.</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: influences the name of the inserted box and broadcasted tf</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="n">new_frame</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">computeTransformation</span><span class="p">()</span> 
+        <span class="k">if</span> <span class="n">pose</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">pose</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">waitUntilFrameUpdate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createPredefinedBox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">learning</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;import tf_helper </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;side=&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;baxter.bb.predefined_box=&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;pose = tf_helper.PS(&#39;</span><span class="si">%s</span><span class="s">&#39;,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">FRAME_ORIGIN</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="p">),</span><span class="nb">list</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;baxter.frame.setTF(&#39;</span><span class="si">%s</span><span class="s">_&#39;+side,pose)</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;baxter.frame.waitUntilFrameUpdate(&#39;</span><span class="si">%s</span><span class="s">_&#39;+side)</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;baxter.scene.createPredefinedBox(baxter.bb.predefined_box+&#39;_&#39;+side,baxter.bb.predefined_box)</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span> <span class="o">==</span> <span class="s">&quot;wako&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;table&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;for drop_off in baxter.scene.boxes[baxter.bb.predefined_box][1].keys():</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;    pose = tf_helper.PS(&#39;</span><span class="si">%s</span><span class="s">_&#39;+side,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">,</span><span class="s">&quot;baxter.scene.boxes[baxter.bb.predefined_box][1][drop_off][0:3]&quot;</span><span class="p">,</span><span class="s">&quot;baxter.scene.boxes[baxter.bb.predefined_box][1][drop_off][3:7]&quot;</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">(</span><span class="s">&quot;    baxter.frame.setTF(drop_off+&#39;_&#39;+side,pose)</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span> <span class="o">==</span> <span class="s">&quot;wako&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;table&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">drop_off</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">pose</span> <span class="o">=</span> <span class="n">PS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">drop_off</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">drop_off</span><span class="p">][</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTF</span><span class="p">(</span><span class="n">drop_off</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">pose</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">confirm</span><span class="p">()</span>
+        
+        </div>
+<div class="viewcode-block" id="BaxterBehaviors.addSceneBox"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.addSceneBox">[docs]</a>    <span class="k">def</span> <span class="nf">addSceneBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Set the current box type to the selected option in the GUI</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predefined_box</span> <span class="o">=</span> <span class="n">box</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">confirm</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+        
+        </div>
+<div class="viewcode-block" id="BaxterBehaviors.selectBoxType"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.selectBoxType">[docs]</a>    <span class="k">def</span> <span class="nf">selectBoxType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a menu with all available predefined boxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="n">entries</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="n">entries</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addSceneBox</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;selectBox&quot;</span><span class="p">,</span><span class="s">&quot;addBox&quot;</span><span class="p">,</span><span class="s">&quot;Select a box type you want to add&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;selectBox&quot;</span><span class="p">)</span>
+
+    
+     
+<span class="c">###  TEACHING MODE</span></div>
+<div class="viewcode-block" id="BaxterBehaviors.stopTeachedPath"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.stopTeachedPath">[docs]</a>    <span class="k">def</span> <span class="nf">stopTeachedPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Stops a trajectory execution that is called by the teaching interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;stop execution called&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">side</span><span class="o">=</span><span class="s">&quot;left&quot;</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">side</span><span class="o">=</span><span class="s">&quot;right&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;could not determine arm to stop&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+          </div>
+<div class="viewcode-block" id="BaxterBehaviors.teach"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.teach">[docs]</a>    <span class="k">def</span> <span class="nf">teach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Teaches a new trajectory and overwrites the old one</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm to be teached</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param number: if multiple trajectories are saved the number is added to the name</span>
+<span class="sd">            :type number: int</span>
+<span class="sd">            :param parent: parent menu from which this function is called, to be able to return properly</span>
+<span class="sd">            :type parent: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;number&#39;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;parent&#39;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="s">&quot;teachMenu&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">entries</span><span class="p">[</span><span class="s">&quot;Stop recording&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saveTeachPath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;teach&quot;</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="s">&quot;Saving current path...&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;teach&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
+       </div>
+<div class="viewcode-block" id="BaxterBehaviors.saveTeachPath"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.saveTeachPath">[docs]</a>    <span class="k">def</span> <span class="nf">saveTeachPath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Stops the current recording, saves it and return to the previous menu</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopRecording</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+    
+    
+    </div>
+<div class="viewcode-block" id="BaxterBehaviors.executePath"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.executePath">[docs]</a>    <span class="k">def</span> <span class="nf">executePath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Executes a saved trajectory. </span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: The parameters below are not the method parameters but the entries in the kwargs</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm to execute the trajectory</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param looped: Play infinitely?</span>
+<span class="sd">            :type looped: bool</span>
+<span class="sd">            :param number: Trajectory to be executed</span>
+<span class="sd">            :type number: int</span>
+<span class="sd">            :param threaded: Nonblocking? Threaded?</span>
+<span class="sd">            :type threaded: bool</span>
+<span class="sd">            </span>
+<span class="sd">           </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">mutex</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">locked</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">looped</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;looped&#39;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">looped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;number&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">threaded</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;threaded&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">threaded</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">threaded</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">side</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">looped</span><span class="p">],</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">side</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">looped</span><span class="p">],</span><span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
+        
+
+
+
+<span class="c">### ARM SELECTION</span>
+    </div>
+<div class="viewcode-block" id="BaxterBehaviors.useArm"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.useArm">[docs]</a>    <span class="k">def</span> <span class="nf">useArm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Set the arm that is selected in the GUI to True to be able to be used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Using the left arm&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Using the right arm&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">no</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">confirm</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="BaxterBehaviors.selectArms"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.selectArms">[docs]</a>    <span class="k">def</span> <span class="nf">selectArms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Set both arms to False, when the menu is loaded.</span>
+<span class="sd">            Afterwards it offers a menu to select the arms to be used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">entries</span><span class="p">[</span><span class="s">&quot;Use Left&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">useArm</span>
+        <span class="n">entries</span><span class="p">[</span><span class="s">&quot;Use Right&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">useArm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;selectArms&quot;</span><span class="p">,</span><span class="s">&quot;main&quot;</span><span class="p">,</span><span class="s">&quot;Select the arm you want to use&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;selectArms&quot;</span><span class="p">)</span>
+
+<span class="c">###################&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.btnToggleSonar"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.btnToggleSonar">[docs]</a>    <span class="k">def</span> <span class="nf">btnToggleSonar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">sonar</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">sonar</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">sonar</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.setHRLogo"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.setHRLogo">[docs]</a>    <span class="k">def</span> <span class="nf">setHRLogo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Displays the HumaRobotics Logo on baxter&#39;s display</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;logo1024.jpg&quot;</span><span class="p">)</span>
+        
+        
+<span class="c">###########</span>
+<span class="c">#gripper setup</span>
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.gripperType"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.gripperType">[docs]</a>    <span class="k">def</span> <span class="nf">gripperType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a menu to change the length of the gripper (electric and suction)</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: gripper side to be changed</span>
+<span class="sd">            :type side: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">gripper_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">gripper_type</span><span class="o">==</span><span class="s">&quot;suction&quot;</span><span class="p">:</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Short&quot;</span><span class="p">,</span><span class="s">&quot;Middle&quot;</span><span class="p">,</span><span class="s">&quot;Long&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">gripper_type</span><span class="o">==</span><span class="s">&quot;electric&quot;</span><span class="p">:</span>
+            <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Short&quot;</span><span class="p">,</span><span class="s">&quot;Long&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dimension</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Unknown Gripper&quot;</span><span class="p">]</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Unknown Gripper&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">no</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">entries</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dimension</span>  <span class="ow">in</span> <span class="n">dimensions</span><span class="p">:</span>
+            <span class="n">entries</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selectGripper</span><span class="p">,</span><span class="n">gripper_type</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;gripperType&quot;</span><span class="p">,</span><span class="s">&quot;main&quot;</span><span class="p">,</span><span class="s">&quot;Select your gripper type&quot;</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;gripperType&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaxterBehaviors.selectGripper"><a class="viewcode-back" href="../baxter_behaviors.html#baxter_behaviors.BaxterBehaviors.selectGripper">[docs]</a>    <span class="k">def</span> <span class="nf">selectGripper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Sets the gripper length according to the type of the gripper and the selected length from the previous menu.</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: gripper side to be changed  </span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">gripper_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]]</span>
+        <span class="n">dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">gripper_type</span><span class="o">==</span><span class="s">&quot;suction&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s">&quot;Short&quot;</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="mf">0.06</span>
+            <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s">&quot;Middle&quot;</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="mf">0.06</span> <span class="o">+</span> <span class="mf">0.05</span>
+            <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s">&quot;Long&quot;</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="mf">0.06</span> <span class="o">+</span> <span class="mf">0.05</span><span class="o">*</span><span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">gripper_type</span><span class="o">==</span><span class="s">&quot;electric&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s">&quot;Short&quot;</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="mf">0.125</span>
+            <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s">&quot;Long&quot;</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="mf">0.162</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">no</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">=</span> <span class="n">length</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">attachGripper</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">gripper_type</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">opened</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+<span class="c">################</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

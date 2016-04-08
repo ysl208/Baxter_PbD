@@ -1,0 +1,1078 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_scenarios</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_scenarios</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">boxrenderer</span> <span class="kn">import</span> <span class="n">BoxRenderer1</span>
+<span class="kn">import</span> <span class="nn">baxter_helper_abstract_limb</span>
+<span class="n">RENDER_ERRORS</span><span class="o">=</span><span class="bp">True</span>
+<span class="c">#ATTENTION: All functions with a name that starts with &quot;scenario&quot; will be automatically available in the run menu.</span>
+<div class="viewcode-block" id="BaxterScenarios"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios">[docs]</a><span class="k">class</span> <span class="nc">BaxterScenarios</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This class contains all scenarios that are displayed in the scenario list of the robot. </span>
+<span class="sd">        For all function names that start with &quot;scenario&quot; a callable button is automatically created. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param baxter: object to access all robot functions</span>
+<span class="sd">            :type baxter: BaxterRobot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span> <span class="o">=</span> <span class="n">baxter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="c">#SCENARIO PICK AND PLACE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c">#SCENARIO Consignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">=</span><span class="n">BoxRenderer1</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;box1.png&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;element1.png&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;mark1.png&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;notpicked1.png&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span><span class="o">+</span><span class="s">&quot;nothanded1.png&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;switch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;cover_small&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;cover_door&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_dropped</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">=</span> <span class="s">&quot;Skip&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_to_consign</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="c">#SCENARIO consignment2</span>
+        
+<div class="viewcode-block" id="BaxterScenarios.getScenario"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.getScenario">[docs]</a>    <span class="k">def</span> <span class="nf">getScenario</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Return the currently selected scenario</span>
+<span class="sd">            </span>
+<span class="sd">            :return: the active scenario</span>
+<span class="sd">            :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.setScenario"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.setScenario">[docs]</a>    <span class="k">def</span> <span class="nf">setScenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scenario</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Sets a scenario</span>
+<span class="sd">            </span>
+<span class="sd">            :param scenario: the name of the scenario to set active</span>
+<span class="sd">            :type scenario: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="n">scenario</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.createScenarioName"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.createScenarioName">[docs]</a>    <span class="k">def</span> <span class="nf">createScenarioName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">scenario_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;fname&quot;</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Could not get the current scenario name&quot;</span><span class="p">)</span>
+            <span class="n">scenario_name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&quot;scenario&quot;</span><span class="o">+</span><span class="n">scenario_name</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.resetItems"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.resetItems">[docs]</a>    <span class="k">def</span> <span class="nf">resetItems</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Resets the id of the items in the consignment scenario.</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: Add your code here to reset your scenario</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Resets the consignment scenario</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;switch&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;cover_small&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;cover_door&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+
+<span class="c">## pick and place learning scenario</span></div>
+<div class="viewcode-block" id="BaxterScenarios.scenarioTwoArmSync"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.scenarioTwoArmSync">[docs]</a>    <span class="k">def</span> <span class="nf">scenarioTwoArmSync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Executes the task &quot;scenarioTwoArmSync&quot; first to be flexible to new parameters</span>
+<span class="sd">            and then runs the pick and place scenario in another thread </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createScenarioName</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__scenarioTwoArmSync</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">__scenarioTwoArmSync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">looped</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span> <span class="p">:</span><span class="c">#check if path should be executed in loop</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>            
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span> <span class="c">#execute all substeps until no file is available</span>
+                <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;left&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;File does not exist, breaking loop&quot;</span><span class="p">)</span>
+                    <span class="k">break</span> 
+                <span class="k">print</span> <span class="s">&quot;number inside loop&quot;</span><span class="p">,</span><span class="n">i</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;TwoArmSync &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">side</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;number&#39;</span><span class="p">:</span><span class="n">i</span><span class="p">,</span><span class="s">&#39;looped&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">,</span> <span class="s">&#39;threaded&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">})</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Trajectory could not be executed: Stopping&quot;</span><span class="p">)</span>
+                    <span class="k">break</span>
+                
+                
+                <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;right&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;File does not exist, breaking loop&quot;</span><span class="p">)</span>
+                    <span class="k">break</span> 
+                <span class="k">print</span> <span class="s">&quot;number inside loop&quot;</span><span class="p">,</span><span class="n">i</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;TwoArmSync &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">side</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;number&#39;</span><span class="p">:</span><span class="n">i</span><span class="p">,</span><span class="s">&#39;looped&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">,</span> <span class="s">&#39;threaded&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">})</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Trajectory could not be executed: Stopping&quot;</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">looped</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">))</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;done with all steps&quot;</span><span class="p">)</span>
+
+<span class="c">## pick and place learning scenario</span>
+<div class="viewcode-block" id="BaxterScenarios.scenarioPickAndPlace"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.scenarioPickAndPlace">[docs]</a>    <span class="k">def</span> <span class="nf">scenarioPickAndPlace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Executes the task &quot;scenarioPickAndPlace&quot; first to be flexible to new parameters</span>
+<span class="sd">            and then runs the pick and place scenario in another thread </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createScenarioName</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenarioPickAndPlace</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__scenarioPickAndPlace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the pick and place scenario:</span>
+<span class="sd">            </span>
+<span class="sd">            In this scenario the user can record multiple trajectories for each arm.</span>
+<span class="sd">            The current trajectory number to be recorded is shown in the title bar of baxter.</span>
+<span class="sd">            For every step a trajectory can be recorded. Every step can be relearned and play.</span>
+<span class="sd">            After a complete recording all steps can be placed consecutively.</span>
+<span class="sd">             </span>
+<span class="sd">            All recordings are saved in the data directory of the project and are also available after restart.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span><span class="p">{</span><span class="c">#maybe add an insert step ..more complicated</span>
+                 <span class="s">&#39;Previous Step&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">previousStep</span><span class="p">,</span>
+                 <span class="s">&#39;Next Step&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">nextStep</span><span class="p">,</span>
+                 <span class="s">&#39;Learn Step&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">learnStep</span><span class="p">,</span>
+                 <span class="s">&#39;Run Step&#39;</span><span class="p">:[</span><span class="bp">self</span><span class="o">.</span><span class="n">runStep</span><span class="p">,</span><span class="bp">False</span><span class="p">],</span>
+                 <span class="s">&#39;RunAll&#39;</span><span class="p">:[</span><span class="bp">self</span><span class="o">.</span><span class="n">runAllSteps</span><span class="p">,</span><span class="bp">False</span><span class="p">],</span>
+                 <span class="s">&#39;RunAllLooped&#39;</span><span class="p">:[</span><span class="bp">self</span><span class="o">.</span><span class="n">runAllSteps</span><span class="p">,</span><span class="bp">True</span><span class="p">],</span> 
+                  <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addGenericMenu</span><span class="p">(</span><span class="s">&quot;scenarioPnP&quot;</span><span class="p">,</span> <span class="s">&quot;scenario&quot;</span><span class="p">,</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">),</span><span class="n">entries</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;scenarioPnP&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaxterScenarios.previousStep"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.previousStep">[docs]</a>    <span class="k">def</span> <span class="nf">previousStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">           Goes the the previous recorded trajectory </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.nextStep"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.nextStep">[docs]</a>    <span class="k">def</span> <span class="nf">nextStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Goes to the next step to record a new trajectory or play back an already recorded one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.learnStep"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.learnStep">[docs]</a>    <span class="k">def</span> <span class="nf">learnStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Activates the learning mode for the current step</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: Only if the cuff button is pressed the robot saved the current joint angles and gripper position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">teach</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;number&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">,</span> <span class="s">&#39;parent&#39;</span><span class="p">:</span> <span class="s">&#39;scenarioPnP&#39;</span><span class="p">})</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.runStep"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.runStep">[docs]</a>    <span class="k">def</span> <span class="nf">runStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span><span class="c">#because a thread can not be started more than once</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs the current selected step - non blocking</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__runStep</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__runStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs the current selected step - blocking</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;number&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">})</span>
+    
+<div class="viewcode-block" id="BaxterScenarios.runAllSteps"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.runAllSteps">[docs]</a>    <span class="k">def</span> <span class="nf">runAllSteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs all recorded steps - non blocking</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: Even if you have not recorded anything it could play back, trajectories that already </span>
+<span class="sd">                exist in your datapath.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__runAllSteps</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__runAllSteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs all recorded steps - blocking</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: Even if you have not recorded anything it could play back, trajectories that already </span>
+<span class="sd">                exist in your datapath.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;side&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">neglect</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">looped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">default_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]]</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span> <span class="p">:</span><span class="c">#check if path should be executed in loop</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">print</span> <span class="s">&quot;start of loop&quot;</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">stopExecution</span><span class="p">(</span><span class="n">side</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span> <span class="c">#execute all substeps until no file is available</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">br</span><span class="o">.</span><span class="n">filename</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;File does not exist, breaking loop&quot;</span><span class="p">)</span>
+                    <span class="k">break</span> 
+                <span class="k">print</span> <span class="s">&quot;number inside loop&quot;</span><span class="p">,</span><span class="n">i</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">executePath</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;number&#39;</span><span class="p">:</span><span class="n">i</span><span class="p">,</span><span class="s">&#39;looped&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">,</span> <span class="s">&#39;threaded&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">})</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Trajectory could not be executed: Stopping&quot;</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">looped</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">changeMenuTitle</span><span class="p">(</span><span class="s">&quot;Pick and Place Step &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pnp_index</span><span class="p">))</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;done with all steps&quot;</span><span class="p">)</span>
+
+<span class="c">##############</span>
+
+<div class="viewcode-block" id="BaxterScenarios.btnTray"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnTray">[docs]</a>    <span class="k">def</span> <span class="nf">btnTray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the tray element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;item_tray&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+<span class="c">#         self.manipulateItem(self.side,&quot;item_tray&quot;,0,&quot;front&quot;,False)</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.btnGobletBlue"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnGobletBlue">[docs]</a>    <span class="k">def</span> <span class="nf">btnGobletBlue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the blue goblet element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;goblet_blue&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+<span class="c">#         self.manipulateItem(self.side,&quot;goblet_blue&quot;,0,&quot;front&quot;,False)</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.btnGobletRed"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnGobletRed">[docs]</a>    <span class="k">def</span> <span class="nf">btnGobletRed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the red goblet element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;goblet_red&quot;</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+<span class="c">#         self.manipulateItem(self.side,&quot;goblet_red&quot;,0,&quot;front&quot;,False)</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.scenarioConsignment2"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.scenarioConsignment2">[docs]</a>    <span class="k">def</span> <span class="nf">scenarioConsignment2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs the consignment2 scenario - non blocking</span>
+<span class="sd">            </span>
+<span class="sd">            This scenario uses two long electric grippers to sort 3 simple </span>
+<span class="sd">            plastic elements from a storage onto a conveyor belt with the left hand. </span>
+<span class="sd">            Simultaneously it takes the 3 objects from the conveyor belt and puts it in a </span>
+<span class="sd">            storage on the right side of the robot </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createScenarioName</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">makeTables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__scenarioConsignment2</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+    <span class="k">def</span> <span class="nf">__scenarioConsignment2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Runs the consignment2 scenario - blocking</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;logo1024.jpg&quot;</span><span class="p">)</span>
+        <span class="c"># these are the used items</span>
+        <span class="n">boxes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;item_tray&quot;</span><span class="p">,</span><span class="s">&quot;goblet_blue&quot;</span><span class="p">,</span><span class="s">&quot;goblet_red&quot;</span><span class="p">]</span> <span class="c"># TODO get from scene</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+            <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Going to init pose&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+            <span class="n">last_time</span><span class="o">=</span><span class="bp">None</span>
+            <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">None</span> 
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                 <span class="c"># Print timing</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Getting time for cycle&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">last_time</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">last_time</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Cycle time &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="o">+</span><span class="s">&quot; s&quot;</span><span class="p">)</span>
+                <span class="n">last_time</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+                 <span class="c"># TODO return values should be checked</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L pick goblet1 post back</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="c">#R wait</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">right_thread</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">right_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R pick goblet1 post front</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="c">#L wait</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#L drop goblet1 post front</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R wait </span>
+                    <span class="n">right_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#R drop goblet 1 post back</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L wait</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+                    <span class="c">#L pick goblet 2 post back</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R wait</span>
+                    <span class="n">right_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#R pick goblet 2 post front</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L wait</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#L drop goblet 2 post front</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R wait</span>
+                    <span class="n">right_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#R drop goblet 2 post back</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L wait</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    
+                    <span class="c">#L pick tray 1 post back</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R wait</span>
+                    <span class="n">right_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#R pick tray 2 front</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L wait</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="c">#L drop tray 1 post front</span>
+                    <span class="n">left_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+                    <span class="c">#R drop tray 2 post back</span>
+                    <span class="n">right_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">boxes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">use_arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]:</span>
+                    <span class="c">#L wait</span>
+                    <span class="n">left_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="c">#items completed</span>
+                <span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+=</span><span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">12</span><span class="p">:</span>   
+                    <span class="k">break</span> <span class="c"># stops after 12 elements of all items are manipulated</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="k">break</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;task could not be completed. </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">)</span>
+        
+    <span class="c"># for consignment2 scenario</span>
+<div class="viewcode-block" id="BaxterScenarios.manipulateItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.manipulateItem">[docs]</a>    <span class="k">def</span> <span class="nf">manipulateItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">pick</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Manipulate Item is a more advanced manipulation which consists of:</span>
+<span class="sd">            </span>
+<span class="sd">            * approach to the object inside a box</span>
+<span class="sd">            * grip/release the object inside the box</span>
+<span class="sd">            * withdraw from the box</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: Arm to be used</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: The box where the object should be picked/placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :param id: The object number to be manipulated</span>
+<span class="sd">            :type id: int</span>
+<span class="sd">            :param location: if the object is in &quot;front&quot; of the robot or at the sides. $</span>
+<span class="sd">                If location == &quot;front&quot; the positions F and P are used instead of L and H (see PlanGenerator)</span>
+<span class="sd">            :type location: str</span>
+<span class="sd">            :param pick: If the item to be picked or placed</span>
+<span class="sd">            :type pick: bool</span>
+<span class="sd">            :return: True if movement was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Trying to manipulate object </span><span class="si">%s</span><span class="s"> from box </span><span class="si">%s</span><span class="s"> with </span><span class="si">%s</span><span class="s"> arm at </span><span class="si">%s</span><span class="s">, pick </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">location</span><span class="p">,</span><span class="n">pick</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;stop called&quot;</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">pick</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">outside_grip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">()</span> 
+            <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+            <span class="c">#if you want to sort the object with the right arm the other way around</span>
+<span class="c">#             if side == &quot;right&quot;:</span>
+<span class="c">#                 id= num_items-1 - id%num_items</span>
+<span class="c">#             else:</span>
+            <span class="nb">id</span><span class="o">=</span> <span class="nb">id</span><span class="o">%</span><span class="n">num_items</span>
+            
+            <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="s">&quot;front&quot;</span><span class="p">:</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="s">&quot;P&quot;</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="s">&quot;F&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="s">&quot;H&quot;</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="s">&quot;L&quot;</span>
+            <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;goblet_blue&quot;</span> <span class="ow">and</span> <span class="n">pick</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_moving_force</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_dead_band</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_velocity</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+                
+            <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;item_tray&quot;</span> <span class="ow">and</span> <span class="n">side</span> <span class="o">==</span> <span class="s">&quot;left&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_moving_force</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_dead_band</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_velocity</span><span class="p">(</span><span class="mi">35</span><span class="p">)</span>
+        
+            
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Approach to box </span><span class="si">%s</span><span class="s">,id </span><span class="si">%d</span><span class="s">,high </span><span class="si">%s</span><span class="s">, outside grip: </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">high</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">high</span><span class="p">,</span><span class="n">pick</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Approach to object </span><span class="si">%s</span><span class="s">,id </span><span class="si">%d</span><span class="s">,low </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">low</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">low</span><span class="p">,</span><span class="n">pick</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">False</span>
+    
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Withdraw from object </span><span class="si">%s</span><span class="s">,id </span><span class="si">%d</span><span class="s">,high </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">high</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">high</span><span class="p">,</span><span class="n">pick</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            
+<span class="c">#             rospy.loginfo(&quot;%s #Moving to init from p %s,id %d,high %s&quot;%(side,box,id,high))</span>
+<span class="c">#             if pick is False:</span>
+<span class="c">#                 if not self.baxter.hlm.goToInitPose(side):</span>
+<span class="c">#                     return False</span>
+    
+            <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;goblet_blue&quot;</span> <span class="ow">or</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;item_tray&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_moving_force</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_dead_band</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_velocity</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;Could not manipulate object </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.scenarioConsignment"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.scenarioConsignment">[docs]</a>    <span class="k">def</span> <span class="nf">scenarioConsignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the consignment scenario - non blocking</span>
+<span class="sd">            </span>
+<span class="sd">            The consignment scenario is a speed and feature optimized scenario for special parts</span>
+<span class="sd">            that could be used in the car industry.</span>
+<span class="sd">            </span>
+<span class="sd">            For this scenario a short electric gripper and the pneumatic gripper is beeing used.</span>
+<span class="sd">            All different gripping strategies are shown:</span>
+<span class="sd">            </span>
+<span class="sd">            * Inside electric grip</span>
+<span class="sd">            * Outside electric grip</span>
+<span class="sd">            * Grip with pneumatic gripper</span>
+<span class="sd">            * Passing objects between two objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">yes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createScenarioName</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scenario</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__scenarioConsignment</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+       
+       </div>
+<div class="viewcode-block" id="BaxterScenarios.showBox"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.showBox">[docs]</a>    <span class="k">def</span> <span class="nf">showBox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Shows a sample box with it current state on the screen of the robot,</span>
+<span class="sd">            which was used for the scenario</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img</span><span class="o">=</span><span class="s">&quot;boxrenderer.png&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+     </div>
+    <span class="k">def</span> <span class="nf">__scenarioConsignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Starts the consignment scenario - blocking</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_dropped</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;right&quot;</span>
+            <span class="n">otherSide</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">otherSide</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">result_drop</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">result_handover</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">skip_drop</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="n">last_time</span><span class="o">=</span><span class="bp">None</span>
+            <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+            <span class="n">r_hand_over_0</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;right_hand_over_0&quot;</span><span class="p">)</span>
+            <span class="n">l_hand_over_0</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;left_hand_over_0&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">r_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">state_pos</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;O&quot;</span>     
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">l_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">state_pos</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;O&quot;</span>
+            <span class="c"># MAIN consignment LOOP</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            
+                <span class="c"># Print timing</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">last_time</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">last_time</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Cycle time &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span><span class="o">+</span><span class="s">&quot; s&quot;</span><span class="p">)</span>
+                <span class="n">last_time</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+            
+                <span class="c">#Drop off the switch with the left vacuum gripper inside the wako</span>
+                <span class="n">th_drop_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">dropOffItem</span><span class="p">(</span><span class="n">otherSide</span><span class="p">)</span>
+                <span class="c">#Pick a cover with the right arm and place it in the wako</span>
+                <span class="n">th_cover_small</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">doCoverSmall</span><span class="p">()</span>
+                <span class="c">#Wait until the drop off of left arm is ready for next operation</span>
+                <span class="n">th_drop_switch</span><span class="o">.</span><span class="n">join</span><span class="p">()</span> 
+                <span class="c">#Save the result</span>
+                <span class="n">success</span><span class="p">[</span><span class="s">&quot;drop_switch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">th_drop_switch</span><span class="o">.</span><span class="n">result</span>
+                <span class="c">#Take a cover with the left arm and place it inside the wako</span>
+                <span class="n">th_cover_door</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">doCoverDoor</span><span class="p">()</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="c"># finish after one of each item. special mode</span>
+<span class="c">#                 if self.item_dropped is True:</span>
+<span class="c">#                     th_cover_door.join()</span>
+<span class="c">#                     self.baxter.yes()</span>
+<span class="c">#                     break</span>
+  
+                <span class="c">#Wait until the right arm  finished</span>
+                <span class="n">th_cover_small</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="n">success</span><span class="p">[</span><span class="s">&quot;cover_small&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">th_cover_small</span><span class="o">.</span><span class="n">result</span>
+                
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="s">&quot;switch&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_to_consign</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_to_consign</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span> 
+                    <span class="n">th_cover_door</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                    <span class="k">break</span>
+                
+                <span class="c">#Pick next switch item with the right arm</span>
+                <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preparePickNextItem</span><span class="p">()</span>      
+                
+                <span class="c">#Wait until the left arm finished</span>
+                <span class="n">th_cover_door</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+                <span class="n">success</span><span class="p">[</span><span class="s">&quot;cover_door&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">th_cover_door</span><span class="o">.</span><span class="n">result</span>
+                <span class="k">if</span> <span class="n">th_cover_door</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+                    
+                <span class="c">#Dont skip items in the next round - for initialization</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="o">=</span> <span class="bp">False</span>
+                
+                <span class="c"># If pick is successfull then perform hand-over, otherwise move on to next item</span>
+                <span class="k">if</span> <span class="n">result_pick</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="n">result_handover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handOver</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result_handover</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">success</span><span class="p">[</span><span class="s">&quot;result_handover&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_handover</span>
+                
+                    
+                <span class="bp">self</span><span class="o">.</span><span class="n">printResults</span><span class="p">(</span><span class="n">success</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Scenario finished&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;task could not be completed. error: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        
+        <span class="n">pic</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;logo1024.jpg&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="n">pic</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="BaxterScenarios.printResults"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.printResults">[docs]</a>    <span class="k">def</span> <span class="nf">printResults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">success</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            As the consignment scenario consists of several subtasks, the results of each iteration</span>
+<span class="sd">            that had some troubles are printed.</span>
+<span class="sd">            </span>
+<span class="sd">            :param success: contains the result of all subtasks</span>
+<span class="sd">            :type success: list(bool)</span>
+<span class="sd">            :return: True if all subtasks are successfully executed</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+         <span class="c"># Check and report subtask results</span>
+        <span class="k">if</span> <span class="n">success</span><span class="o">!=</span><span class="p">{}:</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">subtask</span><span class="o">==</span><span class="bp">True</span> <span class="k">for</span> <span class="n">subtask</span> <span class="ow">in</span> <span class="n">success</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>                    
+                <span class="n">success</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">return</span> <span class="bp">True</span>                    
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Result of all subtasks </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">success</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="bp">False</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.btnPickItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnPickItem">[docs]</a>    <span class="k">def</span> <span class="nf">btnPickItem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the switch element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="s">&quot;switch&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;id </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="s">&quot;switch&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pickNextItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="s">&quot;switch&quot;</span><span class="p">])</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.nextItemId"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.nextItemId">[docs]</a>    <span class="k">def</span> <span class="nf">nextItemId</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the next valid item id to be manipulated</span>
+<span class="sd">            :param box: The box you want to have the next ID for</span>
+<span class="sd">            :type box: int</span>
+<span class="sd">            :return: The next ID for the given box</span>
+<span class="sd">            :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;switch&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span> <span class="o">==</span> <span class="mi">8</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span> <span class="o">==</span> <span class="mi">10</span><span class="p">):</span> <span class="c"># Box has no items at this position</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span><span class="o">+=</span><span class="mi">2</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span><span class="o">+=</span><span class="mi">1</span>  
+        <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;switch&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span><span class="o">&gt;=</span><span class="n">num_items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">fill</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">showBox</span><span class="p">()</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span><span class="o">%</span><span class="n">num_items</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.preparePickNextItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.preparePickNextItem">[docs]</a>    <span class="k">def</span> <span class="nf">preparePickNextItem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Manager for picking the next switch item. This function includes a recovery option</span>
+<span class="sd">            and a graphical feedback on the screen.  </span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if pick was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;switch&quot;</span>
+        <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;right&quot;</span>
+        <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>               
+            <span class="bp">self</span><span class="o">.</span><span class="n">nextItemId</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">setMark</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">showBox</span><span class="p">()</span>
+            <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pickNextItem</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">result_pick</span> <span class="ow">is</span>  <span class="bp">False</span><span class="p">:</span>
+                <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_over_0&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">)</span>
+                <span class="n">result_pick</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">result_pick</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>                        
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Releasing unpicked object&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">unsetMark</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">RENDER_ERRORS</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">setNotPicked</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">showBox</span><span class="p">()</span>
+                
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Skip&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Retry&quot;</span><span class="p">:</span>                        
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Stop&quot;</span><span class="p">:</span>
+                    <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Ignore&quot;</span><span class="p">:</span>
+                    <span class="n">result_pick</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">unsetMark</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">showBox</span><span class="p">()</span>                        
+                <span class="k">break</span>                
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result_pick</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.pickNextItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.pickNextItem">[docs]</a>    <span class="k">def</span> <span class="nf">pickNextItem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Picks the next switch item</span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if pick was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>       
+        <span class="c"># Move on to next item</span>
+        
+        <span class="n">side</span><span class="o">=</span><span class="s">&quot;right&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;switch&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">outside_grip</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">]</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Approach to box </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;H&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Approach to object </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;L&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Withdraw from box </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToObject</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;H&quot;</span><span class="p">,</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Withdraw with item failed. Skipping item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Move to hand over </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">))</span>
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">8</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>    
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">gripped</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Could not detect a gripped object. Checking recovery option&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">))</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> #Detected a gripped object&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">side</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BaxterScenarios.gripHandOverItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.gripHandOverItem">[docs]</a>    <span class="k">def</span> <span class="nf">gripHandOverItem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Performs the hand over operation. For this part fixed angles for both arm are saved.</span>
+<span class="sd">            The left arm approches the right one until a grip is detected.</span>
+<span class="sd">            </span>
+<span class="sd">            The baxter monitor can be used to change the fixed hand over positions. </span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if hand over was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;switch&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">outside_grip</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">r_hand_over_0</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;right_hand_over_0&quot;</span><span class="p">)</span>
+        <span class="n">r_hand_over_1</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;right_hand_over_1&quot;</span><span class="p">)</span>
+        <span class="n">l_hand_over_0</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;left_hand_over_0&quot;</span><span class="p">)</span>
+        <span class="n">l_hand_over_1</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;left_hand_over_1&quot;</span><span class="p">)</span>
+
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Holding r_hand_over&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">r_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.00001</span><span class="p">,</span><span class="mf">0.00001</span><span class="p">],</span><span class="n">timeout</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">waitForMoving</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">deactivate</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;left #Activate grip&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">grip</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;left #Approach with left&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">l_hand_over_1</span><span class="p">,</span><span class="o">*</span><span class="p">[</span><span class="mf">0.10</span><span class="p">,</span><span class="mf">0.00001</span><span class="p">,</span><span class="mf">0.00001</span><span class="p">],</span><span class="n">timeout</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">waitForMoving</span><span class="p">()</span>
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;left #Check for grip&quot;</span><span class="p">)</span>
+        <span class="n">gripped</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">moving</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">gripped</span><span class="p">():</span>
+                <span class="k">print</span> <span class="s">&quot;right #Release grip&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">pickUp</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span><span class="s">&quot;side&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="n">gripped</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">waitForStopped</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gripped</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;left #NOT GRIPPED&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">l_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">False</span>            
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;left #Successfully gripped&quot;</span><span class="p">)</span>
+            <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">r_hand_over_1</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">l_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.handOver"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.handOver">[docs]</a>    <span class="k">def</span> <span class="nf">handOver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Manager for the hand over procedure. This manager handles the recovery option</span>
+<span class="sd">            and the graphical feedback.</span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if hand over was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;switch&quot;</span>
+        <span class="n">retry</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;left #Move to hand over&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">result_handover</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripHandOverItem</span><span class="p">()</span> 
+            <span class="k">if</span> <span class="n">result_handover</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Skip&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Retry&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">retry</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="n">retry</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Stop&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">recovery</span> <span class="o">==</span> <span class="s">&quot;Ignore&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">RENDER_ERRORS</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">setNotHanded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">result_handover</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.02</span><span class="p">)</span>
+        
+              </div>
+<div class="viewcode-block" id="BaxterScenarios.btnCoverSmall"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnCoverSmall">[docs]</a>    <span class="k">def</span> <span class="nf">btnCoverSmall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the small cover element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doCoverSmall</span><span class="p">()</span>
+          </div>
+<div class="viewcode-block" id="BaxterScenarios.doCoverSmall"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.doCoverSmall">[docs]</a>    <span class="k">def</span> <span class="nf">doCoverSmall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Approches the box that contains the small covers with the eletric gripper,</span>
+<span class="sd">            grips an object - inside out, withdraws from the source box and</span>
+<span class="sd">            places the item in the destination box.</span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if movement was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_dropped</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;cover_small&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextItemId</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+        <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;right&quot;</span>
+    
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span><span class="c"># to ensure arms are not colliding with items</span>
+        <span class="n">r_hand_over_0</span><span class="o">=</span><span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadAngles</span><span class="p">(</span><span class="s">&quot;right_hand_over_0&quot;</span><span class="p">)</span>
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mf">0.025</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">r_hand_over_0</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">)</span>     
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span> <span class="s">&quot;side&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span> <span class="s">&quot;front&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Going to hand over position with right hand&quot;</span><span class="o">%</span><span class="n">side</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span> 
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BaxterScenarios.btnCoverDoor"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnCoverDoor">[docs]</a>    <span class="k">def</span> <span class="nf">btnCoverDoor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the door cover element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doCoverDoor</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="BaxterScenarios.doCoverDoor"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.doCoverDoor">[docs]</a>    <span class="k">def</span> <span class="nf">doCoverDoor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Approches the box that contains the door covers with the pneumatic gripper,</span>
+<span class="sd">            grips an object, withdraws from the source box and</span>
+<span class="sd">            places the item in the destination box.</span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if movement was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;cover_door&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextItemId</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+        <span class="n">side</span> <span class="o">=</span> <span class="s">&quot;left&quot;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span> <span class="s">&quot;side&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span> <span class="s">&quot;front&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Going to hand over position with left hand&quot;</span><span class="o">%</span><span class="n">side</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">[</span><span class="n">box</span><span class="p">],</span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>        
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BaxterScenarios.btnDropOff"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.btnDropOff">[docs]</a>    <span class="k">def</span> <span class="nf">btnDropOff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Button callback function to test the placement of the switch element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropOffItem</span><span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="s">&quot;left&quot;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="BaxterScenarios.dropOffItem"><a class="viewcode-back" href="../baxter_scenarios.html#baxter_scenarios.BaxterScenarios.dropOffItem">[docs]</a>    <span class="k">def</span> <span class="nf">dropOffItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            After a successful hand over procedure, this function places the switch </span>
+<span class="sd">            in the destination box.</span>
+<span class="sd">            </span>
+<span class="sd">            :return: True if movement was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_first</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Skipped dropoff&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        
+        <span class="n">box</span> <span class="o">=</span> <span class="s">&quot;switch&quot;</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manipulateItem</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span><span class="s">&quot;front&quot;</span><span class="p">,</span><span class="bp">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>              
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">#Moving to I with left hand&quot;</span><span class="o">%</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="s">&quot;I&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>  
+        <span class="k">return</span> <span class="bp">True</span>
+        </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

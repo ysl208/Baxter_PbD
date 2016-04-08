@@ -1,0 +1,1214 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper_abstract_limb Module" href="baxter_helper_abstract_limb.html" />
+    <link rel="prev" title="baxter_behaviors Module" href="baxter_behaviors.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_abstract_limb.html" title="baxter_helper_abstract_limb Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_behaviors.html" title="baxter_behaviors Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_helper">
+<span id="baxter-helper-module"></span><h1>baxter_helper Module<a class="headerlink" href="#module-baxter_helper" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baxter_helper.BaxterCamera">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterCamera</tt><big>(</big><em>display</em>, <em>textDisplay</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="baxter_helper.BaxterCamera.closeAllCameras">
+<tt class="descname">closeAllCameras</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera.closeAllCameras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera.closeAllCameras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes all active cameras</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterCamera.closeCamera">
+<tt class="descname">closeCamera</tt><big>(</big><em>camera_name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera.closeCamera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera.closeCamera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes a specific camera</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>camera_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the camera to be closed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterCamera.grabImage">
+<tt class="descname">grabImage</tt><big>(</big><em>camera_name</em>, <em>filename</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera.grabImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera.grabImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grabs exactly one image from a camera</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>camera_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The image of the camera that should be saved</li>
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The full path of the filename where this image should be saved</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterCamera.listCameras">
+<tt class="descname">listCameras</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera.listCameras"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera.listCameras" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all available cameras</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Available camera names</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterCamera.startCamera">
+<tt class="descname">startCamera</tt><big>(</big><em>camera_name</em>, <em>open_only=False</em>, <em>resolution=(960</em>, <em>600)</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCamera.startCamera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCamera.startCamera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens a camera</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>camera_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the camera to be used</li>
+<li><strong>open_only</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True only opens the camera stream, otherwise the stream is also redirected to the display</li>
+<li><strong>resolution</strong> (<em>(int,int)</em>) &#8211; Resolution of the camera stream</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterCollisionAvoidance">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterCollisionAvoidance</tt><a class="reference internal" href="_modules/baxter_helper.html#BaxterCollisionAvoidance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCollisionAvoidance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to enable and disable the self-collision avoidance. Useful when the robot has to pass objects from one hand to the other</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterCollisionAvoidance.activate">
+<tt class="descname">activate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCollisionAvoidance.activate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCollisionAvoidance.activate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reactivates the self-collision avoidance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterCollisionAvoidance.deactivate">
+<tt class="descname">deactivate</tt><big>(</big><em>timeout</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterCollisionAvoidance.deactivate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterCollisionAvoidance.deactivate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deactivates the self-collision avoidance for a specific amount of time (non-blocking)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; How long the collision avoidance is disabled</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterDisplay">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterDisplay</tt><big>(</big><em>show_local=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterDisplay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterDisplay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles the image publishing to the display of baxter</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterDisplay.setImage">
+<tt class="descname">setImage</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterDisplay.setImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterDisplay.setImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the image to the display of the robot and displays the image locally</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>sensor_msgs.msgs.Image or str</em>) &#8211; The image data can be passed as a sensor_msgs.msg.Image() or a string that contains the path to an image file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="baxter_helper.BaxterException">
+<em class="property">exception </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterException</tt><a class="reference internal" href="_modules/baxter_helper.html#BaxterException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterRangeSensor">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterRangeSensor</tt><a class="reference internal" href="_modules/baxter_helper.html#BaxterRangeSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRangeSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the distances from the range sensors</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterRangeSensor.getDistance">
+<tt class="descname">getDistance</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRangeSensor.getDistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRangeSensor.getDistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the last saved distance value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Distance in meters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterRecorder">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterRecorder</tt><big>(</big><em>baxter</em>, <em>filename='current_recording_'</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records and plays manually learned trajectories. While two trajectories can be played simultaneously,
+the recording has to take place consecutively</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.clean_line">
+<tt class="descname">clean_line</tt><big>(</big><em>line</em>, <em>names</em>, <em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.clean_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.clean_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleans a single line of recorded joint positions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>line</strong> &#8211; the line described in a list to process</li>
+<li><strong>names</strong> &#8211; joint name keys</li>
+<li><strong>side</strong> &#8211; the arm side</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.play">
+<tt class="descname">play</tt><big>(</big><em>side</em>, <em>loops=1</em>, <em>number=''</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.play"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.play" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.record">
+<tt class="descname">record</tt><big>(</big><em>side</em>, <em>number=''</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current joint positions of the given side 
+to a csv file if the cuff button is pressed</p>
+<p>This function will overwrite
+existing files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; side to be recorded</li>
+<li><strong>number</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; added to the filename, if previous file should not be overwritten</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.stopExecution">
+<tt class="descname">stopExecution</tt><big>(</big><em>side</em>, <em>stop=None</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.stopExecution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.stopExecution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets an execution or gets the current execution state of the &#8220;stop&#8221; param is None</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; side of execution to be modified</li>
+<li><strong>stop</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Defines if current executions are stop and if future trajectories are executed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">State of execution</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.stopRecording">
+<tt class="descname">stopRecording</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.stopRecording"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.stopRecording" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops a recording</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The side that should be recorded</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRecorder.try_float">
+<tt class="descname">try_float</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRecorder.try_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRecorder.try_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts something to float</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; data to be converted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">data converted to float or None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterRobot">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterRobot</tt><big>(</big><em>moveit=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.addTasker">
+<tt class="descname">addTasker</tt><big>(</big><em>tasker</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.addTasker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.addTasker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the GUI task interface of the workstation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.disable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables the motors</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.enable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables the motors</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="baxter_helper.BaxterRobot.instance">
+<tt class="descname">instance</tt><em class="property"> = None</em><a class="headerlink" href="#baxter_helper.BaxterRobot.instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadAll">
+<tt class="descname">loadAll</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadAll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadAll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all interfaces</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadArms">
+<tt class="descname">loadArms</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadArms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadArms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load both arms</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the arms/limbs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">SimpleLimb or MoveItLimb</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadBaxterScene">
+<tt class="descname">loadBaxterScene</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadBaxterScene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadBaxterScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the MoveIt scene</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the moveit scene</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterScene</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadBehaviors">
+<tt class="descname">loadBehaviors</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadBehaviors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadBehaviors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Baxter&#8217;s custom behaviors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the behaviors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterBehaviors</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadCamera">
+<tt class="descname">loadCamera</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadCamera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadCamera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the cameras</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the cameras</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterCamera</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadCollisionAvoidance">
+<tt class="descname">loadCollisionAvoidance</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadCollisionAvoidance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadCollisionAvoidance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the self-collision avoidance interface</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the self-collision avoidance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterCollisionAvoidance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadDigitalIO">
+<tt class="descname">loadDigitalIO</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadDigitalIO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadDigitalIO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the buttons</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the buttons</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">DigitalIO</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadFrame">
+<tt class="descname">loadFrame</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the tf broadcaster and listener</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the transformations</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadGrippers">
+<tt class="descname">loadGrippers</tt><big>(</big><em>force_reload=False</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadGrippers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadGrippers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads both grippers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reload</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Recalibrate grippers?</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">interface to the grippers</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Gripper</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadHighLevelMovement">
+<tt class="descname">loadHighLevelMovement</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadHighLevelMovement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadHighLevelMovement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the high level movement controller</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to high level motions</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">HighLevelMovement</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadKinect">
+<tt class="descname">loadKinect</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadKinect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadKinect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publishes the transformation from the kinect rgb camera to the marker that is mounted on baxter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadLeds">
+<tt class="descname">loadLeds</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadLeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadLeds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads all leds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the leds</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Led</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadMenu">
+<tt class="descname">loadMenu</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the menu image composer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to draw and select the menu entries</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterMenuComposer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadMenuManager">
+<tt class="descname">loadMenuManager</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadMenuManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadMenuManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Baxter&#8217;s menu manager</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the menu</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterMenuManager</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadNavigator">
+<tt class="descname">loadNavigator</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadNavigator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadNavigator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the navigators</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the navigators</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Navigator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadRangeSensor">
+<tt class="descname">loadRangeSensor</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadRangeSensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadRangeSensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Baxter&#8217;s range sensors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the range sensors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterRangeSensor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadRecorder">
+<tt class="descname">loadRecorder</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadRecorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadRecorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the recorder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the recorder</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterRecorder</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadSonarControl">
+<tt class="descname">loadSonarControl</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadSonarControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadSonarControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads Baxter&#8217;s sonar control and disables the sonars</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the sonar sensors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterSonar</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadTextDisplay">
+<tt class="descname">loadTextDisplay</tt><big>(</big><em>autostdout=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadTextDisplay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadTextDisplay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the text display</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>autostdout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Should the text display linked to the standard prints?</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">interface to the text display</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">BaxterTextDisplayer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.loadURDFCreator">
+<tt class="descname">loadURDFCreator</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.loadURDFCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.loadURDFCreator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the automatic URDF creator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">interface to the automatic urdf creator</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">BaxterURDFCreator</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.no">
+<tt class="descname">no</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.no"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.no" title="Permalink to this definition">¶</a></dt>
+<dd><p>The robot shakes its display</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.otherSide">
+<tt class="descname">otherSide</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.otherSide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.otherSide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name of the other arm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; One name of an arm</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Name of the other arm</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.pos2list">
+<tt class="descname">pos2list</tt><big>(</big><em>pos</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.pos2list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.pos2list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a geometry.msgs.Point to a list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos</strong> (<em>geometry.msgs.Point</em>) &#8211; Point to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list containing a Point</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.quat2list">
+<tt class="descname">quat2list</tt><big>(</big><em>quat</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.quat2list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.quat2list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a geometry.msgs.Quaternion to a list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>quat</strong> (<em>geometry.msgs.msgs.Quaternion</em>) &#8211; Quaterion to convert</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list containing a Quaternion</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.timer">
+<tt class="descname">timer</tt><big>(</big><em>name</em>, <em>start</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.timer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.timer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.toggleMotorState">
+<tt class="descname">toggleMotorState</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.toggleMotorState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.toggleMotorState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables or disables the motorstate of the robot</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterRobot.yes">
+<tt class="descname">yes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterRobot.yes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterRobot.yes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The robots nods with the display</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterSonar">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterSonar</tt><a class="reference internal" href="_modules/baxter_helper.html#BaxterSonar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterSonar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables or disables the sonar sensors</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterSonar.checkConnection">
+<tt class="descname">checkConnection</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterSonar.checkConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterSonar.checkConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if baxter&#8217;s sonars already subscribed to the publisher</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterSonar.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterSonar.disable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterSonar.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables all sonar sensors</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterSonar.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterSonar.enable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterSonar.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables all sonar sensors</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.BaxterTextDisplayer">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">BaxterTextDisplayer</tt><big>(</big><em>datapath</em>, <em>display</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emulates a terminal style output window to write text information to baxter&#8217;s display</p>
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.autoRefresh">
+<tt class="descname">autoRefresh</tt><big>(</big><em>period=1</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.autoRefresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.autoRefresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a loop that automatically updates the screen (Qttention: This function is blocking. Should be called with post)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>period</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; The time between the updates of the screen</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.clear">
+<tt class="descname">clear</tt><big>(</big><em>refresh=False</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all text from the terminal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>refresh</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If the output should be directly updated</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.log">
+<tt class="descname">log</tt><big>(</big><em>text</em>, <em>refresh=False</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new line to the output terminal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to be written</li>
+<li><strong>refresh</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If the output should be directly updated</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.refresh">
+<tt class="descname">refresh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the screen with the current saved text</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.stopAutoRefresh">
+<tt class="descname">stopAutoRefresh</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.stopAutoRefresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.stopAutoRefresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the auto refreshing loop</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.BaxterTextDisplayer.write">
+<tt class="descname">write</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#BaxterTextDisplayer.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.BaxterTextDisplayer.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new line to the output terminal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; Data to be written -&gt; converted to string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.DigitalIO">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">DigitalIO</tt><big>(</big><em>id</em>, <em>led=None</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#DigitalIO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.DigitalIO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">baxter_interface.digital_io.DigitalIO</span></tt></p>
+<p>Extends DigitalIO with waitForPressed and blinking leds on button presses</p>
+<dl class="method">
+<dt id="baxter_helper.DigitalIO.callbackOnPressed">
+<tt class="descname">callbackOnPressed</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#DigitalIO.callbackOnPressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.DigitalIO.callbackOnPressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a callback on a button press. This function is non blocking</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; function to be called</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.DigitalIO.waitForClick">
+<tt class="descname">waitForClick</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#DigitalIO.waitForClick"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.DigitalIO.waitForClick" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits for a press on the button</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.Gripper">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">Gripper</tt><big>(</big><em>side</em>, <em>scene=None</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="gripper.html#gripper.Gripper" title="gripper.Gripper"><tt class="xref py py-class docutils literal"><span class="pre">gripper.Gripper</span></tt></a></p>
+<p>Extends baxter gripper interface with:
+grip and release  commands, 
+replaces open/close
+set a specific position,
+custom calibration,
+check if object has been gripped</p>
+<dl class="method">
+<dt id="baxter_helper.Gripper.calibrateAdvanced">
+<tt class="descname">calibrateAdvanced</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.calibrateAdvanced"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.calibrateAdvanced" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the farmost open and close position</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.close">
+<tt class="descname">close</tt><big>(</big><em>block=True</em>, <em>timeout=8.0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the gripper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True waits until the gripper finished its movement</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Time to try to execute the command (for pneumatic gripper it affects the time to stop the airflow if nothing is grasped)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.grip">
+<tt class="descname">grip</tt><big>(</big><em>blocking=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.grip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.grip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the gripper if outside grip and opens it otherwise</p>
+<p>:param blocking :If True, the method waits until the gripper finished the grip
+:type blocking: bool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.gripped">
+<tt class="descname">gripped</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.gripped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.gripped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if an object has been gripped</p>
+<p>:return True is object is gripped
+:rtype: bool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.open">
+<tt class="descname">open</tt><big>(</big><em>block=True</em>, <em>timeout=8.0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the gripper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True waits until the gripper finished its movement</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Time to try to execute the command (for pneumatic gripper it affects the time to stop the airflow if nothing is grasped)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.release">
+<tt class="descname">release</tt><big>(</big><em>blocking=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.release"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the gripper if outside grip and closes it otherwise</p>
+<p>:param blocking :If True, the method waits until the gripper finished the release
+:type blocking: bool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Gripper.setPosition">
+<tt class="descname">setPosition</tt><big>(</big><em>position</em>, <em>blocking=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Gripper.setPosition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Gripper.setPosition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.Head">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">Head</tt><a class="reference internal" href="_modules/baxter_helper.html#Head"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Head" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">baxter_interface.head.Head</span></tt></p>
+<dl class="method">
+<dt id="baxter_helper.Head.command_deny">
+<tt class="descname">command_deny</tt><big>(</big><em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Head.command_deny"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Head.command_deny" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command the shake head  &#8220;No&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Seconds to wait for the head to shake. If 0, just command once and return.  [0]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.Led">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">Led</tt><a class="reference internal" href="_modules/baxter_helper.html#Led"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="baxter_helper.Led.blink">
+<tt class="descname">blink</tt><big>(</big><em>name</em>, <em>timeout=0.0</em>, <em>frequency=2.0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.blink"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.blink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blinks a led for a specific time and frequency (blocking)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the led</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Duration to let the led blinking. A value &lt;= 0.0 means infinite time</li>
+<li><strong>frequency</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Rate, how often a led blinks in one second</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Led.blinkAllInner">
+<tt class="descname">blinkAllInner</tt><big>(</big><em>timeout=0</em>, <em>frequency=2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.blinkAllInner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.blinkAllInner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blinks with all white leds for a specific time and frequency (blocking)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Duration to let the leds blinking. A value &lt;= 0.0 means infinite time</li>
+<li><strong>frequency</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Rate, how often all leds blink in one second</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Led.blinkAllOuter">
+<tt class="descname">blinkAllOuter</tt><big>(</big><em>timeout=0</em>, <em>frequency=2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.blinkAllOuter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.blinkAllOuter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blinks with all blue leds for a specific time and frequency (blocking)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Duration to let the leds blinking. A value &lt;= 0.0 means infinite time</li>
+<li><strong>frequency</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Rate, how often all leds blink in one second</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Led.disable">
+<tt class="descname">disable</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.disable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables a Led</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the led</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Led.disableAll">
+<tt class="descname">disableAll</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.disableAll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.disableAll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables all leds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Led.enable">
+<tt class="descname">enable</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Led.enable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Led.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables a Led</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the led</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.Navigator">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">Navigator</tt><big>(</big><em>id</em>, <em>led=None</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">baxter_interface.navigator.Navigator</span></tt></p>
+<p>Extends Navigator with waitForPressed  and pressed callbacks Navigator</p>
+<dl class="method">
+<dt id="baxter_helper.Navigator.activateLed">
+<tt class="descname">activateLed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.activateLed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.activateLed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Activates a led to blink for some time</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.callbackOnPressedCancel">
+<tt class="descname">callbackOnPressedCancel</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.callbackOnPressedCancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.callbackOnPressedCancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a callback on a press on the arrow button. This is a non-blocking function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; function to be called</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.callbackOnPressedOk">
+<tt class="descname">callbackOnPressedOk</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.callbackOnPressedOk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.callbackOnPressedOk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a callback on a press on the wheel button. This is a non-blocking function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; function to be called</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.callbackOnPressedShow">
+<tt class="descname">callbackOnPressedShow</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.callbackOnPressedShow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.callbackOnPressedShow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a callback on a press on the home button. This is a non-blocking function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; function to be called</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.callbackWheel">
+<tt class="descname">callbackWheel</tt><big>(</big><em>callback</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.callbackWheel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.callbackWheel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes a callback on a rotation of the wheel button. This is a non-blocking function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#any" title="(in Python v2.7)"><em>any</em></a>) &#8211; function to be called</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.waitForClickCancel">
+<tt class="descname">waitForClickCancel</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.waitForClickCancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.waitForClickCancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits until the arrow button has been pressed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.waitForClickOk">
+<tt class="descname">waitForClickOk</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.waitForClickOk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.waitForClickOk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits until the wheel button has been pressed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Navigator.waitForClickShow">
+<tt class="descname">waitForClickShow</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Navigator.waitForClickShow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Navigator.waitForClickShow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits until the home button has been pressed</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper.Tee">
+<em class="property">class </em><tt class="descclassname">baxter_helper.</tt><tt class="descname">Tee</tt><big>(</big><em>t1</em>, <em>t2</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Tee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Tee" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="baxter_helper.Tee.isatty">
+<tt class="descname">isatty</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Tee.isatty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Tee.isatty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper.Tee.write">
+<tt class="descname">write</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/baxter_helper.html#Tee.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper.Tee.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_behaviors.html"
+                        title="previous chapter">baxter_behaviors Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper_abstract_limb.html"
+                        title="next chapter">baxter_helper_abstract_limb Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_abstract_limb.html" title="baxter_helper_abstract_limb Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_behaviors.html" title="baxter_behaviors Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

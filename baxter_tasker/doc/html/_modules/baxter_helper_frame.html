@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_frame</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_frame</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">roslib</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span><span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PoseStamped</span><span class="p">,</span>
+    <span class="n">Pose</span><span class="p">,</span>
+    <span class="n">Point</span><span class="p">,</span>
+    <span class="n">Quaternion</span><span class="p">,</span>
+    
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Header</span><span class="p">,</span><span class="n">Empty</span>
+<span class="kn">import</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span><span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">hr_helper.tf_helper</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a new transformation frame based on 2 points and a reference frame.</span>
+<span class="sd">    Also contains useful transformation functions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaxterFrame"><a class="viewcode-back" href="../baxter_helper_frame.html#baxter_helper_frame.BaxterFrame">[docs]</a><span class="k">class</span> <span class="nc">BaxterFrame</span><span class="p">(</span><span class="n">TFHelper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>
+        <span class="n">TFHelper</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span> <span class="o">=</span> <span class="n">baxter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">=</span> <span class="p">[{},{}]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+<div class="viewcode-block" id="BaxterFrame.addPoint"><a class="viewcode-back" href="../baxter_helper_frame.html#baxter_helper_frame.BaxterFrame.addPoint">[docs]</a>    <span class="k">def</span> <span class="nf">addPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">step</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Saves the current position of the gripper_base in relation to the base</span>
+<span class="sd">            :param side: selects the arm that gripper position should be saved</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param step: selects if the current position is the first or second point</span>
+<span class="sd">            :type step: int </span>
+<span class="sd">            :return: returns the point that has been saved</span>
+<span class="sd">            :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pose</span> <span class="o">=</span> <span class="n">PS</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitUntilFrameUpdate</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="s">&quot;base&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">listener</span><span class="o">.</span><span class="n">transformPose</span><span class="p">(</span><span class="s">&quot;base&quot;</span><span class="p">,</span><span class="n">pose</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;saved point </span><span class="si">%d</span><span class="s"> : </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">step</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">step</span><span class="p">])))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            </div>
+<div class="viewcode-block" id="BaxterFrame.computeTransformation"><a class="viewcode-back" href="../baxter_helper_frame.html#baxter_helper_frame.BaxterFrame.computeTransformation">[docs]</a>    <span class="k">def</span> <span class="nf">computeTransformation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the transformation from two saved points</span>
+<span class="sd">            :return: computed pose and a unique frame id.</span>
+<span class="sd">            :rtype (geometry_msgs.msg.PoseStamped,str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_coords</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">coords</span> <span class="o">==</span> <span class="p">{}:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;computeTransformation: some points may not have been taken&quot;</span><span class="p">)</span>    
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">num_coords</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">num_coords</span><span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span> <span class="p">:</span> <span class="c">#compute pose offset</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;compute pose&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">coords</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">pos2list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="p">)))</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;compute transformation. no ROS pose found using baxter pose&quot;</span><span class="p">)</span>
+                        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="s">&#39;position&#39;</span><span class="p">])))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;insufficient points, try again&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+            <span class="k">while</span> <span class="s">&quot;box&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">box_index</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">box_index</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">Header</span><span class="p">(</span><span class="n">stamp</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;base&quot;</span><span class="p">)</span>
+            <span class="n">box_name</span> <span class="o">=</span> <span class="s">&quot;box&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">box_index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">box_index</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeYaw</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computePitch</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">roll</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quaternion_from_euler</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span> <span class="s">&quot;Transformation computed&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="n">box_name</span><span class="p">)</span>    
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;invalid number of points&quot;</span><span class="p">)</span>
+        
+
+    </div>
+<div class="viewcode-block" id="BaxterFrame.transformPose"><a class="viewcode-back" href="../baxter_helper_frame.html#baxter_helper_frame.BaxterFrame.transformPose">[docs]</a>    <span class="k">def</span> <span class="nf">transformPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">target_frame</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">src_pose</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Transforms a pose from one frame to another, which is NOT in the tf tree</span>
+<span class="sd">            :param target_frame: The new and final frame id</span>
+<span class="sd">            :type target_frame: str</span>
+<span class="sd">            :param parent: The original source frame id</span>
+<span class="sd">            :type parent: str</span>
+<span class="sd">            :param src_pose: The current pose, which has to be transformed</span>
+<span class="sd">            :type src_pose: geometry_msgs.msg.PoseStamped</span>
+<span class="sd">            :return: The transformed pose that contains the position and orientation in a list</span>
+<span class="sd">            :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPose</span><span class="p">(</span><span class="n">target_frame</span><span class="p">,</span><span class="n">parent</span><span class="p">)</span>
+        <span class="n">target_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="n">target_pose</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">tar_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">euler_from_quaternion</span><span class="p">(</span><span class="n">target_pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]))</span>
+        <span class="n">tar_src_pos</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_pos</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="n">src_pose</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]))</span>
+        <span class="n">src_rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">euler_from_quaternion</span><span class="p">(</span><span class="n">src_pose</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]))</span>
+        <span class="n">tar_src_rot</span> <span class="o">=</span> <span class="p">(</span><span class="n">tar_rot</span> <span class="o">-</span> <span class="n">src_rot</span><span class="p">)</span><span class="o">%</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">tar_src_quat</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quaternion_from_euler</span><span class="p">(</span><span class="o">*</span><span class="n">tar_src_rot</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tar_src_pos</span> <span class="o">+</span> <span class="n">tar_src_quat</span>
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">baxter</span><span class="o">=</span><span class="n">BaxterRobot</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">loadAll</span><span class="p">()</span>
+    <span class="n">side</span><span class="o">=</span><span class="s">&#39;left&#39;</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">=</span><span class="s">&#39;cover_door&#39;</span>
+    <span class="n">pose</span> <span class="o">=</span> <span class="n">tf_helper</span><span class="o">.</span><span class="n">PS</span><span class="p">(</span><span class="s">&#39;base&#39;</span><span class="p">,[</span><span class="mf">0.1666624398327384</span><span class="p">,</span> <span class="mf">1.0099178330491019</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.017062058603457095</span><span class="p">],[</span><span class="o">-</span><span class="mf">0.0066044035893055306</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.9674102351208056e-05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.9998643224110102</span><span class="p">,</span> <span class="mf">0.015090019478927071</span><span class="p">])</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTF</span><span class="p">(</span><span class="s">&#39;cover_door_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">pose</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">waitUntilFrameUpdate</span><span class="p">(</span><span class="s">&#39;cover_door_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createPredefinedBox</span><span class="p">(</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">predefined_box</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">predefined_box</span><span class="p">)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

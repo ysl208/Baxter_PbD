@@ -1,0 +1,856 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gripper</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for gripper</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="c"># Copyright (c) 2013, Rethink Robotics</span>
+<span class="c"># All rights reserved.</span>
+<span class="c">#</span>
+<span class="c"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c">#</span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#    this list of conditions and the following disclaimer.</span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright</span>
+<span class="c">#    notice, this list of conditions and the following disclaimer in the</span>
+<span class="c">#    documentation and/or other materials provided with the distribution.</span>
+<span class="c"># 3. Neither the name of the Rethink Robotics nor the names of its</span>
+<span class="c">#    contributors may be used to endorse or promote products derived from</span>
+<span class="c">#    this software without specific prior written permission.</span>
+<span class="c">#</span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</span>
+<span class="c"># ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</span>
+<span class="c"># LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="c"># POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">##############################################################################</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">fabs</span>
+
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JSONDecoder</span><span class="p">,</span>
+    <span class="n">JSONEncoder</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="kn">import</span> <span class="nn">baxter_dataflow</span>
+
+<span class="kn">from</span> <span class="nn">baxter_core_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EndEffectorCommand</span><span class="p">,</span>
+    <span class="n">EndEffectorProperties</span><span class="p">,</span>
+    <span class="n">EndEffectorState</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Gripper"><a class="viewcode-back" href="../gripper.html#gripper.Gripper">[docs]</a><span class="k">class</span> <span class="nc">Gripper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gripper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interface class for a gripper on the Baxter Research Robot.</span>
+
+<span class="sd">        :param gripper: robot limb &lt;left/right&gt; on which the gripper</span>
+<span class="sd">                        is mounted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">gripper</span> <span class="o">+</span> <span class="s">&#39;_gripper&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sender</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;_</span><span class="si">%s</span><span class="s">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sequence</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">ns</span> <span class="o">=</span> <span class="s">&#39;/robot/end_effector/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s">&quot;/&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prop</span> <span class="o">=</span> <span class="n">EndEffectorProperties</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="n">ns</span> <span class="o">+</span> <span class="s">&#39;command&#39;</span><span class="p">,</span> <span class="n">EndEffectorCommand</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state_sub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span>
+                                           <span class="n">ns</span> <span class="o">+</span> <span class="s">&#39;state&#39;</span><span class="p">,</span>
+                                           <span class="n">EndEffectorState</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">_on_gripper_state</span><span class="p">,</span><span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span>
+                                           <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prop_sub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span>
+                                          <span class="n">ns</span> <span class="o">+</span> <span class="s">&#39;properties&#39;</span><span class="p">,</span>
+                                          <span class="n">EndEffectorProperties</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">_on_gripper_prop</span><span class="p">,</span><span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span>
+                                          <span class="p">)</span>
+
+        <span class="c"># Wait for the gripper state message to be populated</span>
+        <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+                          <span class="k">lambda</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span>
+                          <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+                          <span class="n">timeout_msg</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;Failed to get state from </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                       <span class="p">(</span><span class="n">ns</span> <span class="o">+</span> <span class="s">&#39;state&#39;</span><span class="p">,))</span>
+                          <span class="p">)</span>
+
+        <span class="c"># Wait for the gripper type to be populated</span>
+        <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+                          <span class="k">lambda</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">,</span>
+                          <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+                          <span class="n">timeout_msg</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;Failed to get properties from </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                       <span class="p">(</span><span class="n">ns</span> <span class="o">+</span> <span class="s">&#39;properties&#39;</span><span class="p">,))</span>
+                          <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_gripper_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_gripper_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prop</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_inc_cmd_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># manage roll over with safe value (maxint)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sequence</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sequence</span> <span class="o">%</span> <span class="mh">0x7FFFFFFF</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sequence</span>
+
+    <span class="k">def</span> <span class="nf">_clip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_capablity_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> - not capable of &#39;</span><span class="si">%s</span><span class="s">&#39; command&quot;</span> <span class="o">%</span>
+               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">(),</span> <span class="n">cmd</span><span class="p">))</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Gripper.command"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.command">[docs]</a>    <span class="k">def</span> <span class="nf">command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                 <span class="n">timeout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raw command call to directly control gripper.</span>
+
+<span class="sd">        :type cmd: str</span>
+<span class="sd">        :param cmd: string of known gripper commands</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+<span class="sd">        :type test: func</span>
+<span class="sd">        :param test: test function for command validation</span>
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for command evaluation</span>
+<span class="sd">        :type args: dict({str:float})</span>
+<span class="sd">        :param args: dictionary of parameter:value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ee_cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="p">()</span>
+        <span class="n">ee_cmd</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_id</span><span class="p">()</span>
+        <span class="n">ee_cmd</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">cmd</span>
+        <span class="n">ee_cmd</span><span class="o">.</span><span class="n">sender</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_sender</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,)</span>
+        <span class="n">ee_cmd</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inc_cmd_sequence</span><span class="p">()</span>
+        <span class="n">ee_cmd</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ee_cmd</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">JSONEncoder</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">seq_test</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">command_sender</span> <span class="o">==</span> <span class="n">ee_cmd</span><span class="o">.</span><span class="n">sender</span> <span class="ow">and</span>
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">command_sequence</span> <span class="o">==</span> <span class="n">ee_cmd</span><span class="o">.</span><span class="n">sequence</span>
+                             <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">command_sequence</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">ee_cmd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">:</span>
+            <span class="n">finish_time</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+            <span class="n">cmd_seq</span> <span class="o">=</span> <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+                          <span class="n">test</span><span class="o">=</span><span class="n">seq_test</span><span class="p">,</span>
+                          <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                          <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                          <span class="n">body</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">ee_cmd</span><span class="p">)</span>
+                      <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cmd_seq</span><span class="p">:</span>
+                <span class="n">seq_msg</span> <span class="o">=</span> <span class="p">((</span><span class="s">&quot;Timed out on gripper command acknowledgement for&quot;</span>
+                           <span class="s">&quot; </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ee_cmd</span><span class="o">.</span><span class="n">command</span><span class="p">))</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="n">seq_msg</span><span class="p">)</span>
+            <span class="n">time_remain</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">finish_time</span> <span class="o">-</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+                       <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">,</span>
+                       <span class="n">timeout</span><span class="o">=</span><span class="n">time_remain</span><span class="p">,</span>
+                       <span class="n">raise_on_error</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                       <span class="n">body</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">ee_cmd</span><span class="p">)</span>
+                   <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.valid_parameters_text"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.valid_parameters_text">[docs]</a>    <span class="k">def</span> <span class="nf">valid_parameters_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Text describing valid gripper parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;&quot;&quot;Valid gripper parameters for the electric gripper are</span>
+<span class="s">            PARAMETERS:</span>
+<span class="s">            velocity - Velocity at which a position move will execute</span>
+<span class="s">            moving_force - Force threshold at which a move will stop</span>
+<span class="s">            holding_force - Force at which a grasp will continue holding</span>
+<span class="s">            dead_zone - Position deadband within move considered successful</span>
+<span class="s">            ALL PARAMETERS (0-100)</span>
+<span class="s">            &quot;&quot;&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;&quot;&quot;Valid gripper parameters for the suction gripper are</span>
+<span class="s">            PARAMETERS:</span>
+<span class="s">            vacuum_sensor_threshold - Measured suction threshold denoting grasp</span>
+<span class="s">            blow_off_seconds - Time in seconds to blow air on release</span>
+<span class="s">            ALL PARAMETERS (0-100)</span>
+<span class="s">            &quot;&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;No valid parameters for </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.valid_parameters"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.valid_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">valid_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns dict of available gripper parameters with default parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s">&#39;velocity&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
+                         <span class="s">&#39;moving_force&#39;</span><span class="p">:</span> <span class="mf">40.0</span><span class="p">,</span>
+                         <span class="s">&#39;holding_force&#39;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">,</span>
+                         <span class="s">&#39;dead_zone&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>
+                         <span class="p">})</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s">&#39;vacuum_sensor_threshold&#39;</span><span class="p">:</span> <span class="mf">18.0</span><span class="p">,</span>
+                          <span class="s">&#39;blow_off_seconds&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+                          <span class="p">})</span>
+        <span class="k">return</span> <span class="n">valid</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_parameters"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the parameters that will describe the position command execution.</span>
+
+<span class="sd">        :type parameters: dict({str:float})</span>
+<span class="sd">        :param parameters: dictionary of parameter:value</span>
+
+<span class="sd">        Percentage of maximum (0-100) for each parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_parameters</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">defaults</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="n">valid_parameters</span>
+        <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">valid_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;Invalid parameter: </span><span class="si">%s</span><span class="s"> provided. </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                       <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_parameters_text</span><span class="p">(),))</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_CONFIGURE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.reset"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the gripper state removing any errors.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for reset success</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;reset&#39;</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_RESET</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                            <span class="n">cmd</span><span class="p">,</span>
+                            <span class="n">block</span><span class="p">,</span>
+                            <span class="n">test</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">False</span> <span class="ow">and</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">ready</span> <span class="o">==</span> <span class="bp">True</span><span class="p">),</span>
+                            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                            <span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_cmd_reboot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Power cycle the gripper, removing calibration information.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for reboot success</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+
+<span class="sd">        Basic call to the gripper reboot command. Waits for gripper to return</span>
+<span class="sd">        ready state but does not clear errors that could occur during boot.</span>
+<span class="sd">        Highly recommended to use the clean reboot() command instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;reboot&#39;</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_REBOOT</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                      <span class="n">cmd</span><span class="p">,</span>
+                      <span class="n">block</span><span class="p">,</span>
+                      <span class="n">test</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">enabled</span> <span class="o">==</span> <span class="bp">True</span> <span class="ow">and</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">ready</span> <span class="o">==</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c"># Allow extra time for reboot to complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">success</span>
+
+<div class="viewcode-block" id="Gripper.reboot"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.reboot">[docs]</a>    <span class="k">def</span> <span class="nf">reboot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">delay_check</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;Clean&quot; reboot of gripper, removes calibration and errors.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeouts in seconds for reboot &amp; reset</span>
+<span class="sd">        :type delay_check: float</span>
+<span class="sd">        :param delay_check: seconds after reboot before error check</span>
+
+<span class="sd">        Robust version of gripper reboot command; recommended to use this</span>
+<span class="sd">        function for rebooting grippers.</span>
+
+<span class="sd">        Calls the basic reboot gripper command to power cycle the gripper</span>
+<span class="sd">        (_cmd_reboot()) and then checks for errors after reboot, calling</span>
+<span class="sd">        reset to clear errors if needed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;reboot&#39;</span><span class="p">)</span>
+
+        <span class="n">_cmd_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmd_reboot</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay_check</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">):</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;Failed to reset gripper error after reboot.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.clear_calibration"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.clear_calibration">[docs]</a>    <span class="k">def</span> <span class="nf">clear_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear calibration information from gripper.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for success</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+
+<span class="sd">        Allows (and requires) new gripper calibration to be run.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;clear_calibration&#39;</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_CLEAR_CALIBRATION</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                   <span class="n">cmd</span><span class="p">,</span>
+                   <span class="n">block</span><span class="p">,</span>
+                   <span class="n">test</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">calibrated</span> <span class="o">==</span> <span class="bp">False</span> <span class="ow">and</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">ready</span> <span class="o">==</span> <span class="bp">True</span><span class="p">),</span>
+                   <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.calibrate"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.calibrate">[docs]</a>    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calibrate the gripper setting maximum and minimum travel distance.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for calibration success</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;calibrate&#39;</span><span class="p">)</span>
+
+        <span class="c"># clear any previous calibration and any current errors</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibrated</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_calibration</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_CALIBRATE</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                      <span class="n">cmd</span><span class="p">,</span>
+                      <span class="n">block</span><span class="p">,</span>
+                      <span class="n">test</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">calibrated</span> <span class="o">==</span> <span class="bp">True</span> <span class="ow">and</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">ready</span> <span class="o">==</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+                      <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">success</span>
+</div>
+<div class="viewcode-block" id="Gripper.stop"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the gripper at the current position and apply holding force.</span>
+
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for stop success</span>
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: command is blocking or non-blocking [False]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;stop&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_STOP</span>
+            <span class="n">stop_test</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">moving</span> <span class="o">==</span> <span class="bp">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s">&#39;blow_off_seconds&#39;</span><span class="p">],</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_RELEASE</span>
+            <span class="n">stop_test</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sucking</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">blowing</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                            <span class="n">cmd</span><span class="p">,</span>
+                            <span class="n">block</span><span class="p">,</span>
+                            <span class="n">test</span><span class="o">=</span><span class="n">stop_test</span><span class="p">,</span>
+                            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                            <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.command_position"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.command_position">[docs]</a>    <span class="k">def</span> <span class="nf">command_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Command the gripper position movement.</span>
+
+<span class="sd">        :type position: float</span>
+<span class="sd">        :param position: in % 0=close 100=open</span>
+
+<span class="sd">        From minimum/closed (0.0) to maximum/open (100.0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;command_position&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">calibrated</span> <span class="o">!=</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Unable to command </span><span class="si">%s</span><span class="s"> position until calibrated&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_GO</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;position&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">position</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="n">cmd_test</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">((</span><span class="n">fabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">-</span> <span class="n">position</span><span class="p">)</span>
+                                  <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s">&#39;dead_zone&#39;</span><span class="p">])</span>
+                                 <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">gripping</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                                <span class="n">cmd</span><span class="p">,</span>
+                                <span class="n">block</span><span class="p">,</span>
+                                <span class="n">test</span><span class="o">=</span><span class="n">cmd_test</span><span class="p">,</span>
+                                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                                <span class="n">args</span><span class="o">=</span><span class="n">arguments</span>
+                                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">arguments</span><span class="p">[</span><span class="s">&#39;position&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">100.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.command_suction"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.command_suction">[docs]</a>    <span class="k">def</span> <span class="nf">command_suction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">8.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Command the gripper suction.</span>
+<span class="sd">        Timeout describes how long the suction will be applied while trying</span>
+<span class="sd">        to determine a grasp (vacuum threshold exceeded) has been achieved.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;command_suction&#39;</span><span class="p">)</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">EndEffectorCommand</span><span class="o">.</span><span class="n">CMD_GO</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;grip_attempt_seconds&quot;</span><span class="p">:</span> <span class="n">timeout</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
+                            <span class="n">cmd</span><span class="p">,</span>
+                            <span class="n">block</span><span class="p">,</span>
+                            <span class="n">test</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vacuum</span><span class="p">,</span>
+                            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                            <span class="n">args</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
+                            <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_velocity"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_velocity">[docs]</a>    <span class="k">def</span> <span class="nf">set_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the velocity at which the gripper position movement will execute.</span>
+
+<span class="sd">        :type velocity: float</span>
+<span class="sd">        :param velocity: in % 0=stop 100=max [50.0]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_velocity&#39;</span><span class="p">)</span>
+
+        <span class="n">velocity_param</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">velocity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">velocity</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">velocity_param</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_moving_force"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_moving_force">[docs]</a>    <span class="k">def</span> <span class="nf">set_moving_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the moving force threshold of the position move execution.</span>
+
+<span class="sd">        :type force: float</span>
+<span class="sd">        :param force: in % 0=none 100=max [30.0]</span>
+
+<span class="sd">        When exceeded, the gripper will stop trying to achieve the commanded</span>
+<span class="sd">        position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_moving_force&#39;</span><span class="p">)</span>
+
+        <span class="n">moving</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">moving_force</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">force</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">moving</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_holding_force"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_holding_force">[docs]</a>    <span class="k">def</span> <span class="nf">set_holding_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set holding force of successful gripper grasp.</span>
+
+<span class="sd">        :type force: float</span>
+<span class="sd">        :param force: in % 0=none 100=max [30.0]</span>
+
+<span class="sd">        Set the force at which the gripper will continue applying after a</span>
+<span class="sd">        position command has completed either from successfully achieving the</span>
+<span class="sd">        commanded position, or by exceeding the moving force threshold.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_holding_force&#39;</span><span class="p">)</span>
+
+        <span class="n">holding</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">holding_force</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">force</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">holding</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_dead_band"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_dead_band">[docs]</a>    <span class="k">def</span> <span class="nf">set_dead_band</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dead_band</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the gripper dead band for position moves.</span>
+
+<span class="sd">        :type dead_band: float</span>
+<span class="sd">        :param dead_band: in % of full position [5.0]</span>
+
+<span class="sd">        Set the gripper dead band describing the position error threshold</span>
+<span class="sd">        where a move will be considered successful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_dead_band&#39;</span><span class="p">)</span>
+
+        <span class="n">dead_band_param</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dead_zone</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">dead_band</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">dead_band_param</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_vacuum_threshold"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_vacuum_threshold">[docs]</a>    <span class="k">def</span> <span class="nf">set_vacuum_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set suction threshold of successful grasp.</span>
+
+<span class="sd">        :type threshold: float</span>
+<span class="sd">        :param threshold: in % of measured vacuum range [18.0]</span>
+
+<span class="sd">        Set the gripper suction threshold describing the threshold at which the</span>
+<span class="sd">        measured suction (vacuum achieved) must exceed to denote a successful</span>
+<span class="sd">        grasp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_vacuum_threshold&#39;</span><span class="p">)</span>
+
+        <span class="n">threshold_param</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">vacuum_sensor_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">threshold_param</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.set_blow_off"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.set_blow_off">[docs]</a>    <span class="k">def</span> <span class="nf">set_blow_off</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blow_off</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the blow_off parameter.</span>
+
+<span class="sd">        :type blow_off: float</span>
+<span class="sd">        :param blow_off: Time in seconds to blow air on release [0.4]</span>
+
+<span class="sd">        This parameter will be used on a stop</span>
+<span class="sd">        command with the suction gripper, ceasing suction and blowing air</span>
+<span class="sd">        from the suction gripper for the seconds specified by this method.</span>
+
+<span class="sd">        Note: This blow off will only be commanded after the previous suction</span>
+<span class="sd">        command returned a successful grasp (suction threshold was exceeded)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;set_blow_off&#39;</span><span class="p">)</span>
+
+        <span class="n">blow_off_param</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">blow_off_seconds</span><span class="o">=</span><span class="n">blow_off</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">blow_off_param</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.open"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Commands maximum gripper position.</span>
+
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: open command is blocking or non-blocking [False]</span>
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for open command success</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;open&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_position</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+                                         <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.close"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Commands minimum gripper position.</span>
+
+<span class="sd">        :type block: bool</span>
+<span class="sd">        :param block: close command is blocking or non-blocking [False]</span>
+<span class="sd">        :type timeout: float</span>
+<span class="sd">        :param timeout: timeout in seconds for close command success</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;close&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;electric&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_position</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+                                         <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command_suction</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.parameters"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.parameters">[docs]</a>    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns dict of parameters describing the gripper command execution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.calibrated"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.calibrated">[docs]</a>    <span class="k">def</span> <span class="nf">calibrated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing gripper calibration state.</span>
+<span class="sd">        (0:Not Calibrated, 1:Calibrated)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">calibrated</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.ready"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.ready">[docs]</a>    <span class="k">def</span> <span class="nf">ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper ready, i.e. is calibrated, not</span>
+<span class="sd">        busy (as in resetting or rebooting), and not moving.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">ready</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.moving"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.moving">[docs]</a>    <span class="k">def</span> <span class="nf">moving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is in motion</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">moving</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.gripping"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.gripping">[docs]</a>    <span class="k">def</span> <span class="nf">gripping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the position move has been preempted by a</span>
+<span class="sd">        position command exceeding the moving_force threshold denoting a grasp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">gripping</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.missed"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.missed">[docs]</a>    <span class="k">def</span> <span class="nf">missed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the position move has completed without</span>
+<span class="sd">        exceeding the moving_force threshold denoting a grasp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">missed</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.error"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is in an error state.</span>
+
+<span class="sd">        Error states can be caused by over/undervoltage, over/under current,</span>
+<span class="sd">        motor faults, etc.</span>
+
+<span class="sd">        Errors can be cleared with a gripper reset. If persistent please</span>
+<span class="sd">        contact Rethink Robotics for further debugging.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">error</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.position"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.position">[docs]</a>    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the current gripper position as a ratio (0-100) of the total</span>
+<span class="sd">        gripper travel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.force"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.force">[docs]</a>    <span class="k">def</span> <span class="nf">force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the current measured gripper force as a ratio (0-100) of the</span>
+<span class="sd">        total force applicable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">force</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.vacuum_sensor"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.vacuum_sensor">[docs]</a>    <span class="k">def</span> <span class="nf">vacuum_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the value (0-100) of the current vacuum sensor reading as a</span>
+<span class="sd">        percentage of the full vacuum sensor range.</span>
+
+<span class="sd">        The message field contains an 8-bit integer representation of the</span>
+<span class="sd">        vacuum sensor, this function converts that integer to the percentage of</span>
+<span class="sd">        the full sensor range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;vacuum_sensor&#39;</span><span class="p">)</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">state</span><span class="p">)[</span><span class="s">&#39;vacuum sensor&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">sensor</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span>
+</div>
+<div class="viewcode-block" id="Gripper.vacuum"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.vacuum">[docs]</a>    <span class="k">def</span> <span class="nf">vacuum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the vacuum sensor threshold has been</span>
+<span class="sd">        exceeded during a command_suction event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;vacuum&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">state</span><span class="p">)[</span><span class="s">&#39;vacuum&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Gripper.blowing"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.blowing">[docs]</a>    <span class="k">def</span> <span class="nf">blowing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is currently blowing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;blowing&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">state</span><span class="p">)[</span><span class="s">&#39;blowing&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Gripper.sucking"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.sucking">[docs]</a>    <span class="k">def</span> <span class="nf">sucking</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is currently sucking.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="s">&#39;suction&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capablity_warning</span><span class="p">(</span><span class="s">&#39;sucking&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">state</span><span class="p">)[</span><span class="s">&#39;sucking&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Gripper.has_force"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.has_force">[docs]</a>    <span class="k">def</span> <span class="nf">has_force</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is capable of force control.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prop</span><span class="o">.</span><span class="n">controls_force</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.has_position"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.has_position">[docs]</a>    <span class="k">def</span> <span class="nf">has_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns bool describing if the gripper is capable of position control.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prop</span><span class="o">.</span><span class="n">controls_position</span> <span class="o">==</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Gripper.type"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.type">[docs]</a>    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns string describing the gripper type.</span>
+
+<span class="sd">        Known types are &#39;suction&#39;, &#39;electric&#39;, and &#39;custom&#39;. An unknown or no</span>
+<span class="sd">        gripper attached to the research robot will be reported as &#39;custom&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+        <span class="n">EndEffectorProperties</span><span class="o">.</span><span class="n">SUCTION_CUP_GRIPPER</span><span class="p">:</span> <span class="s">&#39;suction&#39;</span><span class="p">,</span>
+        <span class="n">EndEffectorProperties</span><span class="o">.</span><span class="n">ELECTRIC_GRIPPER</span><span class="p">:</span> <span class="s">&#39;electric&#39;</span><span class="p">,</span>
+        <span class="n">EndEffectorProperties</span><span class="o">.</span><span class="n">CUSTOM_GRIPPER</span><span class="p">:</span> <span class="s">&#39;custom&#39;</span><span class="p">,</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prop</span><span class="o">.</span><span class="n">ui_type</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.hardware_id"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.hardware_id">[docs]</a>    <span class="k">def</span> <span class="nf">hardware_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns unique hardware id number. This is required for sending</span>
+<span class="sd">        commands to the gripper.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.hardware_version"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.hardware_version">[docs]</a>    <span class="k">def</span> <span class="nf">hardware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns string describing the gripper hardware.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prop</span><span class="o">.</span><span class="n">product</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Gripper.firmware_version"><a class="viewcode-back" href="../gripper.html#gripper.Gripper.firmware_version">[docs]</a>    <span class="k">def</span> <span class="nf">firmware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the current gripper firmware revision.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prop</span><span class="o">.</span><span class="n">firmware_rev</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

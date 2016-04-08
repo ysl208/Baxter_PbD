@@ -1,0 +1,161 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_frame Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper_menu Module" href="baxter_helper_menu.html" />
+    <link rel="prev" title="baxter_helper_abstract_limb Module" href="baxter_helper_abstract_limb.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_menu.html" title="baxter_helper_menu Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_abstract_limb.html" title="baxter_helper_abstract_limb Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_helper_frame">
+<span id="baxter-helper-frame-module"></span><h1>baxter_helper_frame Module<a class="headerlink" href="#module-baxter_helper_frame" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baxter_helper_frame.BaxterFrame">
+<em class="property">class </em><tt class="descclassname">baxter_helper_frame.</tt><tt class="descname">BaxterFrame</tt><big>(</big><em>baxter</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_frame.html#BaxterFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_frame.BaxterFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">hr_helper.tf_helper.TFHelper</span></tt></p>
+<dl class="method">
+<dt id="baxter_helper_frame.BaxterFrame.addPoint">
+<tt class="descname">addPoint</tt><big>(</big><em>side</em>, <em>step</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_frame.html#BaxterFrame.addPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_frame.BaxterFrame.addPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the current position of the gripper_base in relation to the base
+:param side: selects the arm that gripper position should be saved
+:type side: str
+:param step: selects if the current position is the first or second point
+:type step: int 
+:return: returns the point that has been saved
+:rtype: list</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_frame.BaxterFrame.computeTransformation">
+<tt class="descname">computeTransformation</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_frame.html#BaxterFrame.computeTransformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_frame.BaxterFrame.computeTransformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the transformation from two saved points
+:return: computed pose and a unique frame id.
+:rtype (geometry_msgs.msg.PoseStamped,str)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="baxter_helper_frame.BaxterFrame.instance">
+<tt class="descname">instance</tt><em class="property"> = None</em><a class="headerlink" href="#baxter_helper_frame.BaxterFrame.instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_frame.BaxterFrame.transformPose">
+<tt class="descname">transformPose</tt><big>(</big><em>target_frame</em>, <em>parent</em>, <em>src_pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_frame.html#BaxterFrame.transformPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_frame.BaxterFrame.transformPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms a pose from one frame to another, which is NOT in the tf tree
+:param target_frame: The new and final frame id
+:type target_frame: str
+:param parent: The original source frame id
+:type parent: str
+:param src_pose: The current pose, which has to be transformed
+:type src_pose: geometry_msgs.msg.PoseStamped
+:return: The transformed pose that contains the position and orientation in a list
+:rtype: list</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_helper_abstract_limb.html"
+                        title="previous chapter">baxter_helper_abstract_limb Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper_menu.html"
+                        title="next chapter">baxter_helper_menu Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_menu.html" title="baxter_helper_menu Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_abstract_limb.html" title="baxter_helper_abstract_limb Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

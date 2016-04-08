@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>gripper Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="high_level_movement Module" href="high_level_movement.html" />
+    <link rel="prev" title="generate_plans Module" href="generate_plans.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="high_level_movement.html" title="high_level_movement Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generate_plans.html" title="generate_plans Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-gripper">
+<span id="gripper-module"></span><h1>gripper Module<a class="headerlink" href="#module-gripper" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="gripper.Gripper">
+<em class="property">class </em><tt class="descclassname">gripper.</tt><tt class="descname">Gripper</tt><big>(</big><em>gripper</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="gripper.Gripper.blowing">
+<tt class="descname">blowing</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.blowing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.blowing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is currently blowing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.calibrate">
+<tt class="descname">calibrate</tt><big>(</big><em>block=True</em>, <em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.calibrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.calibrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calibrate the gripper setting maximum and minimum travel distance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for calibration success</li>
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; command is blocking or non-blocking [False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.calibrated">
+<tt class="descname">calibrated</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.calibrated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.calibrated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing gripper calibration state.
+(0:Not Calibrated, 1:Calibrated)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.clear_calibration">
+<tt class="descname">clear_calibration</tt><big>(</big><em>block=True</em>, <em>timeout=2.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.clear_calibration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.clear_calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear calibration information from gripper.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for success</li>
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; command is blocking or non-blocking [False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Allows (and requires) new gripper calibration to be run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.close">
+<tt class="descname">close</tt><big>(</big><em>block=False</em>, <em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands minimum gripper position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; close command is blocking or non-blocking [False]</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for close command success</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.command">
+<tt class="descname">command</tt><big>(</big><em>cmd</em>, <em>block=False</em>, <em>test=&lt;function &lt;lambda&gt; at 0x41092a8&gt;</em>, <em>timeout=0.0</em>, <em>args=None</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw command call to directly control gripper.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cmd</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; string of known gripper commands</li>
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; command is blocking or non-blocking [False]</li>
+<li><strong>test</strong> (<em>func</em>) &#8211; test function for command validation</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for command evaluation</li>
+<li><strong>args</strong> (<em>dict({str:float})</em>) &#8211; dictionary of parameter:value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.command_position">
+<tt class="descname">command_position</tt><big>(</big><em>position</em>, <em>block=False</em>, <em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.command_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.command_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command the gripper position movement.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>position</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % 0=close 100=open</td>
+</tr>
+</tbody>
+</table>
+<p>From minimum/closed (0.0) to maximum/open (100.0)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.command_suction">
+<tt class="descname">command_suction</tt><big>(</big><em>block=False</em>, <em>timeout=8.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.command_suction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.command_suction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command the gripper suction.
+Timeout describes how long the suction will be applied while trying
+to determine a grasp (vacuum threshold exceeded) has been achieved.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.error">
+<tt class="descname">error</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is in an error state.</p>
+<p>Error states can be caused by over/undervoltage, over/under current,
+motor faults, etc.</p>
+<p>Errors can be cleared with a gripper reset. If persistent please
+contact Rethink Robotics for further debugging.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.firmware_version">
+<tt class="descname">firmware_version</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.firmware_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.firmware_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current gripper firmware revision.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.force">
+<tt class="descname">force</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current measured gripper force as a ratio (0-100) of the
+total force applicable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.gripping">
+<tt class="descname">gripping</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.gripping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.gripping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the position move has been preempted by a
+position command exceeding the moving_force threshold denoting a grasp.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.hardware_id">
+<tt class="descname">hardware_id</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.hardware_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.hardware_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns unique hardware id number. This is required for sending
+commands to the gripper.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.hardware_version">
+<tt class="descname">hardware_version</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.hardware_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.hardware_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string describing the gripper hardware.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.has_force">
+<tt class="descname">has_force</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.has_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.has_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is capable of force control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.has_position">
+<tt class="descname">has_position</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.has_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.has_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is capable of position control.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.missed">
+<tt class="descname">missed</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.missed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.missed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the position move has completed without
+exceeding the moving_force threshold denoting a grasp</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.moving">
+<tt class="descname">moving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.moving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.moving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is in motion</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.open">
+<tt class="descname">open</tt><big>(</big><em>block=False</em>, <em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands maximum gripper position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; open command is blocking or non-blocking [False]</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for open command success</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.parameters">
+<tt class="descname">parameters</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dict of parameters describing the gripper command execution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.position">
+<tt class="descname">position</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current gripper position as a ratio (0-100) of the total
+gripper travel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.ready">
+<tt class="descname">ready</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.ready" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper ready, i.e. is calibrated, not
+busy (as in resetting or rebooting), and not moving.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.reboot">
+<tt class="descname">reboot</tt><big>(</big><em>timeout=5.0</em>, <em>delay_check=0.1</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.reboot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.reboot" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8220;Clean&#8221; reboot of gripper, removes calibration and errors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeouts in seconds for reboot &amp; reset</li>
+<li><strong>delay_check</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; seconds after reboot before error check</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Robust version of gripper reboot command; recommended to use this
+function for rebooting grippers.</p>
+<p>Calls the basic reboot gripper command to power cycle the gripper
+(_cmd_reboot()) and then checks for errors after reboot, calling
+reset to clear errors if needed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.reset">
+<tt class="descname">reset</tt><big>(</big><em>block=True</em>, <em>timeout=2.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the gripper state removing any errors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for reset success</li>
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; command is blocking or non-blocking [False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_blow_off">
+<tt class="descname">set_blow_off</tt><big>(</big><em>blow_off</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_blow_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_blow_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the blow_off parameter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>blow_off</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; Time in seconds to blow air on release [0.4]</td>
+</tr>
+</tbody>
+</table>
+<p>This parameter will be used on a stop
+command with the suction gripper, ceasing suction and blowing air
+from the suction gripper for the seconds specified by this method.</p>
+<p>Note: This blow off will only be commanded after the previous suction
+command returned a successful grasp (suction threshold was exceeded)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_dead_band">
+<tt class="descname">set_dead_band</tt><big>(</big><em>dead_band</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_dead_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_dead_band" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gripper dead band for position moves.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dead_band</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % of full position [5.0]</td>
+</tr>
+</tbody>
+</table>
+<p>Set the gripper dead band describing the position error threshold
+where a move will be considered successful.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_holding_force">
+<tt class="descname">set_holding_force</tt><big>(</big><em>force</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_holding_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_holding_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set holding force of successful gripper grasp.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % 0=none 100=max [30.0]</td>
+</tr>
+</tbody>
+</table>
+<p>Set the force at which the gripper will continue applying after a
+position command has completed either from successfully achieving the
+commanded position, or by exceeding the moving force threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_moving_force">
+<tt class="descname">set_moving_force</tt><big>(</big><em>force</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_moving_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_moving_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the moving force threshold of the position move execution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % 0=none 100=max [30.0]</td>
+</tr>
+</tbody>
+</table>
+<p>When exceeded, the gripper will stop trying to achieve the commanded
+position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_parameters">
+<tt class="descname">set_parameters</tt><big>(</big><em>parameters=None</em>, <em>defaults=False</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters that will describe the position command execution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>dict({str:float})</em>) &#8211; dictionary of parameter:value</td>
+</tr>
+</tbody>
+</table>
+<p>Percentage of maximum (0-100) for each parameter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_vacuum_threshold">
+<tt class="descname">set_vacuum_threshold</tt><big>(</big><em>threshold</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_vacuum_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_vacuum_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set suction threshold of successful grasp.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>threshold</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % of measured vacuum range [18.0]</td>
+</tr>
+</tbody>
+</table>
+<p>Set the gripper suction threshold describing the threshold at which the
+measured suction (vacuum achieved) must exceed to denote a successful
+grasp.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.set_velocity">
+<tt class="descname">set_velocity</tt><big>(</big><em>velocity</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.set_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.set_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the velocity at which the gripper position movement will execute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>velocity</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; in % 0=stop 100=max [50.0]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.stop">
+<tt class="descname">stop</tt><big>(</big><em>block=True</em>, <em>timeout=5.0</em><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the gripper at the current position and apply holding force.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds for stop success</li>
+<li><strong>block</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; command is blocking or non-blocking [False]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.sucking">
+<tt class="descname">sucking</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.sucking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.sucking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the gripper is currently sucking.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.type">
+<tt class="descname">type</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns string describing the gripper type.</p>
+<p>Known types are &#8216;suction&#8217;, &#8216;electric&#8217;, and &#8216;custom&#8217;. An unknown or no
+gripper attached to the research robot will be reported as &#8216;custom&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.vacuum">
+<tt class="descname">vacuum</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.vacuum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.vacuum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bool describing if the vacuum sensor threshold has been
+exceeded during a command_suction event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.vacuum_sensor">
+<tt class="descname">vacuum_sensor</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.vacuum_sensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.vacuum_sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value (0-100) of the current vacuum sensor reading as a
+percentage of the full vacuum sensor range.</p>
+<p>The message field contains an 8-bit integer representation of the
+vacuum sensor, this function converts that integer to the percentage of
+the full sensor range.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.valid_parameters">
+<tt class="descname">valid_parameters</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.valid_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.valid_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dict of available gripper parameters with default parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gripper.Gripper.valid_parameters_text">
+<tt class="descname">valid_parameters_text</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/gripper.html#Gripper.valid_parameters_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gripper.Gripper.valid_parameters_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text describing valid gripper parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generate_plans.html"
+                        title="previous chapter">generate_plans Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="high_level_movement.html"
+                        title="next chapter">high_level_movement Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="high_level_movement.html" title="high_level_movement Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generate_plans.html" title="generate_plans Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

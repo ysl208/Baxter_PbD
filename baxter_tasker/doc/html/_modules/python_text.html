@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>python_text</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for python_text</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">from</span> <span class="nn">Tkinter</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">keyword</span>
+
+<div class="viewcode-block" id="PythonText"><a class="viewcode-back" href="../python_text.html#python_text.PythonText">[docs]</a><span class="k">class</span> <span class="nc">PythonText</span><span class="p">(</span><span class="n">Text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Tk Text Widget that supports some Python syntax coloring&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Text</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;&lt;KeyRelease&gt;&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">colorize</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createTags</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">addPattern</span><span class="p">(</span><span class="s">&quot;#.*&quot;</span><span class="p">,</span><span class="s">&quot;comment&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addPattern</span><span class="p">(</span><span class="s">&quot;&#39;[^&#39;]*&#39;&quot;</span><span class="p">,</span><span class="s">&quot;string&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addPattern</span><span class="p">(</span><span class="s">&#39;&quot;[^&quot;]*&quot;&#39;</span><span class="p">,</span><span class="s">&quot;string&quot;</span><span class="p">)</span>
+        <span class="n">keywords</span><span class="o">=</span><span class="n">keyword</span><span class="o">.</span><span class="n">kwlist</span>
+        <span class="c">#~ for k in keywords:</span>
+            <span class="c">#~ self.addPattern(&quot;\w%s&quot;%k,&quot;normal&quot;)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addPattern</span><span class="p">(</span><span class="s">&quot;^</span><span class="si">%s</span><span class="s">(?!</span><span class="se">\\</span><span class="s">w)&quot;</span><span class="o">%</span><span class="n">k</span><span class="p">,</span><span class="s">&quot;keyword&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addPattern</span><span class="p">(</span><span class="s">&quot;[ </span><span class="se">\t</span><span class="s">]</span><span class="si">%s</span><span class="s">(?!</span><span class="se">\\</span><span class="s">w)&quot;</span><span class="o">%</span><span class="n">k</span><span class="p">,</span><span class="s">&quot;keyword&quot;</span><span class="p">)</span>
+        
+        
+<div class="viewcode-block" id="PythonText.createTags"><a class="viewcode-back" href="../python_text.html#python_text.PythonText.createTags">[docs]</a>    <span class="k">def</span> <span class="nf">createTags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_configure</span><span class="p">(</span><span class="s">&quot;normal&quot;</span><span class="p">,</span><span class="n">foreground</span><span class="o">=</span><span class="s">&quot;#000000&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_configure</span><span class="p">(</span><span class="s">&quot;comment&quot;</span><span class="p">,</span><span class="n">foreground</span><span class="o">=</span><span class="s">&quot;#007f00&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_configure</span><span class="p">(</span><span class="s">&quot;keyword&quot;</span><span class="p">,</span><span class="n">foreground</span><span class="o">=</span><span class="s">&quot;#0000Af&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_configure</span><span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span><span class="n">foreground</span><span class="o">=</span><span class="s">&quot;#7f007f&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_lower</span><span class="p">(</span><span class="s">&quot;keyword&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_raise</span><span class="p">(</span><span class="s">&quot;comment&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PythonText.deleteTags"><a class="viewcode-back" href="../python_text.html#python_text.PythonText.deleteTags">[docs]</a>    <span class="k">def</span> <span class="nf">deleteTags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_delete</span><span class="p">(</span><span class="s">&quot;normal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_delete</span><span class="p">(</span><span class="s">&quot;comment&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_delete</span><span class="p">(</span><span class="s">&quot;keyword&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_delete</span><span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">)</span>
+
+    </div>
+<div class="viewcode-block" id="PythonText.addPattern"><a class="viewcode-back" href="../python_text.html#python_text.PythonText.addPattern">[docs]</a>    <span class="k">def</span> <span class="nf">addPattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">regexp</span><span class="p">,</span><span class="n">tag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="p">[</span><span class="n">regexp</span><span class="p">]</span><span class="o">=</span><span class="n">tag</span>
+    </div>
+<div class="viewcode-block" id="PythonText.colorize"><a class="viewcode-back" href="../python_text.html#python_text.PythonText.colorize">[docs]</a>    <span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">deleteTags</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createTags</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">regexp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highlight_pattern</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="p">[</span><span class="n">regexp</span><span class="p">],</span><span class="n">regexp</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="PythonText.highlight_pattern"><a class="viewcode-back" href="../python_text.html#python_text.PythonText.highlight_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">highlight_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">&quot;end&quot;</span><span class="p">,</span> <span class="n">regexp</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        
+        <span class="sd">&#39;&#39;&#39;Apply the given tag to all text that matches the given pattern</span>
+
+<span class="sd">        If &#39;regexp&#39; is set to True, pattern will be treated as a regular expression</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s">&quot;matchStart&quot;</span><span class="p">,</span><span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s">&quot;matchEnd&quot;</span><span class="p">,</span><span class="n">start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s">&quot;searchLimit&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="n">IntVar</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="s">&quot;matchEnd&quot;</span><span class="p">,</span><span class="s">&quot;searchLimit&quot;</span><span class="p">,</span>
+                                <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">regexp</span><span class="o">=</span><span class="n">regexp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span> <span class="k">break</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s">&quot;matchStart&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mark_set</span><span class="p">(</span><span class="s">&quot;matchEnd&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">+</span><span class="si">%s</span><span class="s">c&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span><span class="n">count</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tag_add</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="s">&quot;matchStart&quot;</span><span class="p">,</span><span class="s">&quot;matchEnd&quot;</span><span class="p">)</span>
+            </div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="k">class</span> <span class="nc">PythonWindow</span><span class="p">:</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">master</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">=</span><span class="n">master</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">defaultCode</span><span class="o">=</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s"># Use the &#39;chain&#39; object to access motors</span>
+<span class="s"># Here is an example that assumes a motor on ID 1</span>
+
+<span class="s">id=1</span>
+
+<span class="s">chain.goto(id,0,speed=0) # Full speed to pos 0</span>
+<span class="s">chain.goto(id,1000,speed=100) # Low speed to pos 1000</span>
+<span class="s">chain.goto(id,500,blocking=False) # Current speed to pos 500</span>
+<span class="s">while chain.is_moving():</span>
+<span class="s">    print chain.get_reg_si(id,&quot;present_position&quot;)</span>
+<span class="s">chain.goto(id,100,speed=0) # Full speed back to pos 100   </span>
+<span class="s">            &quot;&quot;&quot;</span>
+            
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="o">=</span><span class="n">Frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="p">)</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">pythonFrame</span><span class="o">=</span><span class="n">LabelFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Python code&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">=</span><span class="n">PythonText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pythonFrame</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pythonFrame</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">END</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">defaultCode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">colorize</span><span class="p">()</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span>
+            
+            
+        
+
+    <span class="n">root</span> <span class="o">=</span> <span class="n">Tk</span><span class="p">()</span>
+    <span class="n">appname</span><span class="o">=</span><span class="s">&quot;DynamixelLab&quot;</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">appname</span><span class="p">)</span>
+    <span class="n">mainwindow</span> <span class="o">=</span> <span class="n">PythonWindow</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="c">#~ root.protocol(&quot;WM_DELETE_WINDOW&quot;, mainwindow.destroy)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

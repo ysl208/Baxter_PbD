@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_tasker</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_tasker</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Helper Classes and functions for Baxter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span>  <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="Task"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.Task">[docs]</a><span class="k">class</span> <span class="nc">Task</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a new task in the GUI on the workstation that has access to the robot.</span>
+<span class="sd">        Additionally it can be instantly executed, saved and reloaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tasker</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">=</span><span class="n">tasker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">=</span><span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span>
+        
+<div class="viewcode-block" id="Task.perform"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.Task.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div></div>
+<div class="viewcode-block" id="TaskEval"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.TaskEval">[docs]</a><span class="k">class</span> <span class="nc">TaskEval</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluates a previously defined task</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tasker</span><span class="p">,</span><span class="n">toeval</span><span class="p">):</span>
+        <span class="n">Task</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tasker</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toeval</span><span class="o">=</span><span class="n">toeval</span>
+    
+<div class="viewcode-block" id="TaskEval.perform"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.TaskEval.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Executes a task by evaluating the text in the task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">toeval</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">==</span><span class="s">&quot;&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
+        <span class="c"># Wrap in function with return value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="o">=</span><span class="s">&quot;def _localfunction():</span><span class="se">\n</span><span class="s">&quot;</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">toeval</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="o">+=</span><span class="s">&quot;  &quot;</span><span class="o">+</span><span class="n">l</span><span class="o">+</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span><span class="o">+=</span><span class="s">&quot;_return=_localfunction()&quot;</span>
+        
+        <span class="c"># Build context        </span>
+        <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">buildContext</span><span class="p">()</span>
+        <span class="k">exec</span> <span class="bp">self</span><span class="o">.</span><span class="n">cmd</span> <span class="ow">in</span> <span class="n">context</span>
+        <span class="k">return</span> <span class="n">context</span><span class="p">[</span><span class="s">&quot;_return&quot;</span><span class="p">]</span>
+    </div>
+<div class="viewcode-block" id="TaskEval.buildContext"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.TaskEval.buildContext">[docs]</a>    <span class="k">def</span> <span class="nf">buildContext</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Build context        </span>
+        <span class="n">context</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">globals</span><span class="p">())</span>
+        <span class="k">exec</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="s">&quot;_globals&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">toeval</span> <span class="ow">in</span> <span class="n">context</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&quot;baxter&quot;</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span>                
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">context</span><span class="p">[</span><span class="n">task</span><span class="p">]</span><span class="o">=</span><span class="k">lambda</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+        
+        
+</div></div>
+<div class="viewcode-block" id="Tasker"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.Tasker">[docs]</a><span class="k">class</span> <span class="nc">Tasker</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Manages the tasks that are visible in the GUI</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param baxter: handle to all function of the robot</span>
+<span class="sd">            :type baxter: BaxterRobot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">=</span><span class="n">baxter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">=</span><span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s">&quot;_globals&quot;</span><span class="p">,</span><span class="n">TaskEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;bip=5&quot;</span><span class="p">))</span>
+        
+    
+<div class="viewcode-block" id="Tasker.perform"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.Tasker.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">taskname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calls the perform function of an existing task</span>
+<span class="sd">            </span>
+<span class="sd">            :param taskname: Name of the task</span>
+<span class="sd">            :type taskname: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Executing task </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">taskname</span><span class="p">)</span>
+        <span class="n">ret</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">taskname</span><span class="p">]</span><span class="o">.</span><span class="n">perform</span><span class="p">()</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Done executing task </span><span class="si">%s</span><span class="s"> result=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">taskname</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">ret</span>
+        
+</div>
+<div class="viewcode-block" id="Tasker.add"><a class="viewcode-back" href="../baxter_helper_tasker.html#baxter_helper_tasker.Tasker.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">taskname</span><span class="p">,</span><span class="n">task</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds a new task to the GUI</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: The task is only saved if the &quot;Save tasks&quot; in the menu is invoked</span>
+<span class="sd">            </span>
+<span class="sd">            :param taskname: Name of the task</span>
+<span class="sd">            :type taskname: str</span>
+<span class="sd">            :param task: Handle to the task</span>
+<span class="sd">            :type task: Task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">taskname</span><span class="p">]</span><span class="o">=</span><span class="n">task</span>
+
+        
+        </div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">cmd</span><span class="o">=</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">    &quot;&quot;&quot;</span>
+    <span class="n">tasker</span><span class="o">=</span><span class="n">Tasker</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">te1</span><span class="o">=</span><span class="n">TaskEval</span><span class="p">(</span><span class="n">tasker</span><span class="p">,</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">print &#39;task1&#39;</span>
+<span class="s">print task2()</span>
+<span class="s">print &#39;task1 done&#39;</span>
+<span class="s">return True</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    <span class="n">tasker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s">&quot;task1&quot;</span><span class="p">,</span><span class="n">te1</span><span class="p">)</span>
+
+    <span class="n">te2</span><span class="o">=</span><span class="n">TaskEval</span><span class="p">(</span><span class="n">tasker</span><span class="p">,</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">print &#39;task2&#39;</span>
+<span class="s">print &#39;task2 done&#39;</span>
+<span class="s">print bip</span>
+<span class="s">return &quot;ret2&quot;</span>
+<span class="s">&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+    <span class="n">tasker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s">&quot;task2&quot;</span><span class="p">,</span><span class="n">te2</span><span class="p">)</span>
+
+    <span class="n">tasker</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="s">&quot;task1&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

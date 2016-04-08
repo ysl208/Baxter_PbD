@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_behaviors Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper Module" href="baxter_helper.html" />
+    <link rel="prev" title="scripts" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper.html" title="baxter_helper Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="scripts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_behaviors">
+<span id="baxter-behaviors-module"></span><h1>baxter_behaviors Module<a class="headerlink" href="#module-baxter_behaviors" title="Permalink to this headline">¶</a></h1>
+<p>Provides baxter specific behaviors to handle GUI callbacks. 
+All implemented function here are callable from the menu. 
+Otherwise you have to provide your class to the menu manager.</p>
+<dl class="class">
+<dt id="baxter_behaviors.BaxterBehaviors">
+<em class="property">class </em><tt class="descclassname">baxter_behaviors.</tt><tt class="descname">BaxterBehaviors</tt><big>(</big><em>baxter</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors" title="Permalink to this definition">¶</a></dt>
+<dd><p>The baxter behaviors implement useful stuff for the current interface</p>
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.addFramePoint">
+<tt class="descname">addFramePoint</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.addFramePoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.addFramePoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the point on the finger tip of the gripper</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.addMainWindow">
+<tt class="descname">addMainWindow</tt><big>(</big><em>appendToTask</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.addMainWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.addMainWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Link to main window to write text into the editor window</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.addSceneBox">
+<tt class="descname">addSceneBox</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.addSceneBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.addSceneBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the current box type to the selected option in the GUI</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.back">
+<tt class="descname">back</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.back"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.back" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the previous menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.btnToggleSonar">
+<tt class="descname">btnToggleSonar</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.btnToggleSonar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.btnToggleSonar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.changeExecutionState">
+<tt class="descname">changeExecutionState</tt><big>(</big><em>stop=True</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.changeExecutionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.changeExecutionState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets and unsets the flag to stop all movements</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.computeAndInsertBox">
+<tt class="descname">computeAndInsertBox</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.computeAndInsertBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.computeAndInsertBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the transformation for the 2 previously saved points in relation to the base and inserts the selected box type
+in the scene. This also includes additional transformations which are related to the box.
+Also writes everything to the current open task in case the transformation should be saved.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; influences the name of the inserted box and broadcasted tf</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.executePath">
+<tt class="descname">executePath</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.executePath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.executePath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a saved trajectory.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameters below are not the method parameters but the entries in the kwargs</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm to execute the trajectory</li>
+<li><strong>looped</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Play infinitely?</li>
+<li><strong>number</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Trajectory to be executed</li>
+<li><strong>threaded</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Nonblocking? Threaded?</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.goToInit">
+<tt class="descname">goToInit</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.goToInit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.goToInit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves both arms to the init position</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.gripperType">
+<tt class="descname">gripperType</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.gripperType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.gripperType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a menu to change the length of the gripper (electric and suction)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; gripper side to be changed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.hideGUI">
+<tt class="descname">hideGUI</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.hideGUI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.hideGUI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hides the GUI</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; text display enabled?</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.nothing">
+<tt class="descname">nothing</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.nothing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.nothing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does nothing. Useful if you just create menu entries with no functionality but text information</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.run">
+<tt class="descname">run</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a menu of all functions in baxter_scenarios.py that start with the name &#8220;scenario&#8221;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.saveTeachPath">
+<tt class="descname">saveTeachPath</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.saveTeachPath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.saveTeachPath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the current recording, saves it and return to the previous menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.selectArms">
+<tt class="descname">selectArms</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.selectArms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.selectArms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set both arms to False, when the menu is loaded.
+Afterwards it offers a menu to select the arms to be used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.selectBoxType">
+<tt class="descname">selectBoxType</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.selectBoxType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.selectBoxType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a menu with all available predefined boxes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.selectGripper">
+<tt class="descname">selectGripper</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.selectGripper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.selectGripper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the gripper length according to the type of the gripper and the selected length from the previous menu.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; gripper side to be changed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.setHRLogo">
+<tt class="descname">setHRLogo</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.setHRLogo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.setHRLogo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays the HumaRobotics Logo on baxter&#8217;s display</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.showCamera">
+<tt class="descname">showCamera</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.showCamera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.showCamera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens a hand camera stream and sends it to the display</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; camera to be opened</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.showGUI">
+<tt class="descname">showGUI</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.showGUI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.showGUI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redraws the GUI and selects the first element</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.stopTeachedPath">
+<tt class="descname">stopTeachedPath</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.stopTeachedPath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.stopTeachedPath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops a trajectory execution that is called by the teaching interface</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.teach">
+<tt class="descname">teach</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.teach"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.teach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Teaches a new trajectory and overwrites the old one</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>side</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; arm to be teached</li>
+<li><strong>number</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; if multiple trajectories are saved the number is added to the name</li>
+<li><strong>parent</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; parent menu from which this function is called, to be able to return properly</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_behaviors.BaxterBehaviors.useArm">
+<tt class="descname">useArm</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_behaviors.html#BaxterBehaviors.useArm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_behaviors.BaxterBehaviors.useArm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the arm that is selected in the GUI to True to be able to be used.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper.html"
+                        title="next chapter">baxter_helper Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper.html" title="baxter_helper Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="scripts"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

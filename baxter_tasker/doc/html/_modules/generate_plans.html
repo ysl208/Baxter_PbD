@@ -1,0 +1,668 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>generate_plans</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for generate_plans</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">high_level_movement</span> <span class="kn">import</span> <span class="n">HighLevelMovement</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">hr_helper.tf_helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">import</span> <span class="nn">baxter_helper_abstract_limb</span>
+<span class="c">#############################################################</span>
+<span class="c"># Positions (for each side):</span>
+<span class="c"># H: high position on the back or side of baxter</span>
+<span class="c"># L: lower (grasp) position on the back or side of baxter</span>
+<span class="c"># P: same as H but in front of the robot</span>
+<span class="c"># F: same as L but in front of the robot</span>
+<span class="c"># O: first hand over position for two arm operations</span>
+<span class="c"># I: initial position of the robot arms</span>
+<span class="c">##############################################################</span>
+
+<div class="viewcode-block" id="PlanGenerator"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator">[docs]</a><span class="k">class</span> <span class="nc">PlanGenerator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The PlanGenerator class is used to generate the plans between defined positions. </span>
+<span class="sd">        Currently there are 6 positions or angles for each side defined:</span>
+<span class="sd">        </span>
+<span class="sd">        * L - Low position: The gripping position of the object in a box</span>
+<span class="sd">        * H - High position: The position above L. </span>
+<span class="sd">            Distance to L depends on the offset from the box to the object and the gripping depth</span>
+<span class="sd">        * F - Front position: Similar to L but used for placing the item. It is the same for all items.</span>
+<span class="sd">        * P - Prepare position: The position above F, depending on the offset between F and the dimensions of the box</span>
+<span class="sd">        * I - Initial position: Initial position of an arm. Often used as starting point</span>
+<span class="sd">        * O - Hand Over position: Specific position to pass items from one hand to the other.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param baxter: object to access the scene and the high level motion</span>
+<span class="sd">            :type baxter: BaxterRobot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span> <span class="o">=</span> <span class="n">baxter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_boxes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;item_tray&quot;</span><span class="p">,</span><span class="s">&quot;goblet_blue&quot;</span><span class="p">,</span><span class="s">&quot;goblet_red&quot;</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tries</span> <span class="o">=</span> <span class="mi">3</span>
+
+    
+<div class="viewcode-block" id="PlanGenerator.generateAllPlans"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.generateAllPlans">[docs]</a>    <span class="k">def</span> <span class="nf">generateAllPlans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generates all plans - non blocking - stoppable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">__generateAllPlans</span><span class="p">()</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__generateAllPlans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generates all plans - blocking</span>
+<span class="sd">            </span>
+<span class="sd">            Depending on the scenario, which has to be loaded in advance with the complete scene,</span>
+<span class="sd">            scenario specific plans are generated.</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: If you add your own scenario you should add the plans you need in this file and create at </span>
+<span class="sd">            task in the GUI of your workstation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+<span class="c">##SELECT PLANS TO GENERATE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">bs</span><span class="o">.</span><span class="n">getScenario</span><span class="p">()</span> <span class="o">==</span> <span class="s">&quot;consignment2&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generateConsignment2Plans</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generateConsignment2Plans</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">bs</span><span class="o">.</span><span class="n">getScenario</span><span class="p">()</span> <span class="o">==</span> <span class="s">&quot;consignment&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generatePlans</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="s">&quot;cover_small&quot;</span><span class="p">,</span><span class="s">&quot;top&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generatePlans</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="s">&quot;switch&quot;</span><span class="p">,</span><span class="s">&quot;top&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generatePlans</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="s">&quot;cover_door&quot;</span><span class="p">,</span><span class="s">&quot;top&quot;</span><span class="p">)</span>
+<span class="c">##############</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Generation complete. Items restored&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tries</span><span class="o">-=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;There are at least </span><span class="si">%d</span><span class="s"> invalid plans!&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="p">))</span>
+            
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Trying again. Number of tries: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">tries</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tries</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__generateAllPlans</span><span class="p">()</span>
+                <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Not all plans valid after </span><span class="si">%d</span><span class="s"> tries&quot;</span><span class="p">,</span><span class="mi">3</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">tries</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;All plans valid after </span><span class="si">%d</span><span class="s"> iteration(s)!&quot;</span><span class="o">%</span><span class="p">(</span><span class="mi">3</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">tries</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tries</span> <span class="o">=</span> <span class="mi">3</span>
+        
+<div class="viewcode-block" id="PlanGenerator.generateConsignment2Plans"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.generateConsignment2Plans">[docs]</a>    <span class="k">def</span> <span class="nf">generateConsignment2Plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Generates plans for the consignment2 scenario</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: creates plans for the given side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_boxes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">outside_grip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;goblet_blue&quot;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;generating plan for </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">box</span><span class="p">)</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLH</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createItems2</span><span class="p">(</span><span class="n">box</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getFP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getIP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getIH</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">angles</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getHP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">angles</span><span class="p">)</span>
+
+            
+</div>
+<div class="viewcode-block" id="PlanGenerator.generatePlans"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.generatePlans">[docs]</a>    <span class="k">def</span> <span class="nf">generatePlans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">grip_point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            General function for plan generation, currently used by the consignment scenario.</span>
+<span class="sd">            </span>
+<span class="sd">            Creates the plans and most of the time also the reversed plans for:</span>
+<span class="sd">            </span>
+<span class="sd">            * LH</span>
+<span class="sd">            * IH</span>
+<span class="sd">            * HO</span>
+<span class="sd">            * FP</span>
+<span class="sd">            * OP</span>
+<span class="sd">            * IP</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getLH</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createItems2</span><span class="p">(</span><span class="n">box</span><span class="o">+</span><span class="s">&#39;_&#39;</span><span class="o">+</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getIH</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">angles</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">side</span><span class="o">==</span><span class="s">&quot;right&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getHO</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">angles</span><span class="p">,</span><span class="s">&quot;top&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;switch&quot;</span><span class="p">:</span>
+            <span class="n">side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">otherSide</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getFP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">box</span> <span class="o">!=</span> <span class="s">&quot;switch&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getHP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">angles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getOP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getIP</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        
+  </div>
+<div class="viewcode-block" id="PlanGenerator.removeAllItems"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.removeAllItems">[docs]</a>    <span class="k">def</span> <span class="nf">removeAllItems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes all items inside the boxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cur_box</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_boxes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItems</span><span class="p">(</span><span class="n">cur_box</span><span class="o">+</span><span class="s">&quot;_left&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItems</span><span class="p">(</span><span class="n">cur_box</span><span class="o">+</span><span class="s">&quot;_right&quot;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="PlanGenerator.restoreAllItems"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.restoreAllItems">[docs]</a>    <span class="k">def</span> <span class="nf">restoreAllItems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Restores the items of all boxes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cur_box</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_boxes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createItems2</span><span class="p">(</span><span class="n">cur_box</span><span class="o">+</span><span class="s">&quot;_left&quot;</span><span class="p">,</span><span class="n">cur_box</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">createItems2</span><span class="p">(</span><span class="n">cur_box</span><span class="o">+</span><span class="s">&quot;_right&quot;</span><span class="p">,</span><span class="n">cur_box</span><span class="p">)</span>        
+        </div>
+<div class="viewcode-block" id="PlanGenerator.moveAwayOtherArm"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.moveAwayOtherArm">[docs]</a>    <span class="k">def</span> <span class="nf">moveAwayOtherArm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Moves the other arm away to not interfere with the planning procedure</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The arm that is used. It is not the arm that is move away!</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.015</span><span class="p">,</span><span class="mf">0.015</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">otherSide</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">otherSide</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">otherSide</span><span class="p">,</span><span class="n">otherSide</span><span class="o">+</span><span class="s">&quot;_hand_init_away&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">)</span>
+      
+          </div>
+<div class="viewcode-block" id="PlanGenerator.getLH"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getLH">[docs]</a>    <span class="k">def</span> <span class="nf">getLH</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans L to H and H to L and returns the angles of the H &quot;positions&quot;</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are located</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :return: angles of the computed H positions</span>
+<span class="sd">            :rtype: list(dict({str:float}))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating LH and HL plans for side </span><span class="si">%s</span><span class="s"> for box </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_items</span><span class="p">):</span>
+            <span class="n">angles</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+            <span class="k">if</span> <span class="n">box</span> <span class="o">==</span> <span class="s">&quot;switch&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">id</span> <span class="o">==</span> <span class="mi">9</span> <span class="ow">or</span> <span class="nb">id</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_LH&quot;</span>
+            <span class="n">reverse_plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_HL&quot;</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">reverse_plan_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rplan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">init</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                    <span class="n">init</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">computeItemPose</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+                <span class="n">move_params</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="bp">False</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToPose</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">move_params</span><span class="p">):</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Cannot reach low position of item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan LH for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                <span class="c">#get LH plan</span>
+                <span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">computeItemPose</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToPose_plan</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">position_tolerance</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">cartesian</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan LH found for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                    
+                    <span class="k">continue</span>    
+                <span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span><span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">,</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">positions</span><span class="p">))</span>
+                <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+                <span class="c">#get HL plan</span>
+                <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+                <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">reverse_plan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span><span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">,</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">positions</span><span class="p">))</span>
+        <span class="k">print</span> <span class="s">&quot;angles:&quot;</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_items</span><span class="p">):</span>
+            <span class="k">print</span> <span class="nb">id</span><span class="p">,</span><span class="s">&quot;:&quot;</span><span class="p">,</span><span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">angles</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####LH and HL plans generated&quot;</span><span class="p">)</span>
+    
+        </div>
+<div class="viewcode-block" id="PlanGenerator.getFP"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getFP">[docs]</a>    <span class="k">def</span> <span class="nf">getFP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans F to P and P to F and saves the angles of the P &quot;position&quot; for the box</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating FP plans for side </span><span class="si">%s</span><span class="s"> for box </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_FP&quot;</span>
+        <span class="n">rplan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_PF&quot;</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+        <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">)</span>
+        
+        <span class="n">pose</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">computeItemPose</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rplan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="n">move_params</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="bp">False</span><span class="p">]</span>
+<span class="c">#             self.baxter.frame.setTF(&quot;target&quot;,pose)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToPose</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">move_params</span><span class="p">):</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;could not got to F position of item </span><span class="si">%s</span><span class="s">, side </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">return</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">computeItemPose</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+<span class="c">#             self.baxter.frame.setTF(&quot;target&quot;,pose)</span>
+            <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToPose_plan</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">position_tolerance</span><span class="o">=</span><span class="mf">0.008</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="mf">0.008</span><span class="p">,</span><span class="n">cartesian</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;FP plan not found!&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+            <span class="c">#get LI plan</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">computeItemPose</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;saving pose to p </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">box</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">box</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">,</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">positions</span><span class="p">))</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####FP plans generated&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PlanGenerator.goToHighDestinationPose"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.goToHighDestinationPose">[docs]</a>    <span class="k">def</span> <span class="nf">goToHighDestinationPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Moves the arm to the P angles computed by getFP</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :return: True if the motion was successful</span>
+<span class="sd">            :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.015</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+            <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">box</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="o">*</span><span class="n">move_params</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;could not move to prepare pose p&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        </div>
+<div class="viewcode-block" id="PlanGenerator.getIP"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getIP">[docs]</a>    <span class="k">def</span> <span class="nf">getIP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">side</span> <span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans I to P and P to I</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating IP plans for side </span><span class="si">%s</span><span class="s"> for box </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>     
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_IP&quot;</span>
+        <span class="n">rplan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_PI&quot;</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+        <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rplan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan IP&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">box</span><span class="p">]</span>
+                <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;p-Angles is empty&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="mf">0.02</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan IP found&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">return</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####IP plans generated&quot;</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="PlanGenerator.getOP"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getOP">[docs]</a>    <span class="k">def</span> <span class="nf">getOP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans O to P and P to O</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str,</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating OP and PO plans for side </span><span class="si">%s</span><span class="s"> for box </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>      
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_OP&quot;</span>
+        <span class="n">rplan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_PO&quot;</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+        <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rplan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+            <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.015</span><span class="p">,</span><span class="mf">0.015</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_over_0&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;Could not go to hand over angles 0&quot;</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan OP&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">box</span><span class="p">]</span>
+                <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;p-Angles is empty&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">pickUp</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;side&quot;</span><span class="p">)</span>
+            <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="mf">0.02</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan IP found&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####OP and PO plans generated&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PlanGenerator.getHP"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getHP">[docs]</a>    <span class="k">def</span> <span class="nf">getHP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">angles</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans H to P and P to H</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :param angles: angles of the H position of each item in the source box</span>
+<span class="sd">            :type angles: list(dict({str,float}))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating PH plans </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">box</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">init</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">pickUp</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;top&quot;</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_items</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">==</span> <span class="p">{}:</span>
+                <span class="k">continue</span>
+            <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_PH&quot;</span>
+            <span class="n">rplan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_HP&quot;</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">rplan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">goToHighDestinationPose</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="p">(</span><span class="n">num_items</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="nb">id</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                        <span class="k">return</span>
+                    <span class="n">init</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan PH for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span>
+                <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="mf">0.02</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan PH found for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+                <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+                <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####PH plans generated&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="PlanGenerator.getIH"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getIH">[docs]</a>    <span class="k">def</span> <span class="nf">getIH</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="n">angles</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans I to H</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are placed</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :param angles: angles of the H position of each item in the source box</span>
+<span class="sd">            :type angles: list(dict({str,float}))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#get IH plan</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating IH plans </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">box</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> 
+
+        <span class="n">init</span> <span class="o">=</span> <span class="bp">False</span>    
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_items</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">==</span> <span class="p">{}:</span>
+                <span class="k">continue</span>
+            <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_IH&quot;</span>
+            <span class="c">#~ rplan_name = box+&quot;_&quot;+side+&quot;_&quot;+str(id)+&quot;_HI&quot;</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">removeItem</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="c"># or rplan is None:</span>
+                <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">moveAwayOtherArm</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToInitPose</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                    <span class="n">init</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan IH for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                <span class="c">#get IH plan</span>
+                <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span>
+                <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="mf">0.02</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan IH found for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+                <span class="c">#~ rplan = baxter_helper_abstract_limb.getReversePlan(plan)</span>
+                <span class="c">#~ baxter_helper_abstract_limb.savePlan(rplan_name, rplan)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####IHs plans generated&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PlanGenerator.getHO"><a class="viewcode-back" href="../generate_plans.html#generate_plans.PlanGenerator.getHO">[docs]</a>    <span class="k">def</span> <span class="nf">getHO</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span> <span class="n">angles_H</span><span class="p">,</span><span class="n">grip_side</span><span class="o">=</span><span class="s">&quot;top&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Computes the plans H to O and O to H</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: arm side</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param box: Box where the items are located</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">            :param angles: angles of the H position of each item in the source box</span>
+<span class="sd">            :type angles: list(dict({str,float}))</span>
+<span class="sd">            :param grip_side: depending on the grip side the 3D Model changes</span>
+<span class="sd">            :type grip_side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#get HO plan</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####Generating HO plans for </span><span class="si">%s</span><span class="s">, side </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">box</span><span class="p">,</span><span class="n">side</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Stop called&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">num_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">numItems</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> 
+        <span class="n">move_params</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">10</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">pickUp</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="n">box</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">grip_side</span><span class="p">)</span> 
+        <span class="n">init</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_items</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">angles_H</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">==</span> <span class="p">{}:</span>
+                <span class="k">continue</span>
+            <span class="n">plan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_OH&quot;</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">)</span>
+            <span class="n">rplan_name</span> <span class="o">=</span> <span class="n">box</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_HO&quot;</span>
+            <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">)</span> 
+            <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+               <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                   <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">side</span><span class="p">,</span><span class="s">&quot;right_hand_over_0&quot;</span><span class="p">,</span><span class="n">move_params</span><span class="p">):</span>
+                       <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;Could not go to hand over angles&quot;</span><span class="p">)</span> 
+                       <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">=+</span><span class="n">num_items</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+                       <span class="k">return</span>
+                   <span class="n">init</span> <span class="o">=</span> <span class="bp">True</span>
+               <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Computing plan HO for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+               <span class="c">#get HO plan</span>
+               <span class="n">joint_angles</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">angles_H</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span>
+               <span class="n">plan</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">joint_angles</span><span class="p">,</span><span class="mf">0.02</span><span class="p">)</span>
+               <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                   <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;No plan OH found for item </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">invalid_plans</span><span class="o">+=</span><span class="mi">1</span>
+                   <span class="k">continue</span>    
+               <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">plan_name</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+               <span class="n">rplan</span> <span class="o">=</span> <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+               <span class="n">baxter_helper_abstract_limb</span><span class="o">.</span><span class="n">savePlan</span><span class="p">(</span><span class="n">rplan_name</span><span class="p">,</span> <span class="n">rplan</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;####HO plans generated&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>  
+        
+                  
+                    
+            
+            </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+The Interface on the Robot
+--------------------------
+
+The interface on the robot offers some basic functions. You can control the interface by the buttons on the robot. Although most of the functionality is identical for both sides of the robot, the button side is important when it comes to a specific arm motion.
+
+**Robot Buttons:**
+
+**Hand Cuff:**
+	:Cuff button: Frees the arm to be able to move it around
+	:Oval button: Opens/Closes gripper
+	:Round button: Not used yet
+
+**Navigator Elbow:**
+	:Rethink button: Goes to home menu
+	:Arrow button: Goes one level higher in menu
+	:Wheel button: Confirms a selection
+	:Wheel: Selects previous or next option on screen
+
+**Navigator Torso:**
+	:Wheel button: Unsets the stop flag (same as the continue button on computer)
+	:Arrow button: Sets the stop flag: Robot stops after its trajectory has been finished
+
+**Shoulder buttons:**
+		Enables or disables the motors of the robot
+		
+**Menu:**
+
+**Go to Init**
+	Moves both arms to a starting/neutral position in front of the robot:
+
+**Run Scenarios**
+	Lists all scenarios that are implemented in the script "baxter_scenarios.py". 
+	
+	**PickAndPlace**
+		"PickAndPlace" is an interactive scenario until there are trajectories recorded. This means
+		that you can directly teach the robot what to do, by taking it at its hand.  
+		In this scenario you can save multiple trajectories for each arm. The titlebar shows the number of the active
+		trajectory. The trajectories are saved in the data folder of the package. 
+		
+		.. note:: Even, if there is only one number shown, it affects the ID for both arms. Both arm trajectories can be 
+			learned individually.
+		
+		**Learn Step**
+			Starts the recording of the arm on the side, where the learn button has been pressed. The trajecory ID corresponds 
+			to the number in the titlebar. Only if the cuff button 
+			is pressed, a trajectory is being recorded. Ensure that you also press the cuffs, if you open or close the gripper. 
+			Finer movements should be recorded slower.
+			
+		**Next Step**
+			Switches to the next ID, to record or modify a new trajectory.
+			
+		**Previous Step**
+			Switches to the previous ID, to record or modify a new trajectory. (Smallest ID is 0)
+		
+		**Run Step**
+			Executes the saved trajectory for the arm, where the button has been pressed and which corresponds to the ID in 
+			the titlebar.
+		
+		**RunAll**
+			Executes all saved trajectories for the arm, where the button has been pressed from ID 0 to the last recorded one.
+			
+			.. note:: Be careful, if you have already saved trajectories in your datafolder, as they are also played. A delete button in the interface
+				is integrated in the next update
+		
+		**RunAllLooped**
+			Does the same as "RunAll" but begins from the first trajectory after the last one has been executed.
+			
+	**Consignment (requires MoveIt)**
+		Loads all boxes into the scene for a special consignment task. This task uses a short eletric gripper on the right side and a middle and old
+		pneumatic gripper on the left. Additionally all grip types are shown (Inside grip, outside grip, pneumatic grip). Moreover
+		one item is passed from one hand to the other. The execution is described below: 
+		
+		#. Take object on the right back side with an outside grip
+		#. Move to the front and pass the object to the pneumatic gripper
+		#. Place the object with the left arm into the destination box
+		#. Meanwhile take another object with an inside grip with the right arm and place it in the destination box
+		#. After the placement of the left arm, take an object from the left side and place it in the destination box
+		#. After the placement of the right, pick up the next object from the first box and wait for the left arm until it placed its items
+		#. Start from point 2 again
+	
+	**Consignment2 (requires MoveIt)**
+		Loads all boxes into the scene. This task shows a basic pick and place with three different items. This demos uses 12 items
+		of each type while all of them are stored differently. The execution is described below:
+		
+		#. The left arm picks a small goblet and places it into an already placed tray.
+		#. At the same time the right arm picks a small goblet and stores it.
+		#. The left arm picks a big goblet and places it into an already placed tray.
+		#. At the same time the right arm picks a big goblet and stores it.
+		#. Now the left tray is filled and the right tray is empty. 
+		#. The right arm takes the empty tray from the conveyor belt.
+		#. Simultaneously the left arm picks a tray.
+		#. Now the conveyor belt moves.
+		#. The right arm now stores the tray and the left arm places the new tray on the conveyor belt.
+		#. Start from point 1 again.
+		
+	**Reset Items**
+		In case one of the consignment scenarios have been executed, the virtual items are reset to 0, to be able to run the scenario 
+		again immediately.
+	
+
+**Select arms**
+	Some scenarios e.g. consignment2 have the possibility to only use one arm. In case you want to test something or
+	you dont have enough space around the robot
+
+**Show camera**
+	Depending on the side you press the wheel confirmation button, the according camera in the hand is being displayed on the
+	screen. By any other action afterwards on the Navigator Elbow the camera stream is stopped.
+
+**Teach Menu**
+	Here you can show the robot one trajectory on each arm that can be executed afterwards. In addition you have the 
+	possibility to stop the execution at all times from both arms and the computer interface.
+
+**Manage Boxes (requires MoveIt)**
+	This one sets the origin and inclination of a box relative to gripper endpoint. Boxes are defined by their length,
+	width, height, thickness, number of objects, dimension of the object, pose and offset of the objects or possible drop off points
+	for objects. All predefined boxes are defined in scripts/baxter_scene.py (Going to be moved into a separate config file in the
+	next version). 
+		
+	**Done**
+		Upon the two corners of an external box and the type of the box have been set, the pose of the box is computed. Afterwards the
+		transformation frame and a virtual box model is inserted into the scene.
+	
+	**Point 0**
+		"Point 0" sets the origin of a box. It should correspond to a top corner of a box.
+	
+	**Point 1**
+		"Point 1" lies on the x-axis of Point 0. So it is also on the top edge of a box, but is does not have to be a corner
+		
+	**Select Box Type**			
+		This selects a predefined box type. Depending on the type the shape of the object in the 3 dimensional scene changes.
+
+**Select Gripper (requires MoveIt)**
+	Depending if you are using the electric or suction gripper you can adjust the length of the gripper.
+	This is important for the collision detection in your 3D model.
+	If you have a custom gripper, you need to change the code in scripts/baxter_scene.py -> attachGripper
+
+
+

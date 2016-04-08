@@ -1,0 +1,31 @@
+actions: []
+authors: HumaRobotics <contact@humarobotics.com>
+brief: ''
+bugtracker: ''
+depends:
+- moveit_core
+- baxter_interface
+- hr_helper
+- roscpp
+- python-catkin-pkg
+- std_msgs
+- moveit_msgs
+- message_runtime
+- sensor_msgs
+- baxter_core_msgs
+- moveit_ros_planning
+- message_generation
+- rospy
+- tf
+- catkin
+- cv_bridge
+- moveit_ros_planning_interface
+description: "Generic package for demos with Baxter. Both arms can be used in parallel.\n\
+  \     Uses Baxter screen and buttons for all operations"
+license: Copyright
+maintainers: Sven Bock <sb@humarobotics.com>
+msgs: []
+package_type: package
+repo_url: ''
+srvs: []
+url: ''

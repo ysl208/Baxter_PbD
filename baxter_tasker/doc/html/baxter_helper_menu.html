@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_menu Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper_moveit_limb Module" href="baxter_helper_moveit_limb.html" />
+    <link rel="prev" title="baxter_helper_frame Module" href="baxter_helper_frame.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_moveit_limb.html" title="baxter_helper_moveit_limb Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_frame.html" title="baxter_helper_frame Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_helper_menu">
+<span id="baxter-helper-menu-module"></span><h1>baxter_helper_menu Module<a class="headerlink" href="#module-baxter_helper_menu" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baxter_helper_menu.BaxterMenuComposer">
+<em class="property">class </em><tt class="descclassname">baxter_helper_menu.</tt><tt class="descname">BaxterMenuComposer</tt><big>(</big><em>display</em>, <em>textDisplay</em>, <em>datapath</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the image that is shown on the display of the robot and on the local workstation</p>
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuComposer.hide">
+<tt class="descname">hide</tt><big>(</big><em>update=True</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer.hide"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer.hide" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hides the GUI</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, it enables the text display</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuComposer.loadEntries">
+<tt class="descname">loadEntries</tt><big>(</big><em>title</em>, <em>entries</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer.loadEntries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer.loadEntries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preloads a new menu</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>title</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text in the title bar of the menu</li>
+<li><strong>entries</strong> (<em>list(str)</em>) &#8211; A list of the button names</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuComposer.resetSelection">
+<tt class="descname">resetSelection</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer.resetSelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer.resetSelection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the selected element</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuComposer.select">
+<tt class="descname">select</tt><big>(</big><em>entry</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a rectangle around an element to mark it as the active element</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entry</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Element that has to be marked with a green rectangle</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuComposer.show">
+<tt class="descname">show</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuComposer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuComposer.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the last menu to the robot</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper_menu.BaxterMenuEntries">
+<em class="property">class </em><tt class="descclassname">baxter_helper_menu.</tt><tt class="descname">BaxterMenuEntries</tt><big>(</big><em>mm</em>, <em>moveit</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuEntries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuEntries" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains all fixed menus that are not changing during the execution. 
+Therefore they can be already defined beforehand</p>
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuEntries.addBox">
+<tt class="descname">addBox</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuEntries.addBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuEntries.addBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the menu to setup predefined boxes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuEntries.addMain">
+<tt class="descname">addMain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuEntries.addMain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuEntries.addMain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the main menu which is very important as it is loaded on startup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuEntries.addTeachMenu">
+<tt class="descname">addTeachMenu</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuEntries.addTeachMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuEntries.addTeachMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the menu to teach simple trajectories</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper_menu.BaxterMenuManager">
+<em class="property">class </em><tt class="descclassname">baxter_helper_menu.</tt><tt class="descname">BaxterMenuManager</tt><big>(</big><em>composer</em>, <em>moveit=False</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages the menus behind the GUI.</p>
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addAllMenus">
+<tt class="descname">addAllMenus</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addAllMenus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addAllMenus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds all static menus from BaxterMenuEntries</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addBaxterBehavior">
+<tt class="descname">addBaxterBehavior</tt><big>(</big><em>bb</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addBaxterBehavior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addBaxterBehavior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a BaxterBehavior class that all methods in the added class can be called
+from the menu</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bb</strong> (<em>BaxterBehaviors</em>) &#8211; Custom class that contains specific methods used by the menu</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addConfirmation">
+<tt class="descname">addConfirmation</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addConfirmation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addConfirmation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addEmpty">
+<tt class="descname">addEmpty</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addEmpty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addEmpty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addEntriesToCurrentMenu">
+<tt class="descname">addEntriesToCurrentMenu</tt><big>(</big><em>entries</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addEntriesToCurrentMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addEntriesToCurrentMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds additional entries to the current menu</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>entries</strong> (<em>dict({str:callback}) or dict({str:list(callback,default_value)})</em>) &#8211; Entry with name and callback to add to the current menu.</td>
+</tr>
+</tbody>
+</table>
+<p>The callback could also be a list of the callback and a custom default value that is saved to this entry</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addGenericFunction">
+<tt class="descname">addGenericFunction</tt><big>(</big><em>name</em>, <em>func</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addGenericFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addGenericFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>This could link a string to a specific function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New name of the methods</li>
+<li><strong>func</strong> (<em>callback</em>) &#8211; Existing methods or callback</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addGenericMenu">
+<tt class="descname">addGenericMenu</tt><big>(</big><em>name</em>, <em>parent</em>, <em>title</em>, <em>entries</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addGenericMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addGenericMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a freshly created menu to the availble menu pages</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the menu page</li>
+<li><strong>parent</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the parent menu</li>
+<li><strong>title</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text in the title bar of the menu</li>
+<li><strong>entries</strong> (<em>dict({str:callback}) or dict({str:list(callback,default_value)})</em>) &#8211; Entries in a dictionary with their name and callback</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.addNeglection">
+<tt class="descname">addNeglection</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.addNeglection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.addNeglection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.callMenuEntry">
+<tt class="descname">callMenuEntry</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.callMenuEntry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.callMenuEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls a menu entry by its name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.changeMenuTitle">
+<tt class="descname">changeMenuTitle</tt><big>(</big><em>title</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.changeMenuTitle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.changeMenuTitle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the title text of the current menu</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>title</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New text that should be display in the title bar</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.confirm">
+<tt class="descname">confirm</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.confirm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.confirm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows a confirmation message on the screen and reloads the current menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.emptyMenu">
+<tt class="descname">emptyMenu</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.emptyMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.emptyMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an empty menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.loadDefaultMenu">
+<tt class="descname">loadDefaultMenu</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.loadDefaultMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.loadDefaultMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the menu given in the default value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.loadMenu">
+<tt class="descname">loadMenu</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.loadMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.loadMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unloads the current menu, saves, loads the new menu options and displays it</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New menu to load</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.loadPreviousMenu">
+<tt class="descname">loadPreviousMenu</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.loadPreviousMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.loadPreviousMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the previous menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.neglect">
+<tt class="descname">neglect</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.neglect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.neglect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows a failure message on the screen and reloads the current menu</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_menu.BaxterMenuManager.removeEntriesFromCurrentMenu">
+<tt class="descname">removeEntriesFromCurrentMenu</tt><big>(</big><em>names</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_menu.html#BaxterMenuManager.removeEntriesFromCurrentMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_menu.BaxterMenuManager.removeEntriesFromCurrentMenu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes entries form the current menu</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>names</strong> (<em>list or str</em>) &#8211; Name(s) of the entries to remove from the current menu</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attention :</th><td class="field-body">Do not remove the last element!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_helper_frame.html"
+                        title="previous chapter">baxter_helper_frame Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper_moveit_limb.html"
+                        title="next chapter">baxter_helper_moveit_limb Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_moveit_limb.html" title="baxter_helper_moveit_limb Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_frame.html" title="baxter_helper_frame Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

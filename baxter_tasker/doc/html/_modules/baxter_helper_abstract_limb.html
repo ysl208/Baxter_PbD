@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_abstract_limb</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_abstract_limb</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="n">DEFAULT_RATE</span><span class="o">=</span><span class="mi">200</span>
+<span class="n">DEFAULT_SPEED</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="o">=</span><span class="mf">0.008726646</span>
+<span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="o">=</span><span class="mf">0.03</span>
+<span class="n">DEFAULT_TIMEOUT</span><span class="o">=</span><span class="mi">15</span>
+<span class="n">DEFAULT_PATH_TOLERANCE</span><span class="o">=</span><span class="mf">0.35</span> <span class="c"># Default path tolerance for speed 1</span>
+
+<span class="kn">from</span> <span class="nn">sensor_msgs.msg</span> <span class="kn">import</span> <span class="n">JointState</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span><span class="n">copy</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    IO and Conversions</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PoseStamped</span><span class="p">,</span>
+    <span class="n">Pose</span><span class="p">,</span>
+    <span class="n">Point</span><span class="p">,</span>
+    <span class="n">Quaternion</span><span class="p">,</span>  
+<span class="p">)</span>
+<span class="c"># from trajectory_msgs.msg import (</span>
+<span class="c">#     JointTrajectoryPoint,</span>
+<span class="c"># )</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="c"># The datapath where all data, that is created by this package should be stored</span>
+<span class="n">datapath</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)))</span>  <span class="o">+</span> <span class="s">&quot;/data/&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="getAnglesFromDict"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getAnglesFromDict">[docs]</a><span class="k">def</span> <span class="nf">getAnglesFromDict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a dictionary to a angles of a JointState()</span>
+<span class="sd">        </span>
+<span class="sd">        :param d (dict): The dictionary to be converted</span>
+<span class="sd">        :return (sensor_msgs.msg.JointState): The angles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">js</span><span class="o">=</span><span class="n">JointState</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">js</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="n">js</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">js</span>        
+</div>
+<div class="viewcode-block" id="getDictFromAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getDictFromAngles">[docs]</a><span class="k">def</span> <span class="nf">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts angles of a JointState() to a dictionary</span>
+<span class="sd">        :param angles (sensor_msgs.msg.JointState): angles to be converted</span>
+<span class="sd">        :return (dict): dictionary with angles </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">angles</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">angles</span><span class="o">.</span><span class="n">position</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="getDictFromPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getDictFromPose">[docs]</a><span class="k">def</span> <span class="nf">getDictFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a Pose to a dictionary</span>
+<span class="sd">        :param pose (geometry_msgs.msg.Pose): Pose to be converted</span>
+<span class="sd">        :return (dict): dictionary with position and orientation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">PoseStamped</span><span class="p">:</span>        
+        <span class="n">pose</span><span class="o">=</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span>
+    <span class="n">d</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">d</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">d</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span>
+</div>
+<div class="viewcode-block" id="getStrFromPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getStrFromPose">[docs]</a><span class="k">def</span> <span class="nf">getStrFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a pose of a Pose() or PoseStamped() to a printable string</span>
+<span class="sd">        :param pose (geometry_msgs.msg.Pose): Pose to be converted</span>
+<span class="sd">        :return (string): string of the pose</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;base&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">PoseStamped</span><span class="p">:</span>        
+        <span class="n">frame_id</span><span class="o">=</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span>
+        <span class="n">pose</span><span class="o">=</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">getDictFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">frame_id</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="getStrFromAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getStrFromAngles">[docs]</a><span class="k">def</span> <span class="nf">getStrFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts all angles of a JointState() to a printable string</span>
+<span class="sd">        :param angles (sensor_msgs.msg.JointState): JointState() angles to be converted</span>
+<span class="sd">        :return (string): string of the angles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span> <span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+       </div>
+<div class="viewcode-block" id="getPoseFromDict"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getPoseFromDict">[docs]</a><span class="k">def</span> <span class="nf">getPoseFromDict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a dictionary to a Pose</span>
+<span class="sd">        :param d (dict): The dictionary to be converted</span>
+<span class="sd">        :return (geometry_msgs.msg.Pose): The pose from the dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pose</span><span class="o">=</span><span class="n">Pose</span><span class="p">()</span>
+    <span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">)</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">]</span>
+    <span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span><span class="p">)</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pose</span>
+</div>
+<div class="viewcode-block" id="createDir"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.createDir">[docs]</a><span class="k">def</span> <span class="nf">createDir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Created a directory if it does not exist</span>
+<span class="sd">        :param path (string): Path for the directories to be created, or verified</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="loadPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.loadPose">[docs]</a><span class="k">def</span> <span class="nf">loadPose</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a pose from a file located in the data directory of the package</span>
+<span class="sd">        :param name (string): Filename of the pose to load</span>
+<span class="sd">        :return (geometry_msgs.msg.Pose): The pose as Pose() that is going to be saved </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;pose&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="k">return</span> <span class="n">getPoseFromDict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;.pose&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>    
+    </div>
+<div class="viewcode-block" id="savePose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.savePose">[docs]</a><span class="k">def</span> <span class="nf">savePose</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves a pose to a file located in the data directory of the package</span>
+<span class="sd">        :param name (string): Filename of the pose to save</span>
+<span class="sd">        :param pose (geometry_msgs.msg.Pose): The pose that is going to be saved </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;pose&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">createDir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">=</span><span class="n">getDictFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;.pose&quot;</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="loadAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.loadAngles">[docs]</a><span class="k">def</span> <span class="nf">loadAngles</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads angles from a file located in the data directory of the package</span>
+<span class="sd">        :param name (string): Filename of the angles to load</span>
+<span class="sd">        :return (sensor_msgs.msg.JointState): The angles as a JointState() that are going to be saved </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;angles&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="k">return</span> <span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;.angles&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()))</span>
+</div>
+<div class="viewcode-block" id="saveAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.saveAngles">[docs]</a><span class="k">def</span> <span class="nf">saveAngles</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">angles</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves angles to a file located in the data directory of the package</span>
+<span class="sd">        :param name (string): Filename of the angles to save</span>
+<span class="sd">        :param angles (sensor_msgs.msg.JointState): The angles that are going to be saved </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;angles&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">createDir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;.angles&quot;</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="loadPlan"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.loadPlan">[docs]</a><span class="k">def</span> <span class="nf">loadPlan</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a plan from a file located in the data directory of the package</span>
+<span class="sd">        :param name (string): Filename of the plan to be loaded</span>
+<span class="sd">        :return (moveit_msgs.msg.RobotTrajectory): Returns the plan or None otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;plans&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="k">try</span><span class="p">:</span>  
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&#39;.plan&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pkl_file</span><span class="p">:</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pkl_file</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;old plan found, called </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plan</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;plan to target does not exist yet&quot;</span><span class="p">)</span>        
+        <span class="k">return</span> <span class="bp">None</span>  
+    </div>
+<div class="viewcode-block" id="savePlan"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.savePlan">[docs]</a><span class="k">def</span> <span class="nf">savePlan</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">plan</span><span class="p">):</span>  
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves a plan to a file located in the data directory of the package. The directory is created, if it does not exist.</span>
+<span class="sd">        :param name (string): Filename of the plan to save</span>
+<span class="sd">        :param plan (moveit_msgs.msg.RobotTrajectory): The plan that is going to be saved </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;plans&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">createDir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;planname to save: </span><span class="si">%s</span><span class="s">.plan&quot;</span><span class="o">%</span><span class="n">name</span><span class="p">)</span>      
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&#39;.plan&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pkl_file</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">pkl_file</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="getReversePlan"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getReversePlan">[docs]</a><span class="k">def</span> <span class="nf">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the reverse version of a given plan</span>
+<span class="sd">        :param plan (moveit_msgs.msg.RobotTrajectory): The original plan</span>
+<span class="sd">        :return (moveit_msgs.msg.RobotTrajectory): The reversed plan</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">z</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+    <span class="n">maxtime</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_from_start</span><span class="p">)</span>
+    <span class="n">z</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">=</span><span class="n">maxtime</span><span class="o">-</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">time_from_start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span>
+    
+
+</div>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Comparisons</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="getAnglesDiff"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getAnglesDiff">[docs]</a><span class="k">def</span> <span class="nf">getAnglesDiff</span><span class="p">(</span><span class="n">joint_angles_1</span><span class="p">,</span><span class="n">joint_angles_2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary of the difference between two joint state angles</span>
+<span class="sd">        :param joint_angles_1 (sensor_msgs.msg.JointState): first angles of type sensor_msgs.msg.JointState()</span>
+<span class="sd">        :param joint_angles_2 (sensor_msgs.msg.JointState): second angles of type sensor_msgs.msg.JointState() </span>
+<span class="sd">        :return (dict): Dictionary of angle differences</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">joint_angles_1</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">joint_angles_2</span><span class="p">)</span>
+    <span class="n">dd</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">dd</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">=</span><span class="n">da</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">-</span><span class="n">db</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">dd</span>
+</div>
+<div class="viewcode-block" id="getPoseDiff"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getPoseDiff">[docs]</a><span class="k">def</span> <span class="nf">getPoseDiff</span><span class="p">(</span><span class="n">pose_1</span><span class="p">,</span><span class="n">pose_2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary of the difference between two Poses</span>
+<span class="sd">        :param pose_1 (geometry_msgs.msg.Pose): first pose of type geometry_msgs.msg.Pose()</span>
+<span class="sd">        :param pose_2 (geometry_msgs.msg.Pose): second angles of type geometry_msgs.msg.Pose() </span>
+<span class="sd">        :return (dict): Dictionary of pose difference</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span><span class="o">=</span><span class="n">getDictFromPose</span><span class="p">(</span><span class="n">pose_1</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">=</span><span class="n">getDictFromPose</span><span class="p">(</span><span class="n">pose_2</span><span class="p">)</span>
+    <span class="n">dd</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+    <span class="n">dd</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">dd</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">va</span><span class="p">,</span><span class="n">vb</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">da</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">],</span><span class="n">db</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">]):</span>
+        <span class="n">dd</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">va</span><span class="o">-</span><span class="n">vb</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">va</span><span class="p">,</span><span class="n">vb</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">da</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">],</span><span class="n">db</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">]):</span>
+        <span class="n">dd</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">va</span><span class="o">-</span><span class="n">vb</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dd</span>
+</div>
+<div class="viewcode-block" id="getAnglesError"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.getAnglesError">[docs]</a><span class="k">def</span> <span class="nf">getAnglesError</span><span class="p">(</span><span class="n">joint_angles_1</span><span class="p">,</span> <span class="n">joint_angles_2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the accumulated error from the difference of two joint states angles</span>
+<span class="sd">        :param joint_angles_1 (sensor_msgs.msg.JointState): first angles of type sensor_msgs.msg.JointState()</span>
+<span class="sd">        :param joint_angles_2 (sensor_msgs.msg.JointState): second angles of type sensor_msgs.msg.JointState() </span>
+<span class="sd">        :return (float): Accumulated error</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">da</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">joint_angles_1</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">joint_angles_2</span><span class="p">)</span>
+    <span class="n">err</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">err</span><span class="o">+=</span><span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">da</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">-</span><span class="n">db</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>    
+    <span class="k">return</span> <span class="n">err</span>
+    
+ 
+
+
+</div>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Abstract Limb Interface</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AbstractLimb"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb">[docs]</a><span class="k">class</span> <span class="nc">AbstractLimb</span><span class="p">():</span>
+
+<div class="viewcode-block" id="AbstractLimb.getPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.getPose">[docs]</a>    <span class="k">def</span> <span class="nf">getPose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the current cartesian pose as geometry_msgs/Pose</span>
+<span class="sd">            :return (geometry_msgs.msg.Pose): Current pose</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Pose</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="AbstractLimb.getAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.getAngles">[docs]</a>    <span class="k">def</span> <span class="nf">getAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the current joint state as  sensor_msgs/JointState</span>
+<span class="sd">            :return (sensor_msgs.msg.JointState): Current angles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">JointState</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="AbstractLimb.goToPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.goToPose">[docs]</a>    <span class="k">def</span> <span class="nf">goToPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">position_tolerance</span><span class="o">=</span><span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">cartesian</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Go to a cartesian pose provided as geometry_msgs/Pose for the defined eef , blocking , returns True if all went fine (trajectory found), false otherwise</span>
+<span class="sd">            :param pose (geometry_msgs.msg.Pose):  target position as geometry_msgs/Pose </span>
+<span class="sd">            :param speed (float): a float multiplicator of the default baxter speed</span>
+<span class="sd">            :param position_tolerance (float): position tolerance in meters for the target pose (used in planning pipeline)</span>
+<span class="sd">            :param orientation_tolerance (float): orientation tolerance in radians for the target pose (used in planning pipeline)</span>
+<span class="sd">            :param joint_tolerance (float): joint tolerance in radians for the target joint angles (used for execution)</span>
+<span class="sd">            :param speed_tolerance (float): speed tolerance in rad/s-1 for the controller to stop (used for execution)</span>
+<span class="sd">            :param timeout (float): timeout in seconds before giving on the control</span>
+<span class="sd">            :param cartesian (bool): boolean to compute a cartesian path</span>
+<span class="sd">            :param path_tolerance (float): maximum joint angular distance during execution to consider a failure during trajectory execution</span>
+<span class="sd">            :return (bool): Success flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="AbstractLimb.goToAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.goToAngles">[docs]</a>    <span class="k">def</span> <span class="nf">goToAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Go to a angular joint state provided as sensor_msgs/JointState, blocking, returns True if all went fine (trajectory found), false otherwise</span>
+<span class="sd">            :param angles (sensor_msgs.msg.JointState):  target joint position as sensor_msgs/JointState</span>
+<span class="sd">            :param speed (float): a float multiplicator of the default baxter speed</span>
+<span class="sd">            :param joint_tolerance_plan (float): joint angle tolerance in radians target joint angles (used in planning pipeline)</span>
+<span class="sd">            :param joint_tolerance (float): joint angle tolerance in radians for the target joint angles (used for execution)</span>
+<span class="sd">            :param speed_tolerance (float): speed tolerance in rad/s-1 for the controller to stop (used for execution)</span>
+<span class="sd">            :param timeout (float): timeout in seconds before giving on the control</span>
+<span class="sd">            :param path_tolerance (float): maximum joint angular distance during execution to consider a failure during trajectory execution                    </span>
+<span class="sd">            :return (bool): Success flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+        </div>
+<div class="viewcode-block" id="AbstractLimb.cancel"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Cancel the current motion&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="AbstractLimb.moving"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.moving">[docs]</a>    <span class="k">def</span> <span class="nf">moving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns whether the arm is currently moving</span>
+<span class="sd">            :return (bool): Currently moving flag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">pass</span>
+    </div>
+<div class="viewcode-block" id="AbstractLimb.getAnglesFromPose"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.getAnglesFromPose">[docs]</a>    <span class="k">def</span> <span class="nf">getAnglesFromPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calls inverse kinematics to obtain joint angles from a cartesian pose, return None if failed</span>
+<span class="sd">            :param pose (geometry_msgs.msg.Pose):  target position as geometry_msgs/Pose         </span>
+<span class="sd">            :return (sensor_msgs.msg.JointState): Joint angles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JointState</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="AbstractLimb.getPoseFromAngles"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.getPoseFromAngles">[docs]</a>    <span class="k">def</span> <span class="nf">getPoseFromAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Calls forward kinematics to obtain cartesian pose from joint angles, return None if failed</span>
+<span class="sd">            :param angles (sensor_msgs.msg.JointState):  target joint position as sensor_msgs/JointState</span>
+<span class="sd">            :return (geometry_msgs.msg.Pose): Cartesian pose</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Mock Function&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Pose</span><span class="p">()</span>
+    
+    </div>
+<div class="viewcode-block" id="AbstractLimb.waitForMoving"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.waitForMoving">[docs]</a>    <span class="k">def</span> <span class="nf">waitForMoving</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Wait for motion to start or timeout expires, blocking, return True if motion started, False otherwise</span>
+<span class="sd">            :param timeout (float):  timeout in seconds</span>
+<span class="sd">            :return (bool): True is the robot is moving</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;Waiting </span><span class="si">%s</span><span class="s"> to start motion&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">timeout</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">&gt;</span><span class="n">timeout</span><span class="p">:</span>
+                <span class="k">break</span>           
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="AbstractLimb.waitForStopped"><a class="viewcode-back" href="../baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb.waitForStopped">[docs]</a>    <span class="k">def</span> <span class="nf">waitForStopped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Wait for motion to stop or timeout expires, blocking, return True if motion stopped, False otherwise </span>
+<span class="sd">            :param timeout (float):  timeout in seconds</span>
+<span class="sd">            :return (bool): True if the robot is stopped</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;Waiting </span><span class="si">%s</span><span class="s"> to finish motion&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">timeout</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">&gt;</span><span class="n">timeout</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving</span><span class="p">()</span>
+    
+    </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

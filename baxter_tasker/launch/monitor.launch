@@ -1,0 +1,4 @@
+<launch>
+
+	<node pkg="baxter_tasker" type="monitor.py" name="baxter_monitor" args="/joint_states:=/robot/joint_states" output="screen"/>
+</launch>

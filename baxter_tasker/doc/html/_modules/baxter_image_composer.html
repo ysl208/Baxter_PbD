@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_image_composer</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_image_composer</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageFont</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">ImageDraw</span> 
+
+<div class="viewcode-block" id="ImageComposerElement"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposerElement">[docs]</a><span class="k">class</span> <span class="nc">ImageComposerElement</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines an image element that can be combined</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">imgfile</span><span class="p">,</span><span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param imgfile: Path to the image</span>
+<span class="sd">            :type imgfile: str</span>
+<span class="sd">            :param xpos: x offset to the background, where the element is be drawn</span>
+<span class="sd">            :type xpos: int</span>
+<span class="sd">            :param ypos: y offset to the background, where the element is be drawn</span>
+<span class="sd">            :type ypos: int</span>
+<span class="sd">            :param layer: in which layer the element is drawn</span>
+<span class="sd">            :type layer: int</span>
+<span class="sd">            :param alpha:</span>
+<span class="sd">            :type alpha: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imgfile</span><span class="o">=</span><span class="n">imgfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="o">=</span><span class="n">xpos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="o">=</span><span class="n">ypos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">=</span><span class="n">layer</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">imgfile</span><span class="p">)</span>
+        <span class="c">#~ print &quot;loading &quot;+self.imgfile</span>
+        <span class="c">#~ print self.buffer.mode</span>
+    
+<div class="viewcode-block" id="ImageComposerElement.dispose"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposerElement.dispose">[docs]</a>    <span class="k">def</span> <span class="nf">dispose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Clear the buffer </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span>    
+        </div>
+<div class="viewcode-block" id="ImageComposerElement.drawOnto"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposerElement.drawOnto">[docs]</a>    <span class="k">def</span> <span class="nf">drawOnto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">buffer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">             Add another element onto the current</span>
+<span class="sd">             </span>
+<span class="sd">             :param buffer: Element to add</span>
+<span class="sd">             :type buffer: PIL.Image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">:</span>
+            <span class="nb">buffer</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">),</span><span class="n">mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">buffer</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">))</span>
+        
+        </div></div>
+<div class="viewcode-block" id="ImageComposer"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer">[docs]</a><span class="k">class</span> <span class="nc">ImageComposer</span><span class="p">:</span>    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The image composer combines multiple images into one,</span>
+<span class="sd">        to create interactive interfaces for the robot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bgcolor</span><span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="o">=</span><span class="n">bgcolor</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="o">=</span><span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="o">=</span><span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+            
+<div class="viewcode-block" id="ImageComposer.resetbg"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.resetbg">[docs]</a>    <span class="k">def</span> <span class="nf">resetbg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Draws the background</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_width</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">display_height</span><span class="p">))</span> <span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="p">,</span><span class="n">outline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="p">)</span>
+
+        
+</div>
+<div class="viewcode-block" id="ImageComposer.clear"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Deletes all image elements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">dispose</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">=</span><span class="p">{}</span>
+        
+            </div>
+<div class="viewcode-block" id="ImageComposer.dispose"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.dispose">[docs]</a>    <span class="k">def</span> <span class="nf">dispose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Deletes the current image element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span>
+
+</div>
+<div class="viewcode-block" id="ImageComposer.render"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Resets the background and draws all added element into the image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetbg</span><span class="p">()</span>
+        <span class="n">elements</span><span class="o">=</span><span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="o">!=</span><span class="bp">None</span><span class="p">]</span>
+        <span class="n">elements</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">layer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">drawOnto</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span>
+            </div>
+<div class="viewcode-block" id="ImageComposer.save"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">imgfile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Saves the created image to a file</span>
+<span class="sd">            </span>
+<span class="sd">            :param imgfile: Filename to save</span>
+<span class="sd">            :type imgfile: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">imgfile</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImageComposer.set"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">,</span><span class="n">element</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds a new element to the image to be combined</span>
+<span class="sd">            </span>
+<span class="sd">            :param label: Name of the new element</span>
+<span class="sd">            :type label:  str</span>
+<span class="sd">            :param element: Element to be drawn into the image (see example code)</span>
+<span class="sd">            :type element: ImageComposerElement</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">=</span><span class="n">element</span>
+        </div>
+<div class="viewcode-block" id="ImageComposer.unset"><a class="viewcode-back" href="../baxter_image_composer.html#baxter_image_composer.ImageComposer.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">):</span>    
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Deletes an element</span>
+<span class="sd">            </span>
+<span class="sd">            :param label: Element&#39;s name to be deleted</span>
+<span class="sd">            :type label: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+        
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">comp</span><span class="o">=</span><span class="n">ImageComposer</span><span class="p">()</span>
+    <span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;background&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="s">&quot;../data/starting.png&quot;</span><span class="p">))</span> <span class="c"># default layer=0</span>
+    <span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;drawingblack&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="s">&quot;../data/test-alpha.png&quot;</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">comp</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;drawinggreen&quot;</span><span class="p">,</span><span class="n">ImageComposerElement</span><span class="p">(</span><span class="s">&quot;../data/test-alpha2.png&quot;</span><span class="p">,</span><span class="mi">350</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="n">layer</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">comp</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+    <span class="n">comp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;tmp.png&quot;</span><span class="p">)</span>
+    
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

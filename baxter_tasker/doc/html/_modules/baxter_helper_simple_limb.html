@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_simple_limb</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_helper_simple_limb</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">baxter_core_msgs.srv</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SolvePositionIK</span><span class="p">,</span>
+    <span class="n">SolvePositionIKRequest</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">baxter_helper_abstract_limb</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">limb</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span><span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="n">Float64</span>
+<span class="kn">import</span> <span class="nn">baxter_dataflow</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">PoseStamped</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Quaternion</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Simple Limb that uses Baxter API</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="SimpleLimb"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb">[docs]</a><span class="k">class</span> <span class="nc">SimpleLimb</span><span class="p">(</span><span class="n">limb</span><span class="o">.</span><span class="n">Limb</span><span class="p">,</span><span class="n">AbstractLimb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">ik</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">limb</span><span class="o">.</span><span class="n">Limb</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="o">=</span><span class="n">side</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_BAXTER_SPEED</span><span class="o">=</span><span class="mf">0.3</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="s">&quot;right&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">BaxterException</span><span class="p">,</span><span class="s">&quot;Error non existing side: </span><span class="si">%s</span><span class="s">, please provide left or right&quot;</span><span class="o">%</span><span class="n">side</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">=</span><span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simple</span><span class="o">=</span><span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_moving</span><span class="o">=</span><span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="o">=</span><span class="n">Lock</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">ik</span><span class="o">=</span><span class="n">ik</span>        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ik</span><span class="p">:</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">ns</span> <span class="o">=</span> <span class="s">&quot;/ExternalTools/</span><span class="si">%s</span><span class="s">/PositionKinematicsNode/IKService&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span>    
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Waiting for inverse kinematics service on </span><span class="si">%s</span><span class="s">...&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">wait_for_service</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">iksvc</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns</span><span class="p">,</span> <span class="n">SolvePositionIK</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Waiting for inverse kinematics service DONE&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Skipping inverse kinematics service loading&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_speed</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s">&quot;/robot/limb/</span><span class="si">%s</span><span class="s">/set_speed_ratio&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">Float64</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub_speed</span><span class="o">.</span><span class="n">get_num_connections</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="c">#self.setSpeed(3)</span>
+        
+
+<div class="viewcode-block" id="SimpleLimb.setSpeed"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.setSpeed">[docs]</a>    <span class="k">def</span> <span class="nf">setSpeed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">speed</span><span class="p">):</span>
+        <span class="n">finalspeed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_BAXTER_SPEED</span><span class="o">*</span><span class="n">speed</span>
+        <span class="k">if</span> <span class="n">finalspeed</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span> <span class="n">finalspeed</span><span class="o">=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">finalspeed</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span> <span class="n">finalspeed</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_speed</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">Float64</span><span class="p">(</span><span class="n">finalspeed</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="SimpleLimb.getPose"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.getPose">[docs]</a>    <span class="k">def</span> <span class="nf">getPose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint_pose</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;ERROR: Pose is empty, you may want to wait a bit before calling getPose to populate data&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">pose</span><span class="o">=</span><span class="n">Pose</span><span class="p">()</span>        
+        <span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">=</span><span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">[</span><span class="s">&quot;position&quot;</span><span class="p">])</span>
+        <span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">=</span><span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">[</span><span class="s">&quot;orientation&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">pose</span>
+        </div>
+<div class="viewcode-block" id="SimpleLimb.getAngles"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.getAngles">[docs]</a>    <span class="k">def</span> <span class="nf">getAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_angles</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">getAnglesFromDict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        </div>
+<div class="viewcode-block" id="SimpleLimb.goToPose"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.goToPose">[docs]</a>    <span class="k">def</span> <span class="nf">goToPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">position_tolerance</span><span class="o">=</span><span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">cartesian</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; position_tolerance, orientation_tolerance, speed_tolerance, cartesian are ignored&quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;SimpleLimb </span><span class="si">%s</span><span class="s"> goToPose </span><span class="si">%s</span><span class="s"> speed </span><span class="si">%f</span><span class="s"> position_tolerance </span><span class="si">%f</span><span class="s"> orientation_tolerance </span><span class="si">%f</span><span class="s"> joint_tolerance </span><span class="si">%f</span><span class="s"> speed_tolerance </span><span class="si">%f</span><span class="s"> timeout </span><span class="si">%f</span><span class="s"> cartesian=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">getStrFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span><span class="n">speed</span><span class="p">,</span><span class="n">position_tolerance</span><span class="p">,</span><span class="n">orientation_tolerance</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">cartesian</span><span class="p">))</span> <span class="p">)</span>
+        <span class="n">angles</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getAnglesFromPose</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">angles</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">,</span><span class="n">path_tolerance</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">False</span>
+        <span class="n">diff</span><span class="o">=</span><span class="n">getPoseDiff</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getPose</span><span class="p">())</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;SimpleLimb goToPose distance to target: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ret</span>
+            
+    </div>
+<div class="viewcode-block" id="SimpleLimb.moving"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.moving">[docs]</a>    <span class="k">def</span> <span class="nf">moving</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_moving</span>
+        </div>
+<div class="viewcode-block" id="SimpleLimb.goToAngles"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.goToAngles">[docs]</a>    <span class="k">def</span> <span class="nf">goToAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angles</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="n">DEFAULT_SPEED</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; joint_tolerance_plan,speed_tolerance are ignored, &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_moving</span><span class="o">=</span><span class="bp">True</span>
+        <span class="n">d</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;SimpleLimb </span><span class="si">%s</span><span class="s"> goToAngles </span><span class="si">%s</span><span class="s"> speed </span><span class="si">%f</span><span class="s"> joint_tolerance </span><span class="si">%f</span><span class="s"> speed_tolerance </span><span class="si">%f</span><span class="s"> timeout </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="n">getStrFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span><span class="n">speed</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setSpeed</span><span class="p">(</span><span class="n">speed</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">move_to_joint_positions</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">joint_tolerance</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="p">,</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span> <span class="s">&quot;Timeout PID: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">ret</span><span class="o">=</span><span class="bp">False</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">moving_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_moving</span><span class="o">=</span><span class="bp">False</span>
+            
+        <span class="n">diff</span><span class="o">=</span><span class="n">getAnglesDiff</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getAngles</span><span class="p">())</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logdebug</span><span class="p">(</span><span class="s">&quot;SimpleLimb </span><span class="si">%s</span><span class="s"> goToAngles distance to target: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">side</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+</div>
+<div class="viewcode-block" id="SimpleLimb.cancel"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cancel</span><span class="o">=</span><span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="SimpleLimb.getAnglesFromPose"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.getAnglesFromPose">[docs]</a>    <span class="k">def</span> <span class="nf">getAnglesFromPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pose</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pose</span><span class="p">)</span><span class="o">==</span><span class="n">Pose</span><span class="p">:</span>
+            <span class="n">goal</span><span class="o">=</span><span class="n">PoseStamped</span><span class="p">()</span>
+            <span class="n">goal</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;/base&quot;</span>
+            <span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">=</span><span class="n">pose</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">goal</span><span class="o">=</span><span class="n">pose</span>
+        
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ik</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerror</span><span class="p">(</span><span class="s">&quot;ERROR: Inverse Kinematics service was not loaded&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">goalstr</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%f</span><span class="s">,</span><span class="si">%f</span><span class="s">,</span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">goal</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">ikreq</span> <span class="o">=</span> <span class="n">SolvePositionIKRequest</span><span class="p">()</span>
+        
+        <span class="n">ikreq</span><span class="o">.</span><span class="n">pose_stamp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iksvc</span><span class="p">(</span><span class="n">ikreq</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">isValid</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">joints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;FAILURE - No Valid Joint Solution Found for </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">goalstr</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceException</span><span class="p">,</span><span class="n">e</span> <span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Service call failed: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e</span><span class="p">,))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="c"># Copied from original limb, added joint and speed tolerance parameters</span></div>
+<div class="viewcode-block" id="SimpleLimb.move_to_joint_positions"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.move_to_joint_positions">[docs]</a>    <span class="k">def</span> <span class="nf">move_to_joint_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">joint_tolerance</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span><span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Commands the limb to the provided positions.</span>
+
+<span class="sd">        :param positions: joint_name:angle command</span>
+<span class="sd">        :type positions: dict({str:float})</span>
+<span class="sd">        :param joint_tolerance: Desired maximum goal tolerance in radians</span>
+<span class="sd">        :type joint_tolerance: float</span>
+<span class="sd">        :param timeout: seconds to wait for move to finish</span>
+<span class="sd">        :type timeout: float</span>
+
+<span class="sd">        Waits until the reported joint state matches that specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cancel</span><span class="o">=</span><span class="bp">False</span>
+        <span class="k">def</span> <span class="nf">genf</span><span class="p">(</span><span class="n">joint</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">joint_diff</span><span class="p">():</span>
+                <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">angle</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_angle</span><span class="p">[</span><span class="n">joint</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">joint_diff</span>
+
+        <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span><span class="n">genf</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">positions</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span>
+                 <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_joint_angle</span><span class="p">]</span>
+
+        <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">diff</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">joint_tolerance</span>
+                         <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">diffs</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancel</span><span class="p">),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="n">timeout_msg</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> limb failed to reach commanded joint positions&quot;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(),)),</span>
+            <span class="n">rate</span><span class="o">=</span><span class="n">DEFAULT_RATE</span><span class="p">,</span>
+            <span class="n">body</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_joint_positions</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="SimpleLimb.move_to_neutral"><a class="viewcode-back" href="../baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb.move_to_neutral">[docs]</a>    <span class="k">def</span> <span class="nf">move_to_neutral</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Command the joints to the center of their joint ranges</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_names</span><span class="p">(),</span>
+                          <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.26</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_to_joint_positions</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

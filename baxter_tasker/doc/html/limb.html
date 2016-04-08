@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>limb Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="monitor Module" href="monitor.html" />
+    <link rel="prev" title="joint_trajectory_action_server Module" href="joint_trajectory_action_server.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="monitor.html" title="monitor Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="joint_trajectory_action_server.html" title="joint_trajectory_action_server Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-limb">
+<span id="limb-module"></span><h1>limb Module<a class="headerlink" href="#module-limb" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="limb.Limb">
+<em class="property">class </em><tt class="descclassname">limb.</tt><tt class="descname">Limb</tt><big>(</big><em>limb</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="class">
+<dt id="limb.Limb.Point">
+<em class="property">class </em><tt class="descname">Point</tt><a class="headerlink" href="#limb.Limb.Point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
+<p>Point(x, y, z)</p>
+<dl class="attribute">
+<dt id="limb.Limb.Point.x">
+<tt class="descname">x</tt><a class="headerlink" href="#limb.Limb.Point.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="limb.Limb.Point.y">
+<tt class="descname">y</tt><a class="headerlink" href="#limb.Limb.Point.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="limb.Limb.Point.z">
+<tt class="descname">z</tt><a class="headerlink" href="#limb.Limb.Point.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="limb.Limb.Quaternion">
+<em class="property">class </em><tt class="descclassname">Limb.</tt><tt class="descname">Quaternion</tt><a class="headerlink" href="#limb.Limb.Quaternion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tuple</span></tt></p>
+<p>Quaternion(x, y, z, w)</p>
+<dl class="attribute">
+<dt id="limb.Limb.Quaternion.w">
+<tt class="descname">w</tt><a class="headerlink" href="#limb.Limb.Quaternion.w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="limb.Limb.Quaternion.x">
+<tt class="descname">x</tt><a class="headerlink" href="#limb.Limb.Quaternion.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="limb.Limb.Quaternion.y">
+<tt class="descname">y</tt><a class="headerlink" href="#limb.Limb.Quaternion.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="limb.Limb.Quaternion.z">
+<tt class="descname">z</tt><a class="headerlink" href="#limb.Limb.Quaternion.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.endpoint_effort">
+<tt class="descclassname">Limb.</tt><tt class="descname">endpoint_effort</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.endpoint_effort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.endpoint_effort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Cartesian endpoint wrench {force, torque}.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.endpoint_pose">
+<tt class="descclassname">Limb.</tt><tt class="descname">endpoint_pose</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.endpoint_pose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.endpoint_pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Cartesian endpoint pose {position, orientation}.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.endpoint_velocity">
+<tt class="descclassname">Limb.</tt><tt class="descname">endpoint_velocity</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.endpoint_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.endpoint_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Cartesian endpoint twist {linear, angular}.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.exit_control_mode">
+<tt class="descclassname">Limb.</tt><tt class="descname">exit_control_mode</tt><big>(</big><em>timeout=0.2</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.exit_control_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.exit_control_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean exit from advanced control modes (joint torque or velocity).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; control timeout in seconds [0.2]</td>
+</tr>
+</tbody>
+</table>
+<p>Resets control to joint position mode with current positions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_angle">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_angle</tt><big>(</big><em>joint</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the requested joint angle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>joint</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; name of a joint</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_angles">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_angles</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_angles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all joint angles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_effort">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_effort</tt><big>(</big><em>joint</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_effort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_effort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the requested joint effort.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>joint</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; name of a joint</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_efforts">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_efforts</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_efforts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_efforts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all joint efforts.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_names">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_names</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the names of the joints for the specified limb.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_velocities">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_velocities</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all joint velocities.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.joint_velocity">
+<tt class="descclassname">Limb.</tt><tt class="descname">joint_velocity</tt><big>(</big><em>joint</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.joint_velocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.joint_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the requested joint velocity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>joint</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; name of a joint</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.move_to_joint_positions">
+<tt class="descclassname">Limb.</tt><tt class="descname">move_to_joint_positions</tt><big>(</big><em>positions</em>, <em>timeout=15.0</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.move_to_joint_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.move_to_joint_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands the limb to the provided positions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>positions</strong> (<em>dict({str:float})</em>) &#8211; joint_name:angle command</li>
+<li><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; seconds to wait for move to finish [15]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Waits until the reported joint state matches that specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.move_to_neutral">
+<tt class="descclassname">Limb.</tt><tt class="descname">move_to_neutral</tt><big>(</big><em>timeout=15.0</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.move_to_neutral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.move_to_neutral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command the joints to the center of their joint ranges</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.set_command_timeout">
+<tt class="descclassname">Limb.</tt><tt class="descname">set_command_timeout</tt><big>(</big><em>timeout</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.set_command_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.set_command_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the timeout in seconds for the joint controller</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timeout</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; timeout in seconds</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.set_joint_position_speed">
+<tt class="descclassname">Limb.</tt><tt class="descname">set_joint_position_speed</tt><big>(</big><em>speed</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.set_joint_position_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.set_joint_position_speed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set ratio of max joint speed to use during joint position moves.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>speed</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) &#8211; ratio of maximum joint speed for execution default= 0.3; range= [0.0-1.0]</td>
+</tr>
+</tbody>
+</table>
+<p>Set the proportion of maximum controllable velocity to use
+during joint position control execution. The default ratio
+is <cite>0.3</cite>, and can be set anywhere from [0.0-1.0] (clipped).
+Once set, a speed ratio will persist until a new execution
+speed is set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.set_joint_positions">
+<tt class="descclassname">Limb.</tt><tt class="descname">set_joint_positions</tt><big>(</big><em>positions</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.set_joint_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.set_joint_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands the joints of this limb to the specified positions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>positions</strong> (<em>dict({str:float})</em>) &#8211; joint_name:angle command</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.set_joint_torques">
+<tt class="descclassname">Limb.</tt><tt class="descname">set_joint_torques</tt><big>(</big><em>torques</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.set_joint_torques"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.set_joint_torques" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands the joints of this limb to the specified torques.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>torques</strong> (<em>dict({str:float})</em>) &#8211; joint_name:torque command</td>
+</tr>
+</tbody>
+</table>
+<p>IMPORTANT: set_joint_torques must be commanded at a rate great than the
+timeout specified by set_command_timeout. If the timeout is exceeded
+before a new set_joint_torques command is received, the controller will
+switch modes back to position mode for safety purposes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="limb.Limb.set_joint_velocities">
+<tt class="descclassname">Limb.</tt><tt class="descname">set_joint_velocities</tt><big>(</big><em>velocities</em><big>)</big><a class="reference internal" href="_modules/limb.html#Limb.set_joint_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#limb.Limb.set_joint_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commands the joints of this limb to the specified velocities.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>velocities</strong> (<em>dict({str:float})</em>) &#8211; joint_name:velocity command</td>
+</tr>
+</tbody>
+</table>
+<p>IMPORTANT: set_joint_velocities must be commanded at a rate great than
+the timeout specified by set_command_timeout. If the timeout is
+exceeded before a new set_joint_velocities command is received, the
+controller will switch modes back to position mode for safety purposes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="joint_trajectory_action_server.html"
+                        title="previous chapter">joint_trajectory_action_server Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="monitor.html"
+                        title="next chapter">monitor Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="monitor.html" title="monitor Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="joint_trajectory_action_server.html" title="joint_trajectory_action_server Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

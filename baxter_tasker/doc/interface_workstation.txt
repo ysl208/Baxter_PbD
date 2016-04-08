@@ -1,0 +1,82 @@
+The Interface on the Workstation
+--------------------------------
+
+The interface on the computer consists of two columns of buttons on the left side, a list of tasks in the middle and an editor on the right. The buttons offer some functionality to trigger specific functions, which are described in detail below. 
+Not all of them are available on the robot. In fact you are working with a collaborative robot. 
+The idea behind is that you can create a new task, learn with the robot, which generates Python code in the editor field.
+In this interface you have the possibility to modify parameters of this code and also access nearly the complete interface in the background.
+You can simply save your task by clicking on File (in the top row) and click on "Save all Tasks". Once you generated or wrote some code, you select your task from the list and click on the execute button. This gives you the power to test stuff very quickly. 
+
+**Functionality of the buttons:**
+
+**Add Task:**
+	Creates a new task in the list. Use "File->Save Tasks" to keep your task
+
+**Execute Task:**
+	Executes the selected tasks of the list.
+
+**Enable/Disable Robot:**
+	Enables or disables the motors
+
+**Back Button:**
+	Goes one level higher in menu
+	
+**Confirm Right Button:**
+	Confirms a selection with side right
+	
+**Confirm Left Button:**
+	Confirms a selection with side left
+	
+**Turn Wheel:**
+	Turns the left wheel to the right (negative mathematic sense)
+
+**Round Cuff Right Button:**
+	Does nothing
+	
+**Round Cuff Left Button:**
+	Does nothing
+	
+**Oval Cuff Right Button:**
+	Opens/Closes the right gripper
+	
+**Oval Cuff Left Button:**
+	Opens/Closes the left gripper
+	
+**Set HR Logo:**
+	Sets the Humarobotics logo to the screen of the robot
+	
+**Create MoveIt URDF:**
+	Calibrates all joints and then updates the URDF model of the robot
+	
+**STOP:**
+	Set a movement flag to stop new movements.
+	
+**Continue:**
+	Unsets the movement flag
+	
+**Go to Init:**
+	Moves the arms to a start position
+	
+**Generate Plans:**
+	Generate plans for the current scenario and scene
+	
+**Test Switch 1:**
+	Picks a switch item with the right arm
+	
+**Test Switch 2:**
+	Drops a switch item with the left arm
+
+**Test Cover Small:**
+	Picks and drops a small cover with the right arm
+	
+**Test Cover Door:**
+	Picks and drops a door cover with the left arm
+	
+**Test Tray:**
+ 	Picks and drops a tray with the left arm
+	
+**Test Goblet Blue:**
+	Picks and drops a blue goblet with the left arm
+	
+**Test Goblet Red:**
+	Picks and drops a red goblet with the left arm

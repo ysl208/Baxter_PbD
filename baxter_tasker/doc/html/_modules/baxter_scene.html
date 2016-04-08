@@ -1,0 +1,678 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_scene</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_scene</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="c">#from moveit_msgs.msg import RobotState, DisplayTrajectory, OrientationConstraint</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">PoseStamped</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">Quaternion</span>
+<span class="kn">from</span> <span class="nn">shape_msgs.msg</span> <span class="kn">import</span> <span class="n">SolidPrimitive</span>
+<span class="kn">from</span> <span class="nn">moveit_msgs.msg</span> <span class="kn">import</span> <span class="n">CollisionObject</span><span class="p">,</span> <span class="n">AttachedCollisionObject</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">mul</span>
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The baxter scene extends the moveit scene python wrapper to create more complex objects that are useful for baxter, like:</span>
+<span class="sd">    </span>
+<span class="sd">    * Cylinders</span>
+<span class="sd">    * Empty Boxes</span>
+<span class="sd">    * Grippers</span>
+<span class="sd">    </span>
+<span class="sd">    Additionally all pre defined item types are implemented manually here. </span>
+<span class="sd">    These are move to a file called baxter_objects.py on the next release</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BaxterScene"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene">[docs]</a><span class="k">class</span> <span class="nc">BaxterScene</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a link to the moveit scene, saves the current gripper lengths and knows the dimensions of all </span>
+<span class="sd">            important objects in the scene.</span>
+<span class="sd">            </span>
+<span class="sd">            As there is not object scanner yet, objects have to manually added to the scene.</span>
+<span class="sd">            This corresponds to a dictionary entry in the member &quot;boxes&quot;. For baxter&#39;s scenario is prooved to be useful</span>
+<span class="sd">            to have boxes, which contain items. They are modelled in this form:</span>
+<span class="sd">            |self.boxes[OBJECTNAME] = [(BOX_LENGTH, BOX_WIDTH, BOX_HEIGHT, BOX_THICKNESS),</span>
+<span class="sd">            | (NUMBER_ITEMS_X, NUMBER_ITEMS_Y, NUMBER_ITEMS_Z, ITEM_LENGTH, ITEM_WIDTH, ITEM_HEIGHT, GRIPPING_DEPTH),</span>
+<span class="sd">            | (OUTSIDE_GRIP?,[FIRST_ITEM_OFFSET_ORIGIN_X,FIRST_ITEM_OFFSET_ORIGIN_Y,FIRST_ITEM_OFFSET_ORIGIN_Z],</span>
+<span class="sd">            | [GRIP_ORIENTATION_X,GRIP_ORIENTATION_Y,GRIP_ORIENTATION_Z,GRIP_ORIENTATION_W],</span>
+<span class="sd">            | [ITEM2ITEM_OFFSET_X, ITEM2ITEM_OFFSET_Y, ITEM2ITEM_OFFSET_Z])</span>
+<span class="sd">            </span>
+<span class="sd">            .. note:: In this version the gripping point of the object cannot be defined explicitly. </span>
+<span class="sd">                It can be defined by the offset from the origin but this also shifts the center of the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">moveit_commander</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">moveit_commander</span><span class="o">.</span><span class="n">PlanningSceneInterface</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_pub_co</span><span class="o">.</span><span class="n">get_num_connections</span><span class="p">()</span><span class="o">&lt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c">#name: (box_length, box_width,box_height,box_thickness),(num_items_x, num_items_y, num_items_z,_item_length, item_width, item_height,item_grip_depth)</span>
+        <span class="c"># (outside_grip, position[x,y,z], orientation[x,y,z,w],offset[x,y,z])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span> <span class="o">=</span> <span class="p">{</span>
+                      <span class="s">&#39;tray&#39;</span><span class="p">:[(</span><span class="mf">0.167</span><span class="p">,</span><span class="mf">0.325</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="mf">0.01</span><span class="p">),{</span><span class="s">&#39;drop_off_goblet_blue&#39;</span><span class="p">:[</span><span class="mf">0.167</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="o">-</span><span class="mf">0.03</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;drop_off_goblet_red&#39;</span><span class="p">:[</span><span class="mf">0.167</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mf">0.02</span><span class="p">,</span><span class="mf">0.19</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;drop_off_item_tray&#39;</span><span class="p">:[</span><span class="mf">0.167</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mf">0.005</span><span class="p">,</span><span class="mf">0.115</span><span class="p">,</span><span class="mf">0.02</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]}],</span>
+                      <span class="s">&#39;table&#39;</span><span class="p">:[(</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mf">0.4</span><span class="p">),{</span><span class="s">&#39;item_tray&#39;</span><span class="p">:[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.06</span><span class="o">+</span><span class="mf">0.01</span><span class="o">*</span><span class="mi">12</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="s">&#39;goblet_red&#39;</span><span class="p">:[</span><span class="mf">0.53</span><span class="p">,</span><span class="mf">0.13</span><span class="p">,</span><span class="mf">0.058</span><span class="o">+</span><span class="mf">0.00375</span><span class="o">*</span><span class="mi">12</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="s">&#39;goblet_blue&#39;</span><span class="p">:[</span><span class="mf">0.3</span><span class="o">+</span><span class="mf">0.167</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.105</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.7</span><span class="p">]}],</span>
+                      <span class="s">&#39;item_tray&#39;</span><span class="p">:[(</span><span class="mf">0.167</span><span class="p">,</span><span class="mf">0.325</span><span class="p">,</span><span class="mf">0.06</span><span class="o">+</span><span class="mi">12</span><span class="o">*</span><span class="mf">0.01</span><span class="p">,</span><span class="mf">0.001</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mf">0.167</span><span class="p">,</span><span class="mf">0.325</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="mf">0.05</span><span class="p">),(</span><span class="mi">1</span><span class="p">,[</span><span class="mf">0.167</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.115</span><span class="p">,</span><span class="o">-</span><span class="mf">0.00</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.01</span><span class="p">])],</span>
+                      <span class="s">&#39;goblet_red&#39;</span><span class="p">:[(</span><span class="mf">0.112</span><span class="p">,</span><span class="mf">0.112</span><span class="p">,</span><span class="mf">0.058</span><span class="o">+</span><span class="mf">0.00375</span><span class="o">*</span><span class="mi">12</span><span class="p">,</span><span class="mf">0.012</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mf">0.112</span><span class="p">,</span><span class="mf">0.112</span><span class="p">,</span><span class="mf">0.058</span><span class="p">,</span><span class="mf">0.055</span><span class="p">),(</span><span class="mi">0</span><span class="p">,[</span><span class="mf">0.112</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.112</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.00375</span><span class="p">])],</span>
+                      <span class="s">&#39;goblet_blue&#39;</span><span class="p">:[(</span><span class="mf">0.24</span><span class="p">,</span><span class="mf">0.17</span><span class="p">,</span><span class="mf">0.105</span><span class="p">,</span><span class="mf">0.001</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.072</span><span class="p">,</span><span class="mf">0.065</span><span class="p">,</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.02</span><span class="p">),(</span><span class="mi">0</span><span class="p">,[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">,</span><span class="o">-</span><span class="mf">0.05</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.01</span><span class="p">])],</span>
+                      <span class="s">&#39;wako&#39;</span><span class="p">:</span>       <span class="p">[(</span><span class="mf">0.565</span><span class="p">,</span><span class="mf">0.295</span><span class="p">,</span><span class="mf">0.21</span><span class="p">,</span><span class="mf">0.005</span><span class="p">),</span>   <span class="p">{</span><span class="s">&#39;drop_off_cover_small&#39;</span><span class="p">:[</span><span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.045</span><span class="p">,</span><span class="o">-</span><span class="mf">0.701</span><span class="p">,</span> <span class="mf">0.713</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">,</span> <span class="mf">0.010</span><span class="p">],</span><span class="s">&#39;drop_off_switch&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.339</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span><span class="mf">0.02</span> <span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;drop_off_cover_door&#39;</span><span class="p">:[</span><span class="mf">0.46</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.00</span><span class="p">,</span><span class="mf">1.000</span><span class="p">,</span> <span class="mf">0.024</span><span class="p">,</span> <span class="mf">0.004</span><span class="p">,</span> <span class="mf">0.019</span><span class="p">]}],</span><span class="c">#&#39;drop_off_cover_door&#39;:[0.304, 0.262, 0.055,1.000, 0.024, 0.004, 0.019]}],</span>
+                      <span class="s">&#39;switch&#39;</span><span class="p">:</span>     <span class="p">[(</span><span class="mf">0.593</span><span class="p">,</span><span class="mf">0.395</span><span class="p">,</span><span class="mf">0.28</span><span class="p">,</span><span class="mf">0.015</span><span class="p">),(</span><span class="mi">7</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.063</span><span class="p">,</span><span class="mf">0.063</span><span class="p">,</span><span class="mf">0.09</span><span class="p">,</span><span class="mf">0.013</span><span class="p">),(</span><span class="mi">1</span><span class="p">,[</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.073</span><span class="p">,</span><span class="o">-</span><span class="mf">0.03</span><span class="p">],[</span><span class="mf">0.986</span><span class="p">,</span><span class="o">-</span><span class="mf">0.16</span><span class="p">,</span><span class="mf">0.017</span><span class="p">,</span><span class="mf">0.003</span><span class="p">],[</span><span class="mf">0.069</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="o">-</span><span class="mf">0.085</span><span class="p">])],</span>
+                      <span class="s">&#39;cover_small&#39;</span><span class="p">:[(</span><span class="mf">0.59</span><span class="p">,</span><span class="mf">0.39</span><span class="p">,</span><span class="mf">0.09</span><span class="p">,</span><span class="mf">0.015</span><span class="p">),</span>  <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.07</span><span class="p">,</span><span class="mf">0.030</span><span class="p">),(</span><span class="mi">0</span><span class="p">,[</span><span class="mf">0.107</span><span class="p">,</span><span class="mf">0.060</span><span class="p">,</span><span class="o">-</span><span class="mf">0.015</span><span class="p">],[</span><span class="mf">1.000</span><span class="p">,</span> <span class="mf">0.027</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">,</span> <span class="mf">0.000</span><span class="p">],[</span><span class="mf">0.129</span><span class="p">,</span><span class="mf">0.081666</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])],</span>
+                      <span class="s">&#39;cover_door&#39;</span><span class="p">:[(</span><span class="mf">0.59</span><span class="p">,</span><span class="mf">0.39</span><span class="p">,</span><span class="mf">0.085</span><span class="p">,</span><span class="mf">0.02</span><span class="p">),</span>  <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.052</span><span class="p">,</span><span class="mf">0.05</span><span class="p">),(</span><span class="mi">1</span><span class="p">,[</span><span class="mf">0.12</span><span class="p">,</span><span class="mf">0.065</span><span class="p">,</span><span class="o">-</span><span class="mf">0.01</span><span class="p">],[</span><span class="mf">1.000</span><span class="p">,</span> <span class="mf">0.024</span><span class="p">,</span> <span class="mf">0.004</span><span class="p">,</span> <span class="mf">0.019</span><span class="p">],[</span><span class="mf">0.13</span><span class="p">,</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])],</span>
+                      <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanUp</span><span class="p">()</span>
+<span class="c">#         self.makeTables()</span>
+<span class="c">#         self.gripperLength={&#39;left&#39;:0.125,&#39;right&#39;:0.125} # short grippers</span>
+<span class="c">#         self.gripperLength={&#39;left&#39;:0.162,&#39;right&#39;:0.162} #long grippers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;left&#39;</span><span class="p">:</span><span class="mf">0.11</span><span class="p">,</span><span class="s">&#39;right&#39;</span><span class="p">:</span><span class="mf">0.125</span><span class="p">}</span> <span class="c"># left vac gripper ; right short elec gripper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gripperOffset</span> <span class="o">=</span> <span class="mf">0.045</span>
+<span class="c">#         self.attachGrippers()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_object</span> <span class="o">=</span><span class="p">{</span><span class="s">&#39;left&#39;</span><span class="p">:</span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="s">&#39;right&#39;</span><span class="p">:</span><span class="s">&quot;&quot;</span><span class="p">}</span>
+       
+<div class="viewcode-block" id="BaxterScene.otherSide"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.otherSide">[docs]</a>    <span class="k">def</span> <span class="nf">otherSide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Return the name of the other arm</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: One name of an arm</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :return: Name of the other arm</span>
+<span class="sd">            :rtype: str    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">side</span><span class="o">==</span><span class="s">&#39;left&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;right&#39;</span>
+        <span class="k">elif</span> <span class="n">side</span><span class="o">==</span><span class="s">&#39;right&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;left&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;unknown request: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>   
+     </div>
+<div class="viewcode-block" id="BaxterScene.attachGripper"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.attachGripper">[docs]</a>    <span class="k">def</span> <span class="nf">attachGripper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="nb">type</span><span class="p">,</span><span class="n">opened</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Add grippers objects in the virtual scene to include them in collision free planing</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: Side where the gripper should be attached</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param type: The gripper type [&quot;electric&quot; or &quot;suction&quot;]</span>
+<span class="sd">            :type type: str</span>
+<span class="sd">            :param opened: Should the gripped be added opened?</span>
+<span class="sd">            :type opened: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">otherSide</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">otherSide</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>            
+        <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span> 
+        <span class="k">if</span> <span class="n">opened</span><span class="p">:</span>
+            <span class="n">opening</span> <span class="o">=</span> <span class="mf">0.027</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opening</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="n">touch_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">otherSide</span><span class="o">+</span><span class="s">&quot;_electric_gripper_box&quot;</span><span class="p">,</span><span class="n">otherSide</span><span class="o">+</span><span class="s">&quot;_suction_gripper_box&quot;</span><span class="p">,</span><span class="s">&quot;pedestal&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper&quot;</span><span class="p">,</span>
+                       <span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_camera&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_range&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_wrist&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s">&quot;electric&quot;</span><span class="p">:</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">opening</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attachCylinder</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span> <span class="nb">type</span><span class="o">+</span><span class="s">&quot;_gripper_box1&quot;</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">],</span><span class="mf">0.01</span><span class="p">),</span><span class="n">touch_links</span><span class="p">)</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="n">opening</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attachCylinder</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s">&quot;_gripper_box2&quot;</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">],</span><span class="mf">0.01</span><span class="p">),</span><span class="n">touch_links</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s">&quot;suction&quot;</span><span class="p">:</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attachCylinder</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="p">,</span> <span class="n">side</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s">&quot;_gripper_box&quot;</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">pose</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">],</span><span class="mf">0.0075</span><span class="p">),</span><span class="n">touch_links</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+</div>
+<div class="viewcode-block" id="BaxterScene.cleanUp"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.cleanUp">[docs]</a>    <span class="k">def</span> <span class="nf">cleanUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes old grippers, tables and known boxes at startup</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_attached_object</span><span class="p">(</span><span class="s">&quot;right_gripper_base&quot;</span><span class="p">,</span><span class="s">&quot;right_electric_gripper_box&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_attached_object</span><span class="p">(</span><span class="s">&quot;left_gripper_base&quot;</span><span class="p">,</span><span class="s">&quot;left_suction_gripper_box&quot;</span><span class="p">)</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">removeTables</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">removeBox</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+<span class="c">#         rospy.sleep(0.1)</span>
+<span class="c">#         self.scene.remove_world_object(&quot;right_elec_gripper_box&quot;)</span>
+<span class="c">#         self.scene.remove_world_object(&quot;left_suction_gripper_box&quot;)</span>
+        
+    </div>
+<div class="viewcode-block" id="BaxterScene.createPredefinedBox"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.createPredefinedBox">[docs]</a>    <span class="k">def</span> <span class="nf">createPredefinedBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Inserts a pre defined box into the scene and adds the items in the box</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: The reference system</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param box: The box to be inserted</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;item_tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;goblet_red&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="p">:</span><span class="c"># dont make a box for these items</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">makeBox</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="c">#         if name==&quot;wako&quot;:</span>
+<span class="c">#             self.makeBox(name+&quot;2&quot;,self.boxes[box][0],(0,self.boxes[box][0][1],0))</span>
+<span class="c">#             self.makeBox(name+&quot;3&quot;,self.boxes[box][0],(0,-self.boxes[box][0][1],0))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;table&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wako&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span> <span class="p">):</span> <span class="c"># dont create items for these</span>
+<span class="c">#                 print &quot;creating items&quot;</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">createItems2</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">box</span><span class="p">)</span>
+            
+       </div>
+<div class="viewcode-block" id="BaxterScene.numItems"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.numItems">[docs]</a>    <span class="k">def</span> <span class="nf">numItems</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the amount of items in a box</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the pre defined box</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :return: The amount of items</span>
+<span class="sd">            :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         return 3</span>
+        <span class="k">return</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        
+             </div>
+<div class="viewcode-block" id="BaxterScene.ind2sub"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.ind2sub">[docs]</a>    <span class="k">def</span> <span class="nf">ind2sub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the subscripts for an item in the box</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the box</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param item: index of the item</span>
+<span class="sd">            :type item: int</span>
+<span class="sd">            :return: The subscripts as x,y,z</span>
+<span class="sd">            :rtype: [int,int,int] </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">item</span><span class="o">%</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">%</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">item</span><span class="o">%</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">/</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="o">/</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span>
+        
+                    
+    <span class="c"># items are distributed as messured, also used to grasp them</span></div>
+<div class="viewcode-block" id="BaxterScene.createItems2"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.createItems2">[docs]</a>    <span class="k">def</span> <span class="nf">createItems2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">box</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            This function creates the items in a box</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: The reference system where the items should be created</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param box: The pre defined box name to know the dimensions of the items</span>
+<span class="sd">            :type box: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s">&quot;wako&quot;</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;table&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="p">[</span><span class="n">num_x</span><span class="p">,</span><span class="n">num_y</span><span class="p">,</span><span class="n">num_z</span><span class="p">,</span><span class="n">item_length</span><span class="p">,</span><span class="n">item_width</span><span class="p">,</span><span class="n">item_height</span><span class="p">,</span><span class="n">gripping_depth</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">[</span><span class="n">init_x</span><span class="p">,</span><span class="n">init_y</span><span class="p">,</span><span class="n">init_z</span><span class="p">]</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">[</span><span class="n">offset_x</span><span class="p">,</span><span class="n">offset_y</span><span class="p">,</span><span class="n">offset_z</span><span class="p">]</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;item_tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">init_x</span><span class="o">=</span><span class="n">item_length</span><span class="o">/</span><span class="mi">2</span>
+                <span class="n">init_y</span><span class="o">=</span><span class="n">item_width</span><span class="o">/</span><span class="mi">2</span>
+                <span class="n">init_z</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_z</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_y</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num_x</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;item_tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;goblet_red&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+                            <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span><span class="n">item_length</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">y</span><span class="o">-</span><span class="n">item_width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">makeBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">),(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">4</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">5</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]),</span><span class="n">offset</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+        
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># create wako internal box</span>
+            <span class="p">[</span><span class="n">length</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">,</span><span class="n">thickness</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="nb">id</span><span class="o">=</span><span class="mi">0</span>
+            <span class="n">cur_thickness</span><span class="o">=</span><span class="mf">0.000</span>
+            <span class="n">cur_height</span> <span class="o">=</span> <span class="mf">0.26</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_in_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">name</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="n">height</span><span class="o">+</span><span class="p">(</span><span class="n">height</span><span class="o">-</span><span class="mf">0.07</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">length</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="o">-</span><span class="mf">0.07</span><span class="p">)</span>
+            <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_in_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">name</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.16</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.15</span><span class="p">,</span><span class="mf">0.008</span><span class="p">,</span><span class="mf">0.07</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+
+            
+        </div>
+<div class="viewcode-block" id="BaxterScene.removeItems"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.removeItems">[docs]</a>    <span class="k">def</span> <span class="nf">removeItems</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes all items of a reference frame</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Reference frame</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">name</span><span class="o">==</span><span class="s">&quot;wako&quot;</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;table&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">removeBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_in_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+            
+</div>
+<div class="viewcode-block" id="BaxterScene.makeTables"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.makeTables">[docs]</a>    <span class="k">def</span> <span class="nf">makeTables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scenario</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates tables around the robot to the corresponding scenario</span>
+<span class="sd">            </span>
+<span class="sd">            :param scenario: The target scenario</span>
+<span class="sd">            :type scenario: str </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="s">&quot;base&quot;</span>
+        <span class="c">#base is at 0.92 from ground</span>
+        <span class="c">#base offset around 0.06</span>
+        <span class="n">table_height_ground</span> <span class="o">=</span> <span class="mf">0.767</span>
+        
+        <span class="k">if</span> <span class="n">scenario</span> <span class="o">==</span> <span class="s">&quot;scenarioConsignment2&quot;</span><span class="p">:</span>
+            <span class="n">conveyor_belt</span> <span class="o">=</span> <span class="mf">0.63</span>
+            <span class="n">robot_base_height_ground</span> <span class="o">=</span> <span class="mf">0.92</span><span class="o">+</span><span class="mf">0.06</span>
+            <span class="n">table_height_base</span> <span class="o">=</span> <span class="n">table_height_ground</span> <span class="o">-</span> <span class="n">robot_base_height_ground</span>
+            <span class="n">conveyor_height_base</span> <span class="o">=</span> <span class="n">conveyor_belt</span> <span class="o">-</span> <span class="n">robot_base_height_ground</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="s">&quot;front_table&quot;</span><span class="p">,</span><span class="n">reference</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="n">conveyor_height_base</span><span class="o">-</span><span class="p">(</span><span class="n">conveyor_belt</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">1.2</span><span class="p">,</span><span class="n">conveyor_belt</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="s">&quot;front_table_left&quot;</span><span class="p">,</span><span class="n">reference</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.6</span><span class="o">-</span><span class="mf">0.03</span><span class="p">,</span><span class="n">conveyor_height_base</span><span class="o">+</span><span class="mf">0.08</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.06</span><span class="p">,</span><span class="mf">0.16</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scenario</span> <span class="o">==</span> <span class="s">&quot;scenarioConsignment&quot;</span><span class="p">:</span>
+            <span class="n">conveyor_belt</span> <span class="o">=</span> <span class="mf">0.67</span>
+            <span class="n">robot_base_height_ground</span> <span class="o">=</span> <span class="mf">0.92</span><span class="o">+</span><span class="mf">0.06</span>
+            <span class="n">table_height_base</span> <span class="o">=</span> <span class="n">table_height_ground</span> <span class="o">-</span> <span class="n">robot_base_height_ground</span>
+            <span class="n">conveyor_height_base</span> <span class="o">=</span> <span class="n">conveyor_belt</span> <span class="o">-</span> <span class="n">robot_base_height_ground</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="s">&quot;front_table&quot;</span><span class="p">,</span><span class="n">reference</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="n">conveyor_height_base</span><span class="p">,</span><span class="mf">0.75</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mf">0.035</span><span class="p">)</span>
+        <span class="c">#~ self.addSubBox(&quot;left_table&quot;,reference,-0.3,0.9,table_height_base,1.4,0.55,0.02)</span>
+<span class="c">#         self.addSubBox(&quot;right_table&quot;,reference,-0.3,-0.9,table_height_base,3.0,0.55,0.02)</span>
+        <span class="c">#~ self.addSubBox(&quot;wall&quot;,reference,-0.75,0,0,0.1,3,3) </span>
+        <span class="c">#self.addSubBox(&quot;rightwall&quot;,reference,-0.3,-1.2,-robot_base_height_ground+1.31/2,0.6,0.01,1.31)</span>
+        </div>
+<div class="viewcode-block" id="BaxterScene.removeTables"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.removeTables">[docs]</a>    <span class="k">def</span> <span class="nf">removeTables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes the tables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         self.scene.remove_world_object(&quot;left_table&quot;)</span>
+<span class="c">#         self.scene.remove_world_object(&quot;right_table&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="s">&quot;front_table&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="s">&quot;front_table_left&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaxterScene.makeBox"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.makeBox">[docs]</a>    <span class="k">def</span> <span class="nf">makeBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">dimension</span><span class="o">=</span><span class="p">(</span><span class="mf">0.828</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.33</span><span class="p">,</span><span class="mf">0.02</span><span class="p">),</span><span class="n">offset</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">reference</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates a new and empty box without a top cover</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the new box. If the reference frame is not defined, the name is also used as reference frame</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param dimension:  Size of the box (length, width, height, thickness)</span>
+<span class="sd">            :type dimension: (float,float,float,float)</span>
+<span class="sd">            :param offset: The offset from the origin of the frame (x_offset,y_offset,z_offset)</span>
+<span class="sd">            :type offset: (float,float,float)</span>
+<span class="sd">            :param reference: The reference frame where the box should be attached</span>
+<span class="sd">            :type reference: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reference</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">reference</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">dimension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">dimension</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">dimension</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">thickness</span> <span class="o">=</span> <span class="n">dimension</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>   
+            
+        <span class="c">#baseplate</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;item_tray&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;goblet_red&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;goblet_blue&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;cover_door&quot;</span><span class="p">):</span>
+<span class="c">#                 self.addSubBox(name+&quot;_&quot;+str(id),reference,length/2+offset[0],width/2+offset[1],thickness/2-height+offset[2],length,width,0.001)</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">thickness</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">height</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">length</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">thickness</span><span class="p">)</span>
+            <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="c">#left side        </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">thickness</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">length</span><span class="p">,</span><span class="n">thickness</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+        <span class="c">#right side</span>
+        <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">width</span><span class="o">-</span><span class="n">thickness</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">length</span><span class="p">,</span><span class="n">thickness</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+        <span class="c">#front side</span>
+        <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">thickness</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">thickness</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+        <span class="c">#back side</span>
+        <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">-</span><span class="n">thickness</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">thickness</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+        
+<span class="c">#         if name.find(&quot;tray&quot;) != -1:</span>
+<span class="c">#             id+=1</span>
+<span class="c">#             self.addSubBox(name+&quot;_&quot;+str(id),reference,length/2,0.213,-height+(0.045)/2,length,0.01,0.045)</span>
+        
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;wako&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="c">#grundfuellung</span>
+<span class="c">#             id+=1</span>
+<span class="c">#             self.addSubBox(name+&quot;_&quot;+str(id),reference,length/2+offset[0],width/2+offset[1],-height+(height-0.07)/2+offset[2],length,width,height-0.07)</span>
+            <span class="c">#griff</span>
+            <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mf">0.16</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">0</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="mf">0.15</span><span class="p">,</span><span class="mf">0.008</span><span class="p">,</span><span class="mf">0.08</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+            <span class="c">#unbenutzer grosse luefterablage</span>
+<span class="c">#             id+=1</span>
+<span class="c">#             self.addSubBox(name+&quot;_&quot;+str(id),reference,length-0.18/2+offset[0],width/2-0.055/2+offset[1],-height/2+offset[2],0.18,width-0.055,height)</span>
+            <span class="c">#mittelsteg</span>
+            <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="n">length</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mf">0.16</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">length</span><span class="p">,</span><span class="mf">0.008</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+            <span class="c">#steg zwischen lds und lds blende</span>
+            <span class="nb">id</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addSubBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">reference</span><span class="p">,</span><span class="mf">0.17</span><span class="o">+</span><span class="mf">0.12</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mf">0.135</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="o">-</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="n">offset</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="mf">0.12</span><span class="p">,</span><span class="mf">0.135</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+              </div>
+<div class="viewcode-block" id="BaxterScene.addSubBox"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.addSubBox">[docs]</a>    <span class="k">def</span> <span class="nf">addSubBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">reference</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">length</span><span class="p">,</span><span class="n">thickness</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates one element of a box</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+        <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
+        <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="n">reference</span>
+        
+<span class="c">#         print &quot;adding&quot;,name, &quot;with reference&quot;,reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_box</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="n">width</span><span class="p">,</span><span class="n">length</span><span class="p">,</span><span class="n">thickness</span><span class="p">))</span>
+        
+<span class="c">#     def addSubCylinder(self,name,reference,x,y,z,height,radius):</span>
+<span class="c">#         &quot;&quot;&quot;</span>
+<span class="c">#             Create one element of a cylinder</span>
+<span class="c">#         &quot;&quot;&quot;</span>
+<span class="c">#         pose = PoseStamped()</span>
+<span class="c">#         pose.pose.position = Point(*[x,y,z])</span>
+<span class="c">#         pose.pose.orientation = Quaternion(*[0.0,0.0,0.0,1])</span>
+<span class="c">#         pose.header.frame_id = reference</span>
+<span class="c">#         self.addCylinder(name,pose,(height,radius))</span>
+    </div>
+<div class="viewcode-block" id="BaxterScene.removeBox"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.removeBox">[docs]</a>    <span class="k">def</span> <span class="nf">removeBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes a box</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the box to be removed</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">box_parts</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">box_parts</span><span class="p">):</span>
+<span class="c">#             print &quot;removing&quot;,name+&quot;_&quot;+str(i)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            
+<span class="c">#         self.removeItems(name)</span>
+    
+    </div>
+<div class="viewcode-block" id="BaxterScene.removeItem"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.removeItem">[docs]</a>    <span class="k">def</span> <span class="nf">removeItem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">item</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes a specific item</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the box that contains the item</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param item: Index of the item</span>
+<span class="sd">            :type item: int</span>
+<span class="sd">            :param side: The side where the item is located</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c">#         print &quot;removing item&quot;,name,item</span>
+<span class="c">#         if name in self.boxes.keys():</span>
+<span class="c">#         items = self.boxes[name][1]</span>
+        <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ind2sub</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>                    
+        <span class="bp">self</span><span class="o">.</span><span class="n">removeBox</span><span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="BaxterScene.pickUp"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.pickUp">[docs]</a>    <span class="k">def</span> <span class="nf">pickUp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">item</span><span class="p">,</span><span class="n">grip_side</span><span class="o">=</span><span class="s">&quot;top&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Removes an item of the scene and adds it to the gripper</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side and gripper where the item should be picked</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param name: Name of the box that contains the item</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param item: Index of the item</span>
+<span class="sd">            :type item: int</span>
+<span class="sd">            :param grip_side: Where the item should be gripped [&quot;top&quot; or &quot;side&quot;]</span>
+<span class="sd">            :type grip_side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_object</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot; gripper seems not to be empty!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ind2sub</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+            <span class="c">#self.scene.remove_world_object(name+&quot;_item_&quot;+str(x)+&quot;_&quot;+str(y)+&quot;_&quot;+str(z))</span>
+            <span class="c">#print &quot;removing object from&quot;,name</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span>
+            <span class="nb">object</span> <span class="o">=</span> <span class="n">name</span><span class="o">+</span><span class="s">&quot;_item_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">))</span><span class="o">+</span><span class="s">&quot;_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cur_object</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">=</span> <span class="nb">object</span>
+            <span class="n">touch_links</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;right_elec_gripper_box&quot;</span><span class="p">,</span><span class="s">&quot;left_suction_gripper_box&quot;</span><span class="p">,</span><span class="s">&quot;pedestal&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_camera&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand_range&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_hand&quot;</span><span class="p">,</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_wrist&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">==</span><span class="s">&quot;switch&quot;</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;goblet&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">grip_side</span><span class="o">==</span><span class="s">&quot;side&quot;</span><span class="p">:</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">+</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">attachCylinder</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="nb">object</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">touch_links</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">grip_side</span><span class="o">==</span><span class="s">&quot;top&quot;</span><span class="p">:</span> 
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">-</span> <span class="n">items</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">attachCylinder</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="nb">object</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">touch_links</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;This grip side is not implemented&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">grip_side</span><span class="o">==</span><span class="s">&quot;side&quot;</span><span class="p">:</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">-</span> <span class="n">items</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.7</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.7</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">attach_box</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="nb">object</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span><span class="n">touch_links</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">grip_side</span><span class="o">==</span><span class="s">&quot;top&quot;</span><span class="p">:</span>
+
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gripperLength</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">-</span> <span class="n">items</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">1.000</span><span class="p">,</span> <span class="mf">0.021</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">,</span> <span class="mf">0.020</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">attach_box</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="nb">object</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span><span class="n">touch_links</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;This grip side is not implemented&quot;</span><span class="p">)</span>
+        
+    </div>
+<div class="viewcode-block" id="BaxterScene.release"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Releases and object from the gripper</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side of the gripper that should be released</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_object</span><span class="p">[</span><span class="n">side</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">object</span><span class="o">!=</span><span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_attached_object</span><span class="p">(</span><span class="n">side</span><span class="o">+</span><span class="s">&quot;_gripper_base&quot;</span><span class="p">,</span><span class="nb">object</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_world_object</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_object</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    
+<span class="c">#     def release_old(self,side,name,item):</span>
+<span class="c">#         if name in self.boxes.keys():</span>
+<span class="c">#             items = self.boxes[name][1]</span>
+<span class="c">#             [x,y,z] = self.ind2sub(name, item)</span>
+<span class="c">#             self.scene.remove_attached_object(side+&quot;_gripper_base&quot;,name+&quot;_item_&quot;+str(int(x))+&quot;_&quot;+str(int(y))+&quot;_&quot;+str(int(z)))</span>
+<span class="c">#             rospy.sleep(0.1)</span>
+<span class="c">#             self.scene.remove_world_object(name+&quot;_item_&quot;+str(int(x))+&quot;_&quot;+str(int(y))+&quot;_&quot;+str(int(z)))</span>
+<span class="c">#             </span></div>
+    <span class="k">def</span> <span class="nf">__make_cylinder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">pose</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        
+        <span class="n">co</span> <span class="o">=</span> <span class="n">CollisionObject</span><span class="p">()</span>
+        <span class="n">co</span><span class="o">.</span><span class="n">operation</span> <span class="o">=</span> <span class="n">CollisionObject</span><span class="o">.</span><span class="n">ADD</span>
+        <span class="n">co</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">co</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">pose</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">cyl</span> <span class="o">=</span> <span class="n">SolidPrimitive</span><span class="p">()</span>
+        <span class="n">cyl</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">SolidPrimitive</span><span class="o">.</span><span class="n">CYLINDER</span>
+        <span class="n">cyl</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">co</span><span class="o">.</span><span class="n">primitives</span> <span class="o">=</span> <span class="p">[</span><span class="n">cyl</span><span class="p">]</span>
+        <span class="n">co</span><span class="o">.</span><span class="n">primitive_poses</span> <span class="o">=</span> <span class="p">[</span><span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">co</span>
+    
+<div class="viewcode-block" id="BaxterScene.addCylinder"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.addCylinder">[docs]</a>    <span class="k">def</span> <span class="nf">addCylinder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds a cylinder to the current scene</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the new cylinder object</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param pose: Pose of the new object</span>
+<span class="sd">            :type pose: geometry_msgs.msg.PoseStamped</span>
+<span class="sd">            :param size: Dimensions of the new object (height[m],radius[m])</span>
+<span class="sd">            :type size: (float, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#size: height, radius</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_pub_co</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_cylinder</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">size</span><span class="p">))</span>
+        </div>
+<div class="viewcode-block" id="BaxterScene.attachCylinder"><a class="viewcode-back" href="../baxter_scene.html#baxter_scene.BaxterScene.attachCylinder">[docs]</a>    <span class="k">def</span> <span class="nf">attachCylinder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">link</span><span class="p">,</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">touch_links</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Attaches a cylinder to a gripper</span>
+<span class="sd">            </span>
+<span class="sd">            :param name: Name of the new cylinder object</span>
+<span class="sd">            :type name: str</span>
+<span class="sd">            :param pose: Pose of the new object</span>
+<span class="sd">            :type pose: geometry_msgs.msg.PoseStamped</span>
+<span class="sd">            :param size: Dimensions of the new object (height[m],radius[m])</span>
+<span class="sd">            :type size: (float, float)</span>
+<span class="sd">            :param touch_links: links that are already in collision with the attached object (added links do not trigger a collision)</span>
+<span class="sd">            :type touch_links: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print &quot;attach object with name&quot;, name</span>
+        <span class="c">#print &quot;touch links&quot;,touch_links</span>
+        <span class="n">aco</span> <span class="o">=</span> <span class="n">AttachedCollisionObject</span><span class="p">()</span>
+        <span class="n">aco</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__make_cylinder</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pose</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="n">aco</span><span class="o">.</span><span class="n">link_name</span> <span class="o">=</span> <span class="n">link</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">touch_links</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">aco</span><span class="o">.</span><span class="n">touch_links</span> <span class="o">=</span> <span class="n">touch_links</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">aco</span><span class="o">.</span><span class="n">touch_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">link</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_pub_aco</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">aco</span><span class="p">)</span>
+        
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>  
+    <span class="kn">import</span> <span class="nn">moveit_commander</span>
+    <span class="k">def</span> <span class="nf">removeLaunchArgs</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>    
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">args</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;__name:=&quot;</span><span class="p">)]</span>
+    
+    <span class="n">moveit_commander</span><span class="o">.</span><span class="n">roscpp_initialize</span><span class="p">(</span><span class="n">removeLaunchArgs</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">))</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s">&#39;baxterSceneDemo&#39;</span><span class="p">,</span><span class="n">anonymous</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">moveit_commander</span><span class="o">.</span><span class="n">PlanningSceneInterface</span><span class="p">()</span>
+    <span class="c">#rospy.sleep(1)</span>
+    <span class="c">#bs = BaxterScene(scene)</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+    <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s">&quot;right_gripper&quot;</span>
+    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.02</span><span class="p">])</span>
+    <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">scene</span><span class="o">.</span><span class="n">attach_box</span><span class="p">(</span><span class="s">&quot;right_gripper&quot;</span><span class="p">,</span><span class="s">&quot;my_attached_gripper&quot;</span><span class="p">,</span><span class="n">pose</span><span class="p">,(</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.04</span><span class="p">))</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">moveit_commander</span><span class="o">.</span><span class="n">roscpp_shutdown</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_helper_moveit_limb Module</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="index.html" />
+    <link rel="up" title="scripts" href="modules.html" />
+    <link rel="next" title="baxter_helper_simple_limb Module" href="baxter_helper_simple_limb.html" />
+    <link rel="prev" title="baxter_helper_menu Module" href="baxter_helper_menu.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_simple_limb.html" title="baxter_helper_simple_limb Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_menu.html" title="baxter_helper_menu Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">scripts</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-baxter_helper_moveit_limb">
+<span id="baxter-helper-moveit-limb-module"></span><h1>baxter_helper_moveit_limb Module<a class="headerlink" href="#module-baxter_helper_moveit_limb" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="baxter_helper_moveit_limb.MoveItHelper">
+<em class="property">class </em><tt class="descclassname">baxter_helper_moveit_limb.</tt><tt class="descname">MoveItHelper</tt><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItHelper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItHelper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt id="baxter_helper_moveit_limb.MoveItHelper.instance">
+<tt class="descname">instance</tt><em class="property"> = None</em><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItHelper.instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="baxter_helper_moveit_limb.MoveItLimb">
+<em class="property">class </em><tt class="descclassname">baxter_helper_moveit_limb.</tt><tt class="descname">MoveItLimb</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="baxter_helper_simple_limb.html#baxter_helper_simple_limb.SimpleLimb" title="baxter_helper_simple_limb.SimpleLimb"><tt class="xref py py-class docutils literal"><span class="pre">baxter_helper_simple_limb.SimpleLimb</span></tt></a>, <a class="reference internal" href="baxter_helper_abstract_limb.html#baxter_helper_abstract_limb.AbstractLimb" title="baxter_helper_abstract_limb.AbstractLimb"><tt class="xref py py-class docutils literal"><span class="pre">baxter_helper_abstract_limb.AbstractLimb</span></tt></a></p>
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.applyTrajectorySpeed">
+<tt class="descname">applyTrajectorySpeed</tt><big>(</big><em>traj</em>, <em>spd</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.applyTrajectorySpeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.applyTrajectorySpeed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.callback_trajectory_result">
+<tt class="descname">callback_trajectory_result</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.callback_trajectory_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.callback_trajectory_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>This callback function is invoked after a trajectory has been completed
+:param msg: The status and result published by the trajectory server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.cancel">
+<tt class="descname">cancel</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.cancel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.cleanupTrajectory">
+<tt class="descname">cleanupTrajectory</tt><big>(</big><em>traj</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.cleanupTrajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.cleanupTrajectory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.execute">
+<tt class="descname">execute</tt><big>(</big><em>traj</em>, <em>speed=1</em>, <em>joint_tolerance=0.008726646</em>, <em>speed_tolerance=0.03</em>, <em>timeout=15</em>, <em>path_tolerance=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.execute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.getAngles">
+<tt class="descname">getAngles</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.getAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.getAngles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.getAnglesFromPose">
+<tt class="descname">getAnglesFromPose</tt><big>(</big><em>pose</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.getAnglesFromPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.getAnglesFromPose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls inverse kinematics to obtain joint angles from a cartesian pose, return None if failed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.getMoveGroup">
+<tt class="descname">getMoveGroup</tt><big>(</big><em>side</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.getMoveGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.getMoveGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the MoveIt interface to control an arm
+:param side: The arm side (&#8220;left&#8221; or &#8220;right&#8221;)
+:return: Return the move group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.getPose">
+<tt class="descname">getPose</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.getPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.getPose" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.getPoseFromAngles">
+<tt class="descname">getPoseFromAngles</tt><big>(</big><em>angles</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.getPoseFromAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.getPoseFromAngles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.goToAngles">
+<tt class="descname">goToAngles</tt><big>(</big><em>angles</em>, <em>speed=1</em>, <em>joint_tolerance_plan=0.01</em>, <em>joint_tolerance=0.008726646</em>, <em>speed_tolerance=0.03</em>, <em>timeout=15</em>, <em>path_tolerance=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.goToAngles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.goToAngles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.goToAngles_plan">
+<tt class="descname">goToAngles_plan</tt><big>(</big><em>angles</em>, <em>joint_tolerance_plan=0.01</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.goToAngles_plan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.goToAngles_plan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.goToPose">
+<tt class="descname">goToPose</tt><big>(</big><em>pose</em>, <em>speed=1</em>, <em>position_tolerance=0.01</em>, <em>orientation_tolerance=0.01</em>, <em>joint_tolerance=0.008726646</em>, <em>speed_tolerance=0.03</em>, <em>timeout=15</em>, <em>cartesian=False</em>, <em>path_tolerance=0</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.goToPose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.goToPose" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.goToPose_plan">
+<tt class="descname">goToPose_plan</tt><big>(</big><em>pose</em>, <em>position_tolerance=0.01</em>, <em>orientation_tolerance=0.01</em>, <em>cartesian=False</em><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.goToPose_plan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.goToPose_plan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="baxter_helper_moveit_limb.MoveItLimb.moving">
+<tt class="descname">moving</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/baxter_helper_moveit_limb.html#MoveItLimb.moving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#baxter_helper_moveit_limb.MoveItLimb.moving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the robot is moving
+:return: Return True if something is moving on this side and False otherwise.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="baxter_helper_menu.html"
+                        title="previous chapter">baxter_helper_menu Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="baxter_helper_simple_limb.html"
+                        title="next chapter">baxter_helper_simple_limb Module</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_simple_limb.html" title="baxter_helper_simple_limb Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="baxter_helper_menu.html" title="baxter_helper_menu Module"
+             >previous</a> |</li>
+        <li><a href="index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="modules.html" >scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

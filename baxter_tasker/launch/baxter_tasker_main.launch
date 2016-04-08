@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="baxter_tasker" type="baxter_tasker_main.py" name="baxter_tasker_main" args="/joint_states:=/robot/joint_states" output="screen"/>
+</launch>

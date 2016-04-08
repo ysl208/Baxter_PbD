@@ -1,0 +1,544 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>baxter_tasker_main</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for baxter_tasker_main</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">Tkinter</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">tkSimpleDialog</span>
+<span class="kn">import</span> <span class="nn">tkFileDialog</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">baxter_helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">baxter_helper_tasker</span>
+
+<span class="kn">import</span> <span class="nn">python_text</span>
+<span class="n">DEFAULT_EXTENSION</span><span class="o">=</span><span class="s">&quot;.task.py&quot;</span>
+ 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main class for the baxter tasker that creates the GUI and objects for the robot.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MainWindow"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow">[docs]</a><span class="k">class</span> <span class="nc">MainWindow</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The main window for baxter tasker. It links the buttons on the robot and the GUI to their corresponding behaviors.</span>
+<span class="sd">        </span>
+<span class="sd">        :param master: Handle to the Tkinter object</span>
+<span class="sd">        :type master: Tk</span>
+<span class="sd">        :param tasker: Handle to the task management. Contains also the robot object that can be accessed in the GUI</span>
+<span class="sd">        :type tasker: baxter_helper_tasker.Tasker</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">master</span><span class="p">,</span><span class="n">tasker</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">=</span><span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">=</span><span class="n">tasker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">=</span><span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">=</span><span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildMenu</span><span class="p">(</span><span class="n">master</span><span class="p">)</span>
+        <span class="c">#~ self.frame = Frame(master, width= self.width, height= self.height)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;&lt;Key-Escape&gt;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">loadMenuManager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span> <span class="o">=</span> <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">mm</span>
+        <span class="k">if</span> <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">loadBehaviors</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bb</span> <span class="o">=</span> <span class="n">tasker</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">bb</span>
+        <span class="n">bs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">bs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">addMainWindow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">appendToTask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">addAllMenus</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">)</span>
+        <span class="c">#self.position=0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="o">=</span><span class="bp">None</span>
+        <span class="c">#~ Button(self.frame,text=&quot;Refresh&quot;,command=self.refresh).grid(row=0,column=0)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Add Task&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">addTask</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Execute Task&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">executeTask</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Enable/Disable Robot&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">toggleMotorState</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Back Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Confirm Right Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Confirm Left Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Turn Wheel&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cycleMode</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Round Cuff Right Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">posButton</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Round Cuff Left Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">posButton</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Oval Cuff Right Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripButton</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Oval Cuff Left Button&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripButton</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Set HR Logo&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">setHRLogo</span><span class="p">(</span><span class="o">**</span><span class="p">{})))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Create MoveIt URDF&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">uc</span><span class="o">.</span><span class="n">createMoveItURDF</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;STOP&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Continue&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">(</span><span class="bp">False</span><span class="p">)))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Go to Init&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">goToInit</span><span class="p">(</span><span class="o">**</span><span class="p">{})))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Generate Plans&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">generateAllPlans</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Run Scenarios&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="p">{})))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Switch 1&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnPickItem</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Switch 2&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnDropOff</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Cover Small&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnCoverSmall</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Cover Door&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnCoverDoor</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Tray&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnTray</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Goblet Blue&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnGobletBlue</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test Goblet Red&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">bs</span><span class="o">.</span><span class="n">btnGobletRed</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Toggle Sonar&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">btnToggleSonar</span><span class="p">()))</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+         
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span> <span class="o">=</span> <span class="n">Listbox</span><span class="p">(</span><span class="n">master</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">rowspan</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;&lt;&lt;ListboxSelect&gt;&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectTask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;&lt;Delete&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleteTask</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">=</span><span class="n">python_text</span><span class="o">.</span><span class="n">PythonText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">rowspan</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;&lt;KeyRelease&gt;&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">updateTask</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;right_upper_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripButton</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;left_upper_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripButton</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;right_lower_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">posButton</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;left_lower_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">posButton</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span> <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;left_shoulder_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">toggleMotorState</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;right_shoulder_button&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">toggleMotorState</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedShow</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">home</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedShow</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">home</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">))</span>
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedOk</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedOk</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedCancel</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedCancel</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">back</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">))</span>         
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;torso_left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedCancel</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;torso_right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedCancel</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;torso_left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedOk</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;torso_right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackOnPressedOk</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb</span><span class="o">.</span><span class="n">changeExecutionState</span><span class="p">(</span><span class="bp">False</span><span class="p">))</span>
+       
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;left&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;right&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackWheel</span><span class="p">(</span><span class="k">lambda</span> <span class="n">newstate</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wheel</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">,</span><span class="n">newstate</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">navigator</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">callbackWheel</span><span class="p">(</span><span class="k">lambda</span> <span class="n">newstate</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wheel</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="n">newstate</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        
+        
+<div class="viewcode-block" id="MainWindow.buildMenu"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.buildMenu">[docs]</a>    <span class="k">def</span> <span class="nf">buildMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates the menu bar</span>
+<span class="sd">            </span>
+<span class="sd">            :param root: Tkinter interface</span>
+<span class="sd">            :type root: Tk</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">menubar</span> <span class="o">=</span> <span class="n">Menu</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">menu</span><span class="o">=</span><span class="n">menubar</span><span class="p">)</span>
+        <span class="n">filemenu</span> <span class="o">=</span> <span class="n">Menu</span><span class="p">(</span><span class="n">menubar</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">add_cascade</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;File&#39;</span><span class="p">,</span> <span class="n">menu</span><span class="o">=</span><span class="n">filemenu</span><span class="p">)</span>
+        <span class="n">filemenu</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;Load all tasks&#39;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loadAllTasks</span><span class="p">)</span>
+        <span class="n">filemenu</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;Load task ...&#39;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loadTask</span><span class="p">)</span>
+        <span class="n">filemenu</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;Save tasks&#39;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">saveTasks</span><span class="p">)</span>
+        <span class="n">filemenu</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;Quit&#39;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exit</span><span class="p">)</span>
+
+            </div>
+<div class="viewcode-block" id="MainWindow.wheel"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.wheel">[docs]</a>    <span class="k">def</span> <span class="nf">wheel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">,</span><span class="n">position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback for the wheel buttons on the elbows are rotated. Checks in which direction the wheel was turned</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side that has been altered</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">            :param position: The new position of the wheel [0-255]</span>
+<span class="sd">            :type position: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">position</span> <span class="ow">and</span>  <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">==</span> <span class="mi">255</span> <span class="ow">and</span> <span class="n">position</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">position</span><span class="o">==</span><span class="mi">255</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">increase</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">increase</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">side</span><span class="p">]</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cycleMode</span><span class="p">(</span><span class="n">increase</span><span class="p">)</span>
+               </div>
+<div class="viewcode-block" id="MainWindow.home"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.home">[docs]</a>    <span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback for the home buttons on the elbows. Directly shows the root menu on the robot display</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side that has been pushed</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">closeAllCameras</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadMenu</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">)</span>        
+</div>
+<div class="viewcode-block" id="MainWindow.back"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.back">[docs]</a>    <span class="k">def</span> <span class="nf">back</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback for the back (arrow) buttons on the elbows. Shows the previous menu on the robot display</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side that has been pushed</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">closeAllCameras</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">loadPreviousMenu</span><span class="p">()</span>
+            </div>
+<div class="viewcode-block" id="MainWindow.confirm"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.confirm">[docs]</a>    <span class="k">def</span> <span class="nf">confirm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback for a button push for the wheel buttons on the elbows. Calls the current menu entry on the robot display</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side that has been pushed</span>
+<span class="sd">            :type side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># hide menu</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">closeAllCameras</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span>
+<span class="c">#         print &quot;modes&quot;,self.mm.modes</span>
+<span class="c">#         print &quot;selected&quot;, self.mm.cur_mode</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">]</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;position&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="n">side</span><span class="p">],</span><span class="s">&#39;side&#39;</span><span class="p">:</span><span class="n">side</span><span class="p">,</span><span class="s">&#39;fname&#39;</span><span class="p">:</span><span class="n">fname</span><span class="p">}</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span> <span class="s">&quot;calling method with name </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">callMenuEntry</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span><span class="n">e</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logwarn</span><span class="p">(</span><span class="s">&quot;Could not call entry: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">no</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="MainWindow.cycleMode"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.cycleMode">[docs]</a>    <span class="k">def</span> <span class="nf">cycleMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">increase</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Selects the next or previous entry in the menu on the display. Called by the wheel method when the wheel is turned.</span>
+<span class="sd">            </span>
+<span class="sd">            :param increase: Move to the next entry?</span>
+<span class="sd">            :param increase: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">closeAllCameras</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">num_modes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_modes</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">increase</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">num_modes</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">num_modes</span>
+        
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Current mode changed to </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">hidden</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">menu</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mm</span><span class="o">.</span><span class="n">cur_mode</span><span class="p">])</span>
+        </div>
+<div class="viewcode-block" id="MainWindow.appendToTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.appendToTask">[docs]</a>    <span class="k">def</span> <span class="nf">appendToTask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">txt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Appends text to the currently selected editor window in the GUI. Can be used by all behaviors to easily store robot data</span>
+<span class="sd">            </span>
+<span class="sd">            :param txt: Text to be written to the editor window</span>
+<span class="sd">            :param txt: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">END</span><span class="p">,</span><span class="n">txt</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">]</span><span class="o">.</span><span class="n">toeval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">END</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">colorize</span><span class="p">()</span>
+            </div>
+<div class="viewcode-block" id="MainWindow.gripButton"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.gripButton">[docs]</a>    <span class="k">def</span> <span class="nf">gripButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback when the oval (grip) button on the hand cuff is pressed. Opens or closes the gripper</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: Side of the gripper to be activated</span>
+<span class="sd">            :param side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opened</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">opened</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Grip button pressed. gripper was </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">opened</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">opened</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">([</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">()</span><span class="o">==</span><span class="s">&#39;suction&#39;</span><span class="p">])</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.posButton"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.posButton">[docs]</a>    <span class="k">def</span> <span class="nf">posButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback for the round button on the hand cuff. This button is not assigned yet. Add your code here for additional functionality</span>
+<span class="sd">            </span>
+<span class="sd">            :param side: The side where the button was pressed</span>
+<span class="sd">            :param side: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;The grip button is not used at this very moment&quot;</span><span class="p">)</span>
+          </div>
+<div class="viewcode-block" id="MainWindow.selectTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.selectTask">[docs]</a>    <span class="k">def</span> <span class="nf">selectTask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Selects a task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getSelectedKeys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">txt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">toeval</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="o">=</span><span class="n">k</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">END</span><span class="p">)</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">END</span><span class="p">,</span><span class="n">txt</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.refresh"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Refreshes the task list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">END</span><span class="p">)</span>
+        <span class="n">keys</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">END</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+            </div>
+<div class="viewcode-block" id="MainWindow.addTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.addTask">[docs]</a>    <span class="k">def</span> <span class="nf">addTask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Adds an empty task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">defaulttaskcontent</span><span class="o">=</span><span class="s">&quot;&quot;</span>        
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&#39;Add Task&#39;</span><span class="p">,</span> <span class="s">&#39;Task name:&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span><span class="n">baxter_helper_tasker</span><span class="o">.</span><span class="n">TaskEval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="p">,</span><span class="n">defaulttaskcontent</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="MainWindow.deleteTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.deleteTask">[docs]</a>    <span class="k">def</span> <span class="nf">deleteTask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Deletes a task from the current menu. (Does not delete the file)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getSelectedKeys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>            
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="MainWindow.executeTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.executeTask">[docs]</a>    <span class="k">def</span> <span class="nf">executeTask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Executes selected tasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getSelectedKeys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="MainWindow.exit"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.exit">[docs]</a>    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Stops the robots movement and </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;exit&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">hlm</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="MainWindow.saveTasks"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.saveTasks">[docs]</a>    <span class="k">def</span> <span class="nf">saveTasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Saves all tasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">options</span><span class="o">=</span><span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;tasks&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">+</span><span class="n">k</span><span class="o">+</span><span class="n">DEFAULT_EXTENSION</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">toeval</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.updateTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.updateTask">[docs]</a>    <span class="k">def</span> <span class="nf">updateTask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Updates the tasks list and colorizes the python code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">]</span><span class="o">.</span><span class="n">toeval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="n">END</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">textTask</span><span class="o">.</span><span class="n">colorize</span><span class="p">()</span>
+            </div>
+<div class="viewcode-block" id="MainWindow.loadTaskFile"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.loadTaskFile">[docs]</a>    <span class="k">def</span> <span class="nf">loadTaskFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads the task file that corresponds to the path from the harddisk into the GUI</span>
+<span class="sd">            </span>
+<span class="sd">            :param file:path and name to the task file</span>
+<span class="sd">            :type file:str</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">taskcode</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">toks</span><span class="o">=</span><span class="nb">file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">toks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">DEFAULT_EXTENSION</span><span class="p">,</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">baxter_helper_tasker</span><span class="o">.</span><span class="n">TaskEval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasker</span><span class="p">,</span><span class="n">taskcode</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">END</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="MainWindow.loadAllTasks"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.loadAllTasks">[docs]</a>    <span class="k">def</span> <span class="nf">loadAllTasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Loads all tasks in the data/tasks directory of the package</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">datapath</span> <span class="o">+</span> <span class="s">&quot;tasks&quot;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">+</span><span class="s">&quot;*.task.py&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadTaskFile</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.loadTask"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.loadTask">[docs]</a>    <span class="k">def</span> <span class="nf">loadTask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Callback from the menu to load a task. Opens a file dialog</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">options</span><span class="o">=</span><span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s">&#39;defaultextension&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_EXTENSION</span>
+        <span class="n">options</span><span class="p">[</span><span class="s">&#39;filetypes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;task files&#39;</span><span class="p">,</span> <span class="n">DEFAULT_EXTENSION</span><span class="p">)]</span>
+        <span class="nb">file</span><span class="o">=</span><span class="n">tkFileDialog</span><span class="o">.</span><span class="n">askopenfilename</span><span class="p">(</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loadTaskFile</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.getSelectedKeys"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.MainWindow.getSelectedKeys">[docs]</a>    <span class="k">def</span> <span class="nf">getSelectedKeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the selected tasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">curselection</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="n">v</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">listTasks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">l</span>
+    
+</div></div>
+<div class="viewcode-block" id="startGUI"><a class="viewcode-back" href="../baxter_tasker_main.html#baxter_tasker_main.startGUI">[docs]</a><span class="k">def</span> <span class="nf">startGUI</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Starts the main baxter_tasker</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s">&quot;baxter_tasker_main&quot;</span><span class="p">)</span>
+<span class="c">#     rospy.init_node(&quot;baxter_tasker_main&quot;,log_level=rospy.DEBUG) # start baxter with debug output</span>
+    <span class="n">baxter</span><span class="o">=</span><span class="n">BaxterRobot</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">loadAll</span><span class="p">()</span>
+    <span class="n">tasker</span><span class="o">=</span><span class="n">baxter_helper_tasker</span><span class="o">.</span><span class="n">Tasker</span><span class="p">(</span><span class="n">baxter</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">addTasker</span><span class="p">(</span><span class="n">tasker</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">Tk</span><span class="p">()</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;baxter_tasker_main&quot;</span><span class="p">)</span>
+    
+    <span class="n">mainwindow</span> <span class="o">=</span> <span class="n">MainWindow</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="n">tasker</span><span class="p">)</span>
+    <span class="n">mainwindow</span><span class="o">.</span><span class="n">loadAllTasks</span><span class="p">()</span>
+    
+    <span class="n">root</span><span class="o">.</span><span class="n">protocol</span><span class="p">(</span><span class="s">&quot;WM_DELETE_WINDOW&quot;</span><span class="p">,</span> <span class="n">mainwindow</span><span class="o">.</span><span class="n">exit</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">startGUI</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

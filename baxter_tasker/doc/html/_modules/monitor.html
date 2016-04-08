@@ -1,0 +1,583 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>monitor</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for monitor</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">Tkinter</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">tkSimpleDialog</span>
+<span class="kn">import</span> <span class="nn">tkFileDialog</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="kn">from</span> <span class="nn">hr_helper.post_threading</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PoseStamped</span><span class="p">,</span>
+    <span class="n">Pose</span><span class="p">,</span>
+    <span class="n">Point</span><span class="p">,</span>
+    <span class="n">Quaternion</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">baxter_core_msgs.srv</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SolvePositionIK</span><span class="p">,</span>
+    <span class="n">SolvePositionIKRequest</span><span class="p">,</span>
+    <span class="n">ListCameras</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">baxter_core_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>    
+    <span class="n">EndEffectorProperties</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="kn">import</span> <span class="nn">baxter_interface</span>
+<span class="kn">from</span> <span class="nn">moveit_msgs.srv</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">moveit_msgs.msg</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">baxter_helper</span> <span class="kn">import</span> <span class="n">BaxterRobot</span>
+<span class="kn">from</span> <span class="nn">baxter_helper_abstract_limb</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">baxter_helper_moveit_limb</span> <span class="kn">import</span> <span class="n">MoveItLimb</span>
+
+
+<span class="n">REFRESH_DELAY_MS</span><span class="o">=</span><span class="mi">2000</span>
+
+<span class="n">GRIPPERS</span><span class="o">=</span><span class="bp">False</span>
+<span class="n">ARMS</span><span class="o">=</span><span class="bp">True</span>
+
+
+
+<div class="viewcode-block" id="ArmController"><a class="viewcode-back" href="../monitor.html#monitor.ArmController">[docs]</a><span class="k">class</span> <span class="nc">ArmController</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">main</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">=</span><span class="n">main</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">=</span><span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="o">=</span><span class="n">arm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">title</span><span class="o">=</span><span class="n">title</span>
+        
+<div class="viewcode-block" id="ArmController.buildGUI"><a class="viewcode-back" href="../monitor.html#monitor.ArmController.buildGUI">[docs]</a>    <span class="k">def</span> <span class="nf">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+        <span class="n">lframe</span><span class="o">=</span><span class="n">LabelFrame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">=</span><span class="n">lframe</span>
+        <span class="n">row</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Record&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;goToAngles&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;goToPose&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">goToPose</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">)</span><span class="o">==</span><span class="n">MoveItLimb</span><span class="p">:</span>
+            <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;goToAngles_plan&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">goToAnglesPlan</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;goToPose_plan&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span> <span class="n">arm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">goToPosePlan</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+            
+
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Angles:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="o">=</span> <span class="n">StringVar</span><span class="p">()</span>
+        <span class="n">entryAngles</span><span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+        <span class="n">entryAngles</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Position:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">=</span> <span class="n">StringVar</span><span class="p">()</span>
+        <span class="n">entryPosition</span><span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+        <span class="n">entryPosition</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Orientation:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="o">=</span> <span class="n">StringVar</span><span class="p">()</span>
+        <span class="n">entryOrientation</span><span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+        <span class="n">entryOrientation</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="n">REFRESH_DELAY_MS</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lframe</span>    
+    
+</div>
+<div class="viewcode-block" id="ArmController.refresh"><a class="viewcode-back" href="../monitor.html#monitor.ArmController.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">angles</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">getAngles</span><span class="p">()</span>
+        
+        <span class="c">#~ fkpose=self.arm.getPoseFromAngles(angles)</span>
+        <span class="c">#~ print fkpose</span>
+        
+        <span class="n">dangles</span><span class="o">=</span><span class="n">getDictFromAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+        <span class="n">sangles</span><span class="o">=</span><span class="s">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dangles</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">sangles</span><span class="o">+=</span><span class="s">&quot;</span><span class="si">%.3f</span><span class="s">,&quot;</span><span class="o">%</span><span class="n">v</span>                    
+        <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">sangles</span><span class="p">)</span>
+
+        <span class="n">pose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">getPose</span><span class="p">()</span>
+        <span class="n">sposition</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%.3f</span><span class="s">,</span><span class="si">%.3f</span><span class="s">,</span><span class="si">%.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">sposition</span><span class="p">)</span>
+        <span class="n">sorientation</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%.3f</span><span class="s">,</span><span class="si">%.3f</span><span class="s">,</span><span class="si">%.3f</span><span class="s">,</span><span class="si">%.3f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">x</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">y</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">z</span><span class="p">,</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orientation</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">sorientation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="n">REFRESH_DELAY_MS</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">)</span>
+
+        <span class="c">#~ ikangles=self.arm.getAnglesFromPose(pose)</span>
+        <span class="c">#~ print ikangles</span>
+
+
+
+</div></div>
+<div class="viewcode-block" id="GripperController"><a class="viewcode-back" href="../monitor.html#monitor.GripperController">[docs]</a><span class="k">class</span> <span class="nc">GripperController</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">main</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">gripper</span><span class="p">,</span><span class="n">dio</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main</span><span class="o">=</span><span class="n">main</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">=</span><span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">=</span><span class="n">gripper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dio</span><span class="o">=</span><span class="n">dio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dio</span><span class="o">.</span><span class="n">callbackOnPressed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggle</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="GripperController.buildGUI"><a class="viewcode-back" href="../monitor.html#monitor.GripperController.buildGUI">[docs]</a>    <span class="k">def</span> <span class="nf">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">):</span>
+        <span class="n">lframe</span><span class="o">=</span><span class="n">LabelFrame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">=</span><span class="n">lframe</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Grip&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">grip</span><span class="p">()</span>   <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Release&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>  <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Test&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>  <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Position:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">=</span> <span class="n">StringVar</span><span class="p">()</span>
+        <span class="n">entryPosition</span><span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">entryPosition</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">columnspan</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="n">REFRESH_DELAY_MS</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lframe</span>    
+    
+</div>
+<div class="viewcode-block" id="GripperController.refresh"><a class="viewcode-back" href="../monitor.html#monitor.GripperController.refresh">[docs]</a>    <span class="k">def</span> <span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">position</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">position</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">position</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lframe</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="n">REFRESH_DELAY_MS</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GripperController.toggle"><a class="viewcode-back" href="../monitor.html#monitor.GripperController.toggle">[docs]</a>    <span class="k">def</span> <span class="nf">toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">gripping</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">grip</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="GripperController.test"><a class="viewcode-back" href="../monitor.html#monitor.GripperController.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">grip</span><span class="p">()</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">position</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gripper</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+    </div></div>
+<div class="viewcode-block" id="MainWindow"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow">[docs]</a><span class="k">class</span> <span class="nc">MainWindow</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">master</span><span class="p">,</span><span class="n">baxter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">=</span><span class="n">master</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">=</span><span class="n">Post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">master</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&#39;&lt;Key-Escape&gt;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">=</span><span class="n">baxter</span>
+        
+        
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose_index</span><span class="o">=</span><span class="mi">0</span>
+        
+        <span class="c">#~ Button(self.frame,text=&quot;Enable&quot;,command=lambda: self.baxter.enable()    ).grid(row=0,column=0)</span>
+        <span class="c">#~ Button(self.frame,text=&quot;Disable&quot;,command=lambda: self.baxter.disable()    ).grid(row=1,column=0)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildParametersFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="s">&quot;Parameters&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;REMOVE COLLISIONS&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">deactivate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;ACTIVATE COLLISIONS&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">collision</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        
+
+        <span class="k">if</span> <span class="n">ARMS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="o">=</span><span class="p">[</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span> <span class="p">,</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="o">=</span><span class="p">[</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">simple</span> <span class="p">,</span><span class="n">baxter</span><span class="o">.</span><span class="n">arm</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arms</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;right&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="p">,</span><span class="s">&quot;left&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="p">}</span>
+
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Compare Left&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Compare Right&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">sleft</span><span class="o">=</span><span class="n">ArmController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;Simple Left Arm&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sleft</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">sright</span><span class="o">=</span><span class="n">ArmController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;Simple Right Arm&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sright</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">mleft</span><span class="o">=</span><span class="n">ArmController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;MoveIt Left Arm&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mleft</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">mright</span><span class="o">=</span><span class="n">ArmController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;MoveIt Right Arm&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mright</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Execute Plan&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Execute Plan&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executePlan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Execute Plan Start&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executePlanFromStart</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_left</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Execute Plan Start&quot;</span><span class="p">,</span><span class="n">command</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">executePlanFromStart</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arms_right</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>    <span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">GRIPPERS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gleft</span><span class="o">=</span><span class="n">GripperController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;Left Gripper&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;left&quot;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;left_lower_button&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gleft</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gright</span><span class="o">=</span><span class="n">GripperController</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s">&quot;Right Gripper&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">gripper</span><span class="p">[</span><span class="s">&quot;right&quot;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">baxter</span><span class="o">.</span><span class="n">dio</span><span class="p">[</span><span class="s">&quot;right_lower_button&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gright</span><span class="o">.</span><span class="n">buildGUI</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+    
+<div class="viewcode-block" id="MainWindow.buildParametersFrame"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.buildParametersFrame">[docs]</a>    <span class="k">def</span> <span class="nf">buildParametersFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">lframe</span><span class="o">=</span><span class="n">LabelFrame</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">=</span><span class="mi">0</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Speed:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_SPEED</span><span class="p">)</span>
+        <span class="n">entrySpeed</span><span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="p">)</span>
+        <span class="n">entrySpeed</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Position tolerance:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position_tolerance</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position_tolerance</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_POSITION_TOLERANCE</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">position_tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Orientation tolerance:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orientation_tolerance</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orientation_tolerance</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_ORIENTATION_TOLERANCE</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation_tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Joint tolerance plan:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance_plan</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance_plan</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_JOINT_TOLERANCE_PLAN</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance_plan</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Joint tolerance execution:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_JOINT_TOLERANCE</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Speed tolerance:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_SPEED_TOLERANCE</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Timeout:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Path tolerance:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">=</span> <span class="n">DoubleVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Entry</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">textvariable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+                
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Cartesian path:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="o">=</span> <span class="n">IntVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Checkbutton</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">Label</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s">&quot;Reverse path:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse_path</span><span class="o">=</span> <span class="n">IntVar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse_path</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">Checkbutton</span><span class="p">(</span><span class="n">lframe</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reverse_path</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">lframe</span>
+   </div>
+<div class="viewcode-block" id="MainWindow.record"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.record">[docs]</a>    <span class="k">def</span> <span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;Record&quot;</span><span class="p">,</span><span class="s">&quot;Name:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span> <span class="k">return</span>
+        
+        <span class="n">i</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pose_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose_index</span><span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="n">angles</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">getAngles</span><span class="p">()</span>
+        <span class="k">print</span> <span class="n">angles</span>
+        <span class="n">pose</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">getPose</span><span class="p">()</span>
+        <span class="k">print</span> <span class="n">pose</span>
+                
+        <span class="k">print</span> <span class="s">&quot;Recording Pose </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">name</span>
+        <span class="n">savePose</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">pose</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;Recording Angles </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">name</span>
+        <span class="n">saveAngles</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">angles</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MainWindow.goToAngles"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.goToAngles">[docs]</a>    <span class="k">def</span> <span class="nf">goToAngles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Angles&quot;</span><span class="p">,</span><span class="s">&quot;Name:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="n">angles</span><span class="o">=</span><span class="n">loadAngles</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;Going to angles&quot;</span>
+            <span class="k">print</span> <span class="n">angles</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+            <span class="n">ret</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance_plan</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">path_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">print</span> <span class="s">&quot;Returned &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="n">delay</span><span class="o">=</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span> 
+            <span class="k">print</span> <span class="s">&quot;Trajectory Delay </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">delay</span>
+                
+</div>
+<div class="viewcode-block" id="MainWindow.goToAnglesPlan"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.goToAnglesPlan">[docs]</a>    <span class="k">def</span> <span class="nf">goToAnglesPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Angles Plan&quot;</span><span class="p">,</span><span class="s">&quot;Angles:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">angles</span><span class="o">=</span><span class="n">loadAngles</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        <span class="n">planname</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Angles Plan&quot;</span><span class="p">,</span><span class="s">&quot;Plan:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">planname</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">print</span> <span class="s">&quot;Planning to angles&quot;</span>
+        <span class="k">print</span> <span class="n">angles</span>
+        <span class="n">plan</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">goToAngles_plan</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span><span class="n">joint_tolerance_plan</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance_plan</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="n">savePlan</span><span class="p">(</span><span class="n">planname</span><span class="p">,</span><span class="n">plan</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">plan</span>
+        <span class="k">print</span> <span class="s">&quot;Saved plan as &quot;</span><span class="o">+</span><span class="n">planname</span>
+                
+  </div>
+<div class="viewcode-block" id="MainWindow.goToPose"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.goToPose">[docs]</a>    <span class="k">def</span> <span class="nf">goToPose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Pose&quot;</span><span class="p">,</span><span class="s">&quot;Name:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="n">pose</span><span class="o">=</span><span class="n">loadPose</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            
+            <span class="n">ps</span><span class="o">=</span><span class="n">PoseStamped</span><span class="p">()</span>            
+            <span class="n">ps</span><span class="o">.</span><span class="n">pose</span><span class="o">=</span><span class="n">pose</span>
+            <span class="n">name</span><span class="o">=</span><span class="s">&quot;/target&quot;</span><span class="o">+</span><span class="n">arm</span><span class="o">.</span><span class="n">title</span>
+            <span class="n">ps</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;base&quot;</span>
+            <span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTF</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">ps</span><span class="p">)</span>
+            
+            <span class="k">print</span> <span class="s">&quot;Going to pose&quot;</span>
+            <span class="k">print</span> <span class="n">pose</span>
+            <span class="n">cartesian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">==</span><span class="mi">1</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+            <span class="n">ret</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">goToPose</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">position_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">position_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">cartesian</span><span class="o">=</span><span class="n">cartesian</span><span class="p">,</span><span class="n">path_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">print</span> <span class="s">&quot;Returned &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            
+            <span class="n">delay</span><span class="o">=</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&quot;Trajectory Delay </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">delay</span>
+</div>
+<div class="viewcode-block" id="MainWindow.goToPosePlan"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.goToPosePlan">[docs]</a>    <span class="k">def</span> <span class="nf">goToPosePlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Pose Plan&quot;</span><span class="p">,</span><span class="s">&quot;Pose:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">pose</span><span class="o">=</span><span class="n">loadPose</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+        
+        <span class="n">ps</span><span class="o">=</span><span class="n">PoseStamped</span><span class="p">()</span>            
+        <span class="n">ps</span><span class="o">.</span><span class="n">pose</span><span class="o">=</span><span class="n">pose</span>
+        <span class="n">name</span><span class="o">=</span><span class="s">&quot;/target&quot;</span><span class="o">+</span><span class="n">arm</span><span class="o">.</span><span class="n">title</span>
+        <span class="n">ps</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span><span class="o">=</span><span class="s">&quot;base&quot;</span>
+        <span class="n">baxter</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTF</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">ps</span><span class="p">)</span>
+
+        <span class="n">planname</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;GoTo Pose Plan&quot;</span><span class="p">,</span><span class="s">&quot;Plan:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">planname</span><span class="p">:</span> <span class="k">return</span>
+        
+        <span class="k">print</span> <span class="s">&quot;Planning to pose&quot;</span>
+        <span class="k">print</span> <span class="n">pose</span>
+        <span class="n">cartesian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cartesian</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">==</span><span class="mi">1</span>
+        <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="n">plan</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">goToPose_plan</span><span class="p">(</span><span class="n">pose</span><span class="p">,</span><span class="n">position_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">position_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">orientation_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orientation_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">cartesian</span><span class="o">=</span><span class="n">cartesian</span><span class="p">)</span>
+        <span class="n">savePlan</span><span class="p">(</span><span class="n">planname</span><span class="p">,</span><span class="n">plan</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">plan</span>
+        <span class="k">print</span> <span class="s">&quot;Saved plan as &quot;</span><span class="o">+</span><span class="n">planname</span>
+</div>
+<div class="viewcode-block" id="MainWindow.executePlan"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.executePlan">[docs]</a>    <span class="k">def</span> <span class="nf">executePlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;Execute Plan&quot;</span><span class="p">,</span><span class="s">&quot;Name:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="n">plan</span><span class="o">=</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse_path</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">plan</span><span class="o">=</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">plan</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+            <span class="n">ret</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">path_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span>
+            <span class="k">print</span> <span class="s">&quot;Plan delay </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">delay</span>
+            <span class="k">print</span> <span class="s">&quot;Returned &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="MainWindow.executePlanFromStart"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.executePlanFromStart">[docs]</a>    <span class="k">def</span> <span class="nf">executePlanFromStart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arm</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">=</span><span class="n">tkSimpleDialog</span><span class="o">.</span><span class="n">askstring</span><span class="p">(</span><span class="s">&quot;Execute Plan From Start&quot;</span><span class="p">,</span><span class="s">&quot;Name:&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="n">plan</span><span class="o">=</span><span class="n">loadPlan</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse_path</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">plan</span><span class="o">=</span><span class="n">getReversePlan</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">plan</span>
+            <span class="n">jnames</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">joint_names</span>
+            <span class="n">jangles</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">joint_trajectory</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">positions</span>
+            <span class="n">angles</span><span class="o">=</span><span class="n">getAnglesFromDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">jnames</span><span class="p">,</span><span class="n">jangles</span><span class="p">)))</span>                        
+            
+            <span class="n">arm</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">goToAngles</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+            
+            <span class="n">start</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>            
+            <span class="n">ret</span><span class="o">=</span><span class="n">arm</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span><span class="n">speed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">joint_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">joint_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">speed_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">speed_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span><span class="n">path_tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path_tolerance</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span>
+            <span class="k">print</span> <span class="s">&quot;Plan delay </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">delay</span>
+            <span class="k">print</span> <span class="s">&quot;Returned &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                        
+
+
+        </div>
+<div class="viewcode-block" id="MainWindow.compare"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.compare">[docs]</a>    <span class="k">def</span> <span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">side</span><span class="p">):</span>
+        <span class="n">arms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">arms</span><span class="p">[</span><span class="n">side</span><span class="p">]</span>
+        <span class="n">pa</span><span class="o">=</span><span class="n">arms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getPose</span><span class="p">()</span>
+        <span class="n">pb</span><span class="o">=</span><span class="n">arms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">getPose</span><span class="p">()</span>
+        <span class="n">aa</span><span class="o">=</span><span class="n">arms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getAngles</span><span class="p">()</span>
+        <span class="n">ab</span><span class="o">=</span><span class="n">arms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">getAngles</span><span class="p">()</span>
+        <span class="k">print</span> <span class="s">&quot;DELTA ANGLES&quot;</span>
+        <span class="k">print</span> <span class="n">getAnglesDiff</span><span class="p">(</span><span class="n">aa</span><span class="p">,</span><span class="n">ab</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&quot;DELTA POSE&quot;</span>
+        <span class="k">print</span> <span class="n">getPoseDiff</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span><span class="n">pb</span><span class="p">)</span>
+            
+        </div>
+<div class="viewcode-block" id="MainWindow.exit"><a class="viewcode-back" href="../monitor.html#monitor.MainWindow.exit">[docs]</a>    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&quot;exit&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        
+        </div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span> 
+
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s">&quot;baxter_monitor&quot;</span><span class="p">,</span><span class="n">log_level</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    
+    <span class="k">print</span> <span class="s">&quot;Creating Baxter Robot&quot;</span>
+    <span class="n">baxter</span><span class="o">=</span><span class="n">BaxterRobot</span><span class="p">(</span><span class="n">moveit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ARMS</span><span class="p">:</span>
+        <span class="n">baxter</span><span class="o">.</span><span class="n">loadArms</span><span class="p">()</span> 
+    <span class="k">if</span> <span class="n">GRIPPERS</span><span class="p">:</span>
+        <span class="n">baxter</span><span class="o">.</span><span class="n">loadGripper</span><span class="p">(</span><span class="s">&quot;right&quot;</span><span class="p">)</span>    
+        <span class="n">baxter</span><span class="o">.</span><span class="n">loadGripper</span><span class="p">(</span><span class="s">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">loadDigitalIO</span><span class="p">()</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">loadFrame</span><span class="p">()</span>
+    <span class="n">baxter</span><span class="o">.</span><span class="n">loadCollisionAvoidance</span><span class="p">()</span>
+
+    <span class="n">root</span> <span class="o">=</span> <span class="n">Tk</span><span class="p">()</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;Baxter Monitor&quot;</span><span class="p">)</span>
+    
+    <span class="n">mainwindow</span> <span class="o">=</span> <span class="n">MainWindow</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="n">baxter</span><span class="p">)</span>
+    
+    <span class="n">root</span><span class="o">.</span><span class="n">protocol</span><span class="p">(</span><span class="s">&quot;WM_DELETE_WINDOW&quot;</span><span class="p">,</span> <span class="n">mainwindow</span><span class="o">.</span><span class="n">exit</span><span class="p">)</span>
+    
+    <span class="c">#root.after(0,rospy.sleep(10))</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>    
+    
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

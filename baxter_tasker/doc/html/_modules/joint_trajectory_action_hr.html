@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>joint_trajectory_action_hr</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for joint_trajectory_action_hr</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+
+
+<span class="c">########################################################################### </span>
+<span class="c"># This software is graciously provided by HumaRobotics </span>
+<span class="c"># under the Simplified BSD License on</span>
+<span class="c"># github: git@www.humarobotics.com:baxter_tasker</span>
+<span class="c"># HumaRobotics is a trademark of Generation Robots.</span>
+<span class="c"># www.humarobotics.com </span>
+
+<span class="c"># Copyright (c) 2013, Generation Robots.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c"># www.generationrobots.com</span>
+<span class="c">#   </span>
+<span class="c"># Redistribution and use in source and binary forms, with or without </span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># </span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer.</span>
+<span class="c"># </span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#  this list of conditions and the following disclaimer in the documentation </span>
+<span class="c">#  and/or other materials provided with the distribution.</span>
+<span class="c"># </span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, </span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR </span>
+<span class="c"># PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS </span>
+<span class="c"># BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR </span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF </span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS </span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN </span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) </span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF </span>
+<span class="c"># THE POSSIBILITY OF SUCH DAMAGE. </span>
+<span class="c"># </span>
+<span class="c"># The views and conclusions contained in the software and documentation are </span>
+<span class="c"># those of the authors and should not be interpreted as representing official </span>
+<span class="c"># policies, either expressed or implied, of the FreeBSD Project.</span>
+<span class="c">#</span>
+<span class="c">#############################################################################</span>
+<span class="c"># Copyright (c) 2013, Rethink Robotics</span>
+<span class="c"># All rights reserved.</span>
+<span class="c">#</span>
+<span class="c"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c">#</span>
+<span class="c"># 1. Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#    this list of conditions and the following disclaimer.</span>
+<span class="c"># 2. Redistributions in binary form must reproduce the above copyright</span>
+<span class="c">#    notice, this list of conditions and the following disclaimer in the</span>
+<span class="c">#    documentation and/or other materials provided with the distribution.</span>
+<span class="c"># 3. Neither the name of the Rethink Robotics nor the names of its</span>
+<span class="c">#    contributors may be used to endorse or promote products derived from</span>
+<span class="c">#    this software without specific prior written permission.</span>
+<span class="c">#</span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</span>
+<span class="c"># ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</span>
+<span class="c"># LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</span>
+<span class="c"># CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</span>
+<span class="c"># SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</span>
+<span class="c"># INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</span>
+<span class="c"># CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</span>
+<span class="c"># ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="c"># POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">##############################################################################</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Baxter RSDK Joint Trajectory Action Server</span>
+
+<span class="sd">Main changes from original Joint Trajectory Action Server:</span>
+<span class="sd">    _goal_error  , _error_threshold and _velocity_error are obtained from the trajectory action message</span>
+<span class="sd">    fixed check for _error_threshold  (&gt;0 and abs)</span>
+<span class="sd">    added check for _velocity_error </span>
+<span class="sd">    fixed double check of _goal_error at end of trajectory (sometimes trajectory would finish properly but the second check would make it fail)</span>
+<span class="sd">    uses last trajectory point for set_joint_position when stopping properly</span>
+<span class="sd">    (custom part) PID values are adjusted during trajectory execution: P=4 for 80% of trajectory (move fast), P=1 for remaining 20% (slow down to avoid oscillations), P=2 for the remaining time (big enough to reach goal)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">bisect</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="kn">import</span> <span class="nn">actionlib</span>
+
+<span class="kn">from</span> <span class="nn">control_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FollowJointTrajectoryAction</span><span class="p">,</span>
+    <span class="n">FollowJointTrajectoryFeedback</span><span class="p">,</span>
+    <span class="n">FollowJointTrajectoryResult</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">UInt16</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">trajectory_msgs.msg</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">JointTrajectoryPoint</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">baxter_control</span>
+<span class="kn">import</span> <span class="nn">baxter_dataflow</span>
+<span class="kn">import</span> <span class="nn">baxter_interface</span>
+
+
+<div class="viewcode-block" id="JointTrajectoryActionServerHR"><a class="viewcode-back" href="../joint_trajectory_action_hr.html#joint_trajectory_action_hr.JointTrajectoryActionServerHR">[docs]</a><span class="k">class</span> <span class="nc">JointTrajectoryActionServerHR</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limb</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">200.0</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;Starting custom trajectory server&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limb</span><span class="o">=</span><span class="n">limb</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ns</span> <span class="o">=</span> <span class="s">&#39;robot/limb/&#39;</span> <span class="o">+</span> <span class="n">limb</span> <span class="o">+</span> <span class="s">&#39;/follow_joint_trajectory&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionServer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ns</span><span class="p">,</span>
+            <span class="n">FollowJointTrajectoryAction</span><span class="p">,</span>
+            <span class="n">execute_cb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_trajectory_action</span><span class="p">,</span>
+            <span class="n">auto_start</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span> <span class="o">=</span> <span class="n">baxter_interface</span><span class="o">.</span><span class="n">Limb</span><span class="p">(</span><span class="n">limb</span><span class="p">)</span>
+
+        <span class="c"># Action Feedback/Result</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span> <span class="o">=</span> <span class="n">FollowJointTrajectoryFeedback</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">FollowJointTrajectoryResult</span><span class="p">()</span>
+
+        <span class="c"># Controller parameters from arguments and dynamic reconfigure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_rate</span> <span class="o">=</span> <span class="n">rate</span>  <span class="c"># Hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_control_joints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pid_gains</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;kp&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(),</span> <span class="s">&#39;ki&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(),</span> <span class="s">&#39;kd&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_goal_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_goal_error</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_velocity_error</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_error_threshold</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dflt_vel</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_kp</span><span class="o">=</span><span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_kp</span><span class="o">=</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_kp</span><span class="o">=</span><span class="mi">2</span>
+         
+        
+
+        <span class="c"># Create our PID controllers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">joint_names</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span><span class="p">[</span><span class="n">joint</span><span class="p">]</span> <span class="o">=</span> <span class="n">baxter_control</span><span class="o">.</span><span class="n">PID</span><span class="p">()</span>
+
+        <span class="c"># Set joint state publishing to specified control rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_rate</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span>
+            <span class="s">&#39;/robot/joint_state_publish_rate&#39;</span><span class="p">,</span> <span class="n">UInt16</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub_rate</span><span class="o">.</span><span class="n">get_num_connections</span><span class="p">()</span>  <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_rate</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_control_rate</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_current_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">joint_angle</span><span class="p">(</span><span class="n">joint</span><span class="p">)</span> <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_current_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">joint_velocity</span><span class="p">(</span><span class="n">joint</span><span class="p">)</span> <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_current_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">,</span> <span class="n">set_point</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_position</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span> <span class="n">set_point</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span>
+        <span class="c">#print &quot;error&quot; , error</span>
+        <span class="c">#print &quot;zip&quot; ,  zip(joint_names,error)</span>
+        <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+        
+    <span class="k">def</span> <span class="nf">_get_current_residual_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_velocity</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span> <span class="n">current</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_point</span><span class="p">,</span> <span class="n">jnt_names</span><span class="p">,</span> <span class="n">cur_time</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="o">.</span><span class="n">from_sec</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">joint_names</span> <span class="o">=</span> <span class="n">jnt_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">desired</span> <span class="o">=</span> <span class="n">cmd_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">desired</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="o">.</span><span class="n">from_sec</span><span class="p">(</span><span class="n">cur_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">actual</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_position</span><span class="p">(</span><span class="n">jnt_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">actual</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="o">.</span><span class="n">from_sec</span><span class="p">(</span><span class="n">cur_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">desired</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">actual</span><span class="o">.</span><span class="n">positions</span>
+                                     <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="o">.</span><span class="n">from_sec</span><span class="p">(</span><span class="n">cur_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">publish_feedback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fdbk</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_command_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">,</span><span class="n">joint_values</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">joint_values</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">velocities</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">velocities</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">set_joint_velocities</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">set_joint_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">joint_angles</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">set_joint_positions</span><span class="p">(</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">joint_values</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_command_velocities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint_names</span><span class="p">,</span> <span class="n">positions</span><span class="p">):</span>
+        <span class="n">velocities</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">is_preempt_requested</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_command_stop</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Trajectory Preempted&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">set_preempted</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="n">deltas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_error</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+
+
+        <span class="k">for</span> <span class="n">delta</span> <span class="ow">in</span> <span class="n">deltas</span><span class="p">:</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_error_threshold</span><span class="p">[</span><span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_command_stop</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Exceeded Error Threshold on </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,</span> <span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">]),))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">error_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">PATH_TOLERANCE_VIOLATED</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="n">velocities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pid</span><span class="p">[</span><span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">compute_output</span><span class="p">(</span><span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">velocities</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limb</span><span class="o">.</span><span class="n">set_joint_velocities</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+        
+    <span class="k">def</span> <span class="nf">_on_trajectory_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>        
+        <span class="sd">&quot;&quot;&quot; Main function that performs trajectory&quot;&quot;&quot;</span>
+        <span class="c">#~ print &quot;goal&quot;, goal</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s">&quot;Trajectory&quot;</span>
+        <span class="n">joint_names</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">joint_names</span>
+        <span class="n">trajectory_points</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">points</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Executing requested joint trajectory&quot;</span> <span class="o">%</span>
+                      <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,))</span>
+
+        <span class="c"># Load parameters for trajectory</span>
+        <span class="c">#~ print &quot;goal_tolerance&quot;, goal.goal_tolerance</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_tolerance</span><span class="p">)):</span>            
+            <span class="n">jnt</span><span class="o">=</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_tolerance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="c">#~ print &quot;jnt&quot; , jnt</span>
+            <span class="c">#~ print &quot; goal_tolerance&quot; , goal.goal_tolerance[i].position </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_goal_error</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">goal_tolerance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">position</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_velocity_error</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">goal_tolerance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">velocity</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error_threshold</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">path_tolerance</span><span class="p">)):</span>
+            <span class="n">jnt</span><span class="o">=</span><span class="n">goal</span><span class="o">.</span><span class="n">path_tolerance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error_threshold</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">path_tolerance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">position</span>
+            
+            
+            
+
+
+        <span class="c"># Create a new discretized joint trajectory</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectory_points</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_points</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Empty Trajectory&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="c"># If all time_from_start are zero,</span>
+        <span class="c"># interject these based on default velocities</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">JointTrajectoryPoint</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">trajectory_points</span><span class="p">):</span>
+            <span class="n">last</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_position</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+            <span class="n">move_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">trajectory_points</span><span class="p">:</span>
+                <span class="n">diffs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
+                            <span class="n">last</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+                <span class="n">diffs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span> <span class="n">diffs</span><span class="p">)</span>
+                <span class="n">dflt_vel</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dflt_vel</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span> <span class="k">for</span> <span class="n">jnt</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">]</span>
+                <span class="n">move_time</span> <span class="o">=</span> <span class="n">move_time</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">div</span><span class="p">,</span> <span class="n">diffs</span><span class="p">,</span> <span class="n">dflt_vel</span><span class="p">))</span>
+                <span class="n">point</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="p">(</span><span class="n">move_time</span><span class="p">)</span>
+                <span class="n">last</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">positions</span>
+
+        <span class="k">def</span> <span class="nf">interp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">pct</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">pct</span>
+
+        <span class="k">def</span> <span class="nf">interp_positions</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">pct</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">interp</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="p">[</span><span class="n">pct</span><span class="p">]</span> <span class="o">*</span>
+                       <span class="nb">len</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">positions</span><span class="p">))</span>
+
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">trajectory_points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span>
+        <span class="n">control_rate</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Rate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_control_rate</span><span class="p">)</span>
+
+        <span class="n">pnt_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">pnt</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span> <span class="k">for</span> <span class="n">pnt</span> <span class="ow">in</span> <span class="n">trajectory_points</span><span class="p">]</span>
+
+        <span class="c"># Reset feedback/result</span>
+        <span class="n">start_point</span> <span class="o">=</span> <span class="n">JointTrajectoryPoint</span><span class="p">()</span>
+        <span class="n">start_point</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_position</span><span class="p">(</span><span class="n">joint_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_feedback</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">start_point</span><span class="p">),</span> <span class="n">joint_names</span><span class="p">,</span>
+                              <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
+
+        <span class="c"># Wait for the specified execution time, if not provided use now</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start_time</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="n">baxter_dataflow</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">start_time</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">start_header</span><span class="o">=</span><span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span>
+        <span class="n">now</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="c">#~ print &quot;now=%f start_header=%f end_time=%f goal_time=%f time_tolerance=%f&quot;%(now,start_header,end_time,self._goal_time,goal.goal_time_tolerance.to_sec())</span>
+        <span class="c"># Loop until end of trajectory time.  Provide a single time step</span>
+        <span class="c"># of the control rate past the end to ensure we get to the end.</span>
+        <span class="n">now_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+        <span class="k">while</span> <span class="n">now_from_start</span> <span class="o">&lt;</span> <span class="n">end_time</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control_rate</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">bisect</span><span class="o">.</span><span class="n">bisect</span><span class="p">(</span><span class="n">pnt_times</span><span class="p">,</span> <span class="n">now_from_start</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c"># If our current time is before the first specified point</span>
+                <span class="c"># in the trajectory, then we should interpolate between</span>
+                <span class="c"># our start position and that point.</span>
+                <span class="n">p1</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">start_point</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p1</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">trajectory_points</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="n">num_points</span><span class="p">:</span>
+                <span class="n">p2</span> <span class="o">=</span> <span class="n">trajectory_points</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">pct</span> <span class="o">=</span> <span class="p">((</span><span class="n">now_from_start</span> <span class="o">-</span> <span class="n">p1</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">.</span><span class="n">to_sec</span><span class="p">())</span> <span class="o">/</span>
+                       <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">time_from_start</span> <span class="o">-</span> <span class="n">p1</span><span class="o">.</span><span class="n">time_from_start</span><span class="p">)</span><span class="o">.</span><span class="n">to_sec</span><span class="p">())</span>
+                <span class="n">point</span> <span class="o">=</span> <span class="n">interp_positions</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">pct</span><span class="p">)</span>
+                <span class="n">p1</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">point</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># If the current time is after the last trajectory point,</span>
+                <span class="c"># just hold that position.</span>
+                <span class="n">point</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">positions</span>
+
+            <span class="c"># Update PID: 80% of trajectory uses max_kp, last 20% use min_kp to slow down</span>
+            <span class="n">pct_trajectory</span><span class="o">=</span><span class="n">now_from_start</span><span class="o">/</span><span class="n">end_time</span>
+            <span class="k">if</span> <span class="n">pct_trajectory</span><span class="o">&lt;</span><span class="mf">0.8</span><span class="p">:</span>
+                <span class="n">pct_trajectory</span><span class="o">=</span><span class="mi">0</span>
+            <span class="n">kp</span><span class="o">=</span><span class="n">interp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_kp</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">min_kp</span><span class="p">,</span><span class="n">pct_trajectory</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">jnt</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">:</span>                
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span><span class="o">.</span><span class="n">set_kp</span><span class="p">(</span><span class="n">kp</span><span class="p">)</span>
+
+            
+            <span class="c"># Perform velocity control</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_velocities</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+                <span class="k">return</span>
+
+            <span class="n">control_rate</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>
+            <span class="n">now_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_feedback</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">p1</span><span class="p">),</span> <span class="n">joint_names</span><span class="p">,</span> <span class="n">now_from_start</span><span class="p">)</span>
+
+        <span class="c"># Main trajectory over</span>
+        <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Finished main trajectory after </span><span class="si">%f</span><span class="s"> s&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,</span><span class="n">delay</span><span class="p">))</span>
+
+                
+        
+        <span class="c"># Keep trying to meet goal until goal_time constraint expired</span>
+        
+        <span class="n">last</span> <span class="o">=</span> <span class="n">JointTrajectoryPoint</span><span class="p">()</span>
+        <span class="n">last</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">trajectory_points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">positions</span>
+        <span class="n">last_time</span> <span class="o">=</span> <span class="n">trajectory_points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_from_start</span><span class="o">.</span><span class="n">to_sec</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">check_goal_state</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;Check if goal state is reached &quot;&quot;&quot;</span>
+            <span class="c">#~ print &quot;any of goal state is:&quot;,any(self._goal_error)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_goal_error</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_error</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">last</span><span class="o">.</span><span class="n">positions</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_goal_error</span><span class="p">[</span><span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_goal_error</span><span class="p">[</span><span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span> <span class="c"># If position is outside of tolerance</span>
+                        <span class="c">#print &quot;Position Error&quot;,error[0],&quot;:&quot;,error[1]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">error</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">return</span> <span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="k">def</span> <span class="nf">check_goal_velocity_state</span><span class="p">():</span>
+            <span class="sd">&quot;&quot;&quot;Check if goal velocity is reached &quot;&quot;&quot;</span>
+            <span class="c">#~ print &quot;any of goal velocity is:&quot;,any(self._velocity_error)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_velocity_error</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_residual_velocity</span><span class="p">(</span><span class="n">joint_names</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_velocity_error</span><span class="p">[</span><span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_velocity_error</span><span class="p">[</span><span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&lt;</span> <span class="n">math</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span> <span class="c"># If velocity is outside of tolerance</span>
+                    <span class="c">#print &quot;Velocity Error&quot;,error[0],&quot;:&quot;,error[1]</span>
+                    <span class="k">return</span> <span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+
+        <span class="c"># Set final PID value</span>
+        <span class="k">for</span> <span class="n">jnt</span> <span class="ow">in</span> <span class="n">joint_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span><span class="p">[</span><span class="n">jnt</span><span class="p">]</span><span class="o">.</span><span class="n">set_kp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_kp</span><span class="p">)</span>
+        
+        <span class="c"># Loop until goal reached or goal_tolerance delay expired</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">=</span><span class="bp">None</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="c"># Goal reached</span>
+            <span class="k">if</span> <span class="n">check_goal_state</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">check_goal_velocity_state</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> Successfully finished complete trajectory after </span><span class="si">%f</span><span class="s"> s&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span><span class="n">delay</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_command_stop</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">,</span><span class="n">last</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">error_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">SUCCESSFUL</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">set_succeeded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">)</span>
+                <span class="k">return</span>
+                    
+
+            <span class="c"># Perform velocity control to target</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_velocities</span><span class="p">(</span><span class="n">joint_names</span><span class="p">,</span> <span class="n">last</span><span class="o">.</span><span class="n">positions</span><span class="p">):</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Exiting after failed command_velocities&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">)</span>
+                <span class="k">return</span>
+            
+            <span class="n">now_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_feedback</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">last</span><span class="p">),</span> <span class="n">joint_names</span><span class="p">,</span>
+                                  <span class="n">now_from_start</span><span class="p">)</span>
+            <span class="c">#~ print start_time + last_time + self._goal_time+goal.goal_time_tolerance.to_sec()</span>
+            <span class="c">#~ print rospy.get_time()</span>
+            <span class="k">if</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">last_time</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_goal_time</span><span class="o">+</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_time_tolerance</span><span class="o">.</span><span class="n">to_sec</span><span class="p">():</span>
+                <span class="c">#~ print &quot;breaking refinement loop&quot;</span>
+                <span class="k">break</span>
+            <span class="n">control_rate</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>
+        <span class="c"># Timed out</span>
+        <span class="n">delay</span><span class="o">=</span><span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> Failed to complete trajectory after </span><span class="si">%f</span><span class="s"> s&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,</span><span class="n">delay</span><span class="p">))</span>
+        <span class="n">now_from_start</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_feedback</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">last</span><span class="p">),</span> <span class="n">joint_names</span><span class="p">,</span>
+                                  <span class="n">now_from_start</span><span class="p">)</span>
+        <span class="c"># Verify goal constraint</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">check_goal_state</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_command_stop</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">joint_names</span><span class="p">,</span><span class="n">last</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: Timeout, Exceeded Goal Threshold Error </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_name</span><span class="p">,</span> <span class="n">result</span><span class="p">,))</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s">&quot;Error: </span><span class="si">%f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">error_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">GOAL_TOLERANCE_VIOLATED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">set_aborted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">baxter_tasker documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+.. 	.___                 __         .__  .__   
+	|   | ____   _______/  |______  |  | |  |  
+ 	|   |/    \ /  ___/\   __\__  \ |  | |  |  
+	|   |   |  \\___ \  |  |  / __ \|  |_|  |__
+	|___|___|  /____  > |__| (____  /____/____/
+	         \/     \/            \/           
+	========================================================================
+
+Setup
+=====
+
+
+The baxter tasker needs no compilation, as there are only Python 
+scripts used. The package can directly launched after cloning, 
+with one condition. If you want to use the 3D planning environment, 
+you have to install MoveIt, which is used by the baxter tasker.
+In case you want to use hydro instead of groovy just replace all "groovy" with "hydro".
+
+To install MoveIt:
+Change into the src of your catkin workspace and clone the robot 
+description for baxter: ::
+
+$ cd ~/ros_ws/src
+$ git clone https://github.com/ros-planning/moveit_robots.git
+
+Now you need to install MoveIt. I recommend the installation with 
+the package Manager of Ubuntu: ::
+
+$ sudo apt-get update
+$ sudo apt-get install ros-groovy-moveit-full
+
+In case you use hydro you now need to fix a little bug in the python interface of the MoveIt part.
+So open the file: ::
+
+$gedit /opt/ros/hydro/lib/python2.7/dist-packages/moveit_commander/roscpp_initializer.py
+
+and replace in line 42 the content of ::
+
+          args2 += a
+          
+with ::
+
+          args2.append(a)
+
+If you use groovy you can directly continue here.
+
+Move into the root of your workspace and execute the baxter script 
+and build your workspace afterwards: ::
+
+$ cd ~/ros_ws/
+$ ./baxter.sh
+$ catkin_make
+
+In case you have not used MoveIt before, you should first do the MoveIt
+tutorial which can be found on on the Rethink Robotics website:
+http://sdk.rethinkrobotics.com/wiki/MoveIt_Tutorial
+ 
+
+Planner configuration
+---------------------
+
+Now you should already have the MoveIt configuration of the robot.
+Open a terminal to move to the config folder: ::
+
+$ roscd baxter_moveit_config/config
+	
+and open the "kinematics.yaml" file from this directory. ::
+
+$ gedit kinematics.yaml
+	
+For baxter tasker the strategy is to precompute all plans. That 
+is why we increased the planning time and accuracy. Even if a 
+planning procedure takes a little bit longer, we do not care,
+because once a plan is computed it can be simply executed all
+the time. This gives us the possibilitiy to see directly at the
+beginning, during the plan generation, to see if all positions
+can be reached. 
+
+The values for the planner have been set to::
+
+	left_arm:
+		kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+	# uncomment to use ikfast kinematics plugin
+	#	kinematics_solver: baxter_left_arm_kinematics/IKFastKinematicsPlugin
+		kinematics_solver_attempts: 15
+		kinematics_solver_search_resolution: 0.004
+		kinematics_solver_timeout: 0.010
+	right_arm:
+		kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+	# uncomment to use ikfast kinematics plugin
+	#	kinematics_solver: baxter_right_arm_kinematics/IKFastKinematicsPlugin
+	 	kinematics_solver_attempts: 15
+		kinematics_solver_search_resolution: 0.004
+		kinematics_solver_timeout: 0.010

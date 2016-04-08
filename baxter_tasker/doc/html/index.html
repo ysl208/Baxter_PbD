@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to baxter_tasker’s documentation!</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="" href="#" />
+    <link rel="next" title="scripts" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="scripts"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">baxter_tasker documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-baxter-tasker-s-documentation">
+<h1>Welcome to baxter_tasker&#8217;s documentation!<a class="headerlink" href="#welcome-to-baxter-tasker-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This ROS package called baxter tasker is intended for the Baxter Research
+Robot from Rethink Robotics. It offers an interface on the controlling
+computer and on the robot. In particular this interface is designed to help
+users to setup a simple pick and place behavior, and automatically generate the corresponding Python code.
+Simple behaviors can
+be directly learned on the robot, whereas more complex behaviors have to be
+programmed in Python.
+See the install instructions in INSTALL.txt or the <a class="reference internal" href="#setup">setup</a> section in the
+documentation to get 3D environment running, in order to use all capabilities
+of baxter tasker.</p>
+<div class="section" id="what-is-it-for">
+<h2>What is it for?<a class="headerlink" href="#what-is-it-for" title="Permalink to this headline">¶</a></h2>
+<p>This software it suited for Python developers who are new to baxter,
+even if you already have experience in Python. There are a lot of tools
+to show how the stuff and access to the robot works.
+In this term the interface allows a quick start into the subject of the
+Baxter Research Robot.</p>
+</div>
+<div class="section" id="what-does-it-do">
+<h2>What does it do?<a class="headerlink" href="#what-does-it-do" title="Permalink to this headline">¶</a></h2>
+<p>This software gives a general overview of baxter&#8217;s capabilities. There a lot
+of useful classes in Python that show the usage of the sensor data and
+how to control the robot. The basic interface uses</p>
+<ul class="simple">
+<li>the display,</li>
+<li>the buttons,</li>
+<li>the cameras,</li>
+<li>the arms,</li>
+<li>the infrared distance sensors,</li>
+<li>the leds and</li>
+<li>the sonar sensors.</li>
+</ul>
+<p>There are also procedures
+to save trajectories and information about the environment. For advanced programmers,
+there are two classes where new functions could be added, which are automatically added
+to the graphical user interface. The classes offer an easy access to all of the
+robot&#8217;s hardware.</p>
+</div>
+<div class="section" id="what-was-used">
+<h2>What was used?<a class="headerlink" href="#what-was-used" title="Permalink to this headline">¶</a></h2>
+<p>The Baxter Tasker is made for Python 2.7  with ROS Groovy that uses the catkin builder.
+The current baxter-sdk is 0.7.0. There is also an optional but recommended package
+called MoveIt, which was used to create a virtual scene around baxter. In the virtual
+scene MoveIt! allows collision free planning.</p>
+</div>
+<div class="section" id="dependencies-compatibility-tested-versions">
+<h2>Dependencies - Compatibility - Tested Versions<a class="headerlink" href="#dependencies-compatibility-tested-versions" title="Permalink to this headline">¶</a></h2>
+<p>The Baxter Tasker was tested and works with
+* Python 2.7
+* Groovy, Hydro (with MoveIt fix)
+* Baxter RSDK Version 0.7.0 and 1.0.0
+* MoveIt
+* Ubuntu 12.04, 12.10, 13.04
+There is a good chance that it is also working with different ROS and Ubuntu versions.</p>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+<span class="target" id="setup"></span></div>
+<div class="section" id="id1">
+<h1>Setup<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>The baxter tasker needs no compilation, as there are only Python
+scripts used. The package can directly launched after cloning,
+with one condition. If you want to use the 3D planning environment,
+you have to install MoveIt, which is used by the baxter tasker.
+In case you want to use hydro instead of groovy just replace all &#8220;groovy&#8221; with &#8220;hydro&#8221;.</p>
+<p>To install MoveIt:
+Change into the src of your catkin workspace and clone the robot
+description for baxter:</p>
+<div class="highlight-python"><pre>$ cd ~/ros_ws/src
+$ git clone https://github.com/ros-planning/moveit_robots.git</pre>
+</div>
+<p>Now you need to install MoveIt. I recommend the installation with
+the package Manager of Ubuntu:</p>
+<div class="highlight-python"><pre>$ sudo apt-get update
+$ sudo apt-get install ros-groovy-moveit-full</pre>
+</div>
+<p>In case you use hydro you now need to fix a little bug in the python interface of the MoveIt part.
+So open the file:</p>
+<div class="highlight-python"><pre>$gedit /opt/ros/hydro/lib/python2.7/dist-packages/moveit_commander/roscpp_initializer.py</pre>
+</div>
+<p>and replace in line 42 the content of</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">args2</span> <span class="o">+=</span> <span class="n">a</span>
+</pre></div>
+</div>
+<p>with</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">args2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you use groovy you can directly continue here.</p>
+<p>Move into the root of your workspace and execute the baxter script
+and build your workspace afterwards:</p>
+<div class="highlight-python"><pre>$ cd ~/ros_ws/
+$ ./baxter.sh
+$ catkin_make</pre>
+</div>
+<p>In case you have not used MoveIt before, you should first do the MoveIt
+tutorial which can be found on on the Rethink Robotics website:
+<a class="reference external" href="http://sdk.rethinkrobotics.com/wiki/MoveIt_Tutorial">http://sdk.rethinkrobotics.com/wiki/MoveIt_Tutorial</a></p>
+<div class="section" id="planner-configuration">
+<h2>Planner configuration<a class="headerlink" href="#planner-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Now you should already have the MoveIt configuration of the robot.
+Open a terminal to move to the config folder:</p>
+<div class="highlight-python"><pre>$ roscd baxter_moveit_config/config</pre>
+</div>
+<p>and open the &#8220;kinematics.yaml&#8221; file from this directory.</p>
+<div class="highlight-python"><pre>$ gedit kinematics.yaml</pre>
+</div>
+<p>For baxter tasker the strategy is to precompute all plans. That
+is why we increased the planning time and accuracy. Even if a
+planning procedure takes a little bit longer, we do not care,
+because once a plan is computed it can be simply executed all
+the time. This gives us the possibilitiy to see directly at the
+beginning, during the plan generation, to see if all positions
+can be reached.</p>
+<p>The values for the planner have been set to:</p>
+<div class="highlight-python"><pre>left_arm:
+        kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+# uncomment to use ikfast kinematics plugin
+#       kinematics_solver: baxter_left_arm_kinematics/IKFastKinematicsPlugin
+        kinematics_solver_attempts: 15
+        kinematics_solver_search_resolution: 0.004
+        kinematics_solver_timeout: 0.010
+right_arm:
+        kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+# uncomment to use ikfast kinematics plugin
+#       kinematics_solver: baxter_right_arm_kinematics/IKFastKinematicsPlugin
+        kinematics_solver_attempts: 15
+        kinematics_solver_search_resolution: 0.004
+        kinematics_solver_timeout: 0.010</pre>
+</div>
+</div>
+</div>
+<div class="section" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<p>Run the baxter shell script to source the packages and setup the ROS environment.</p>
+<div class="highlight-python"><pre>$ cd ~/ros_ws/
+$ ./baxter.sh</pre>
+</div>
+<p>From now on you need at least 2 terminals.
+If you have installed the 3d environment, called MoveIt, then we have to start
+this environment first. The next command starts MoveIt, RViz and the trajectory
+action server for the robot. The action server handles all trajectory requests
+to execute      a move, evading all obstacles in your 3D scene.</p>
+<div class="highlight-python"><pre>$ roslaunch baxter_tasker moveit_baxter.launch</pre>
+</div>
+<p>Sometimes RViz crashes. In this case press Ctrl+C and start the launchfile again.</p>
+<p>In case you have limited resources you could instead start everything without RViz by:</p>
+<div class="highlight-python"><pre>$ roslaunch baxter_tasker moveit_baxter_norviz.launch</pre>
+</div>
+<p>For testing moveit, it is recommened to run the monitor now, which can be used for fast
+evaluation of arm trajectories. If you see values for both arms then your moveit is working.
+You can start the monitor by:</p>
+<div class="highlight-python"><pre>$ roslaunch baxter_tasker monitor.launch</pre>
+</div>
+<p>If everything went fine so far, can start the baxter_tasker software. This starts you
+the GUI on the computer and on baxter and enables the easy access to all sensors. Start
+it by typing the following in another terminal:</p>
+<div class="highlight-python"><pre>$ roslaunch baxter_tasker baxter_tasker_main.launch</pre>
+</div>
+</div>
+<div class="section" id="interface-description">
+<h1>Interface Description<a class="headerlink" href="#interface-description" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-interface-on-the-robot">
+<h2>The Interface on the Robot<a class="headerlink" href="#the-interface-on-the-robot" title="Permalink to this headline">¶</a></h2>
+<p>The interface on the robot offers some basic functions. You can control the interface by the buttons on the robot. Although most of the functionality is identical for both sides of the robot, the button side is important when it comes to a specific arm motion.</p>
+<p><strong>Robot Buttons:</strong></p>
+<dl class="docutils">
+<dt><strong>Hand Cuff:</strong></dt>
+<dd><table class="first last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Cuff button:</th><td class="field-body">Frees the arm to be able to move it around</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Oval button:</th><td class="field-body">Opens/Closes gripper</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Round button:</th><td class="field-body">Not used yet</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt><strong>Navigator Elbow:</strong></dt>
+<dd><table class="first last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Rethink button:</th><td class="field-body">Goes to home menu</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Arrow button:</th><td class="field-body">Goes one level higher in menu</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Wheel button:</th><td class="field-body">Confirms a selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Wheel:</th><td class="field-body">Selects previous or next option on screen</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt><strong>Navigator Torso:</strong></dt>
+<dd><table class="first last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Wheel button:</th><td class="field-body">Unsets the stop flag (same as the continue button on computer)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Arrow button:</th><td class="field-body">Sets the stop flag: Robot stops after its trajectory has been finished</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt><strong>Shoulder buttons:</strong></dt>
+<dd>Enables or disables the motors of the robot</dd>
+</dl>
+<p><strong>Menu:</strong></p>
+<dl class="docutils">
+<dt><strong>Go to Init</strong></dt>
+<dd>Moves both arms to a starting/neutral position in front of the robot:</dd>
+<dt><strong>Run Scenarios</strong></dt>
+<dd><p class="first">Lists all scenarios that are implemented in the script &#8220;baxter_scenarios.py&#8221;.</p>
+<dl class="last docutils">
+<dt><strong>PickAndPlace</strong></dt>
+<dd><p class="first">&#8220;PickAndPlace&#8221; is an interactive scenario until there are trajectories recorded. This means
+that you can directly teach the robot what to do, by taking it at its hand.
+In this scenario you can save multiple trajectories for each arm. The titlebar shows the number of the active
+trajectory. The trajectories are saved in the data folder of the package.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Even, if there is only one number shown, it affects the ID for both arms. Both arm trajectories can be
+learned individually.</p>
+</div>
+<dl class="last docutils">
+<dt><strong>Learn Step</strong></dt>
+<dd>Starts the recording of the arm on the side, where the learn button has been pressed. The trajecory ID corresponds
+to the number in the titlebar. Only if the cuff button
+is pressed, a trajectory is being recorded. Ensure that you also press the cuffs, if you open or close the gripper.
+Finer movements should be recorded slower.</dd>
+<dt><strong>Next Step</strong></dt>
+<dd>Switches to the next ID, to record or modify a new trajectory.</dd>
+<dt><strong>Previous Step</strong></dt>
+<dd>Switches to the previous ID, to record or modify a new trajectory. (Smallest ID is 0)</dd>
+<dt><strong>Run Step</strong></dt>
+<dd>Executes the saved trajectory for the arm, where the button has been pressed and which corresponds to the ID in
+the titlebar.</dd>
+<dt><strong>RunAll</strong></dt>
+<dd><p class="first">Executes all saved trajectories for the arm, where the button has been pressed from ID 0 to the last recorded one.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Be careful, if you have already saved trajectories in your datafolder, as they are also played. A delete button in the interface
+is integrated in the next update</p>
+</div>
+</dd>
+<dt><strong>RunAllLooped</strong></dt>
+<dd>Does the same as &#8220;RunAll&#8221; but begins from the first trajectory after the last one has been executed.</dd>
+</dl>
+</dd>
+<dt><strong>Consignment (requires MoveIt)</strong></dt>
+<dd><p class="first">Loads all boxes into the scene for a special consignment task. This task uses a short eletric gripper on the right side and a middle and old
+pneumatic gripper on the left. Additionally all grip types are shown (Inside grip, outside grip, pneumatic grip). Moreover
+one item is passed from one hand to the other. The execution is described below:</p>
+<ol class="last arabic simple">
+<li>Take object on the right back side with an outside grip</li>
+<li>Move to the front and pass the object to the pneumatic gripper</li>
+<li>Place the object with the left arm into the destination box</li>
+<li>Meanwhile take another object with an inside grip with the right arm and place it in the destination box</li>
+<li>After the placement of the left arm, take an object from the left side and place it in the destination box</li>
+<li>After the placement of the right, pick up the next object from the first box and wait for the left arm until it placed its items</li>
+<li>Start from point 2 again</li>
+</ol>
+</dd>
+<dt><strong>Consignment2 (requires MoveIt)</strong></dt>
+<dd><p class="first">Loads all boxes into the scene. This task shows a basic pick and place with three different items. This demos uses 12 items
+of each type while all of them are stored differently. The execution is described below:</p>
+<ol class="last arabic simple">
+<li>The left arm picks a small goblet and places it into an already placed tray.</li>
+<li>At the same time the right arm picks a small goblet and stores it.</li>
+<li>The left arm picks a big goblet and places it into an already placed tray.</li>
+<li>At the same time the right arm picks a big goblet and stores it.</li>
+<li>Now the left tray is filled and the right tray is empty.</li>
+<li>The right arm takes the empty tray from the conveyor belt.</li>
+<li>Simultaneously the left arm picks a tray.</li>
+<li>Now the conveyor belt moves.</li>
+<li>The right arm now stores the tray and the left arm places the new tray on the conveyor belt.</li>
+<li>Start from point 1 again.</li>
+</ol>
+</dd>
+<dt><strong>Reset Items</strong></dt>
+<dd>In case one of the consignment scenarios have been executed, the virtual items are reset to 0, to be able to run the scenario
+again immediately.</dd>
+</dl>
+</dd>
+<dt><strong>Select arms</strong></dt>
+<dd>Some scenarios e.g. consignment2 have the possibility to only use one arm. In case you want to test something or
+you dont have enough space around the robot</dd>
+<dt><strong>Show camera</strong></dt>
+<dd>Depending on the side you press the wheel confirmation button, the according camera in the hand is being displayed on the
+screen. By any other action afterwards on the Navigator Elbow the camera stream is stopped.</dd>
+<dt><strong>Teach Menu</strong></dt>
+<dd>Here you can show the robot one trajectory on each arm that can be executed afterwards. In addition you have the
+possibility to stop the execution at all times from both arms and the computer interface.</dd>
+<dt><strong>Manage Boxes (requires MoveIt)</strong></dt>
+<dd><p class="first">This one sets the origin and inclination of a box relative to gripper endpoint. Boxes are defined by their length,
+width, height, thickness, number of objects, dimension of the object, pose and offset of the objects or possible drop off points
+for objects. All predefined boxes are defined in scripts/baxter_scene.py (Going to be moved into a separate config file in the
+next version).</p>
+<dl class="last docutils">
+<dt><strong>Done</strong></dt>
+<dd>Upon the two corners of an external box and the type of the box have been set, the pose of the box is computed. Afterwards the
+transformation frame and a virtual box model is inserted into the scene.</dd>
+<dt><strong>Point 0</strong></dt>
+<dd>&#8220;Point 0&#8221; sets the origin of a box. It should correspond to a top corner of a box.</dd>
+<dt><strong>Point 1</strong></dt>
+<dd>&#8220;Point 1&#8221; lies on the x-axis of Point 0. So it is also on the top edge of a box, but is does not have to be a corner</dd>
+<dt><strong>Select Box Type</strong></dt>
+<dd>This selects a predefined box type. Depending on the type the shape of the object in the 3 dimensional scene changes.</dd>
+</dl>
+</dd>
+<dt><strong>Select Gripper (requires MoveIt)</strong></dt>
+<dd>Depending if you are using the electric or suction gripper you can adjust the length of the gripper.
+This is important for the collision detection in your 3D model.
+If you have a custom gripper, you need to change the code in scripts/baxter_scene.py -&gt; attachGripper</dd>
+</dl>
+</div>
+<div class="section" id="the-interface-on-the-workstation">
+<h2>The Interface on the Workstation<a class="headerlink" href="#the-interface-on-the-workstation" title="Permalink to this headline">¶</a></h2>
+<p>The interface on the computer consists of two columns of buttons on the left side, a list of tasks in the middle and an editor on the right. The buttons offer some functionality to trigger specific functions, which are described in detail below.
+Not all of them are available on the robot. In fact you are working with a collaborative robot.
+The idea behind is that you can create a new task, learn with the robot, which generates Python code in the editor field.
+In this interface you have the possibility to modify parameters of this code and also access nearly the complete interface in the background.
+You can simply save your task by clicking on File (in the top row) and click on &#8220;Save all Tasks&#8221;. Once you generated or wrote some code, you select your task from the list and click on the execute button. This gives you the power to test stuff very quickly.</p>
+<p><strong>Functionality of the buttons:</strong></p>
+<dl class="docutils">
+<dt><strong>Add Task:</strong></dt>
+<dd>Creates a new task in the list. Use &#8220;File-&gt;Save Tasks&#8221; to keep your task</dd>
+<dt><strong>Execute Task:</strong></dt>
+<dd>Executes the selected tasks of the list.</dd>
+<dt><strong>Enable/Disable Robot:</strong></dt>
+<dd>Enables or disables the motors</dd>
+<dt><strong>Back Button:</strong></dt>
+<dd>Goes one level higher in menu</dd>
+<dt><strong>Confirm Right Button:</strong></dt>
+<dd>Confirms a selection with side right</dd>
+<dt><strong>Confirm Left Button:</strong></dt>
+<dd>Confirms a selection with side left</dd>
+<dt><strong>Turn Wheel:</strong></dt>
+<dd>Turns the left wheel to the right (negative mathematic sense)</dd>
+<dt><strong>Round Cuff Right Button:</strong></dt>
+<dd>Does nothing</dd>
+<dt><strong>Round Cuff Left Button:</strong></dt>
+<dd>Does nothing</dd>
+<dt><strong>Oval Cuff Right Button:</strong></dt>
+<dd>Opens/Closes the right gripper</dd>
+<dt><strong>Oval Cuff Left Button:</strong></dt>
+<dd>Opens/Closes the left gripper</dd>
+<dt><strong>Set HR Logo:</strong></dt>
+<dd>Sets the Humarobotics logo to the screen of the robot</dd>
+<dt><strong>Create MoveIt URDF:</strong></dt>
+<dd>Calibrates all joints and then updates the URDF model of the robot</dd>
+<dt><strong>STOP:</strong></dt>
+<dd>Set a movement flag to stop new movements.</dd>
+<dt><strong>Continue:</strong></dt>
+<dd>Unsets the movement flag</dd>
+<dt><strong>Go to Init:</strong></dt>
+<dd>Moves the arms to a start position</dd>
+<dt><strong>Generate Plans:</strong></dt>
+<dd>Generate plans for the current scenario and scene</dd>
+<dt><strong>Test Switch 1:</strong></dt>
+<dd>Picks a switch item with the right arm</dd>
+<dt><strong>Test Switch 2:</strong></dt>
+<dd>Drops a switch item with the left arm</dd>
+<dt><strong>Test Cover Small:</strong></dt>
+<dd>Picks and drops a small cover with the right arm</dd>
+<dt><strong>Test Cover Door:</strong></dt>
+<dd>Picks and drops a door cover with the left arm</dd>
+<dt><strong>Test Tray:</strong></dt>
+<dd>Picks and drops a tray with the left arm</dd>
+<dt><strong>Test Goblet Blue:</strong></dt>
+<dd>Picks and drops a blue goblet with the left arm</dd>
+<dt><strong>Test Goblet Red:</strong></dt>
+<dd>Picks and drops a red goblet with the left arm</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="baxter_behaviors.html">baxter_behaviors Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper.html">baxter_helper Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_abstract_limb.html">baxter_helper_abstract_limb Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_frame.html">baxter_helper_frame Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_menu.html">baxter_helper_menu Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_moveit_limb.html">baxter_helper_moveit_limb Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_simple_limb.html">baxter_helper_simple_limb Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_helper_tasker.html">baxter_helper_tasker Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_image_composer.html">baxter_image_composer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_image_text_displayer.html">baxter_image_text_displayer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_scenarios.html">baxter_scenarios Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_scene.html">baxter_scene Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_tasker_main.html">baxter_tasker_main Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="baxter_urdf_creator.html">baxter_urdf_creator Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="boxrenderer.html">boxrenderer Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generate_plans.html">generate_plans Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gripper.html">gripper Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="high_level_movement.html">high_level_movement Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="joint_trajectory_action_hr.html">joint_trajectory_action_hr Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="joint_trajectory_action_server.html">joint_trajectory_action_server Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="limb.html">limb Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor.html">monitor Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python_text.html">python_text Module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="useful-environment-configuration">
+<h1>Useful Environment Configuration<a class="headerlink" href="#useful-environment-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Some aliases are very useful for baxter, because they are required regularly and can
+be used in all directories.</p>
+<p>The most important is for instance to enable the robot, so you could make a shortcut
+in the terminal to enable and disable the robot:</p>
+<div class="highlight-python"><pre>echo 'alias be="rostopic pub -1 /robot/set_super_enable std_msgs/Bool True"' &gt;&gt; ~/.bashrc
+echo 'alias bd="rostopic pub -1 /robot/set_super_enable std_msgs/Bool False"' &gt;&gt; ~/.bashrc</pre>
+</div>
+<p>Do not forget to restart the terminal or source the ~/.bashrc file after you made changes to it.</p>
+<p>The same you could do for regularly used launch-files:</p>
+<div class="highlight-python"><pre>echo 'alias bt="roslaunch baxter_tasker baxter_tasker_main.launch"' &gt;&gt; ~/.bashrc</pre>
+</div>
+<p>Or also shell scripts(replace &#8220;ros_ws&#8221; with your catkin or ROS workspace):</p>
+<div class="highlight-python"><pre>echo 'alias baxter=' ( cd ~/ros_ws ; ./baxter.sh ) '' &gt;&gt; ~/.bashrc</pre>
+</div>
+<p>Now you can call your baxter script in all directories with the simple command &#8220;baxter&#8221;</p>
+<p>If you have c++ packages that have to be build you will often use the catkin_make command.
+There is a kind of workaround to invoke the make command as it was in rosbuild. Therefore add
+another command to call a script file:</p>
+<div class="highlight-python"><pre>alias smake=~/smake.sh</pre>
+</div>
+<p>Now go to you home directory and create this file:</p>
+<div class="highlight-python"><pre>cd
+gedit smake.sh</pre>
+</div>
+<p>and paste the following content to this file:</p>
+<div class="highlight-python"><pre>package=${PWD##*/}
+printf 'Selected Package: %s\n' $package
+full_path=${PWD}
+printf 'Current Path: %s\n' $full_path
+cd ~/ros_ws
+catkin_make --pkg $package
+cd $full_path</pre>
+</div>
+<p>If you call &#8220;smake&#8221; now in the root of a package, it does more or less the same as the rosmake command
+for catkin.</p>
+</div>
+<div class="section" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="update-release-1-0-1-2014-07-21">
+<h2>Update Release 1.0.1 (2014-07-21)<a class="headerlink" href="#update-release-1-0-1-2014-07-21" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Moved baxter independent files out of the baxter_tasker package.</li>
+<li>Updated for baxter RSDK 1.0.0 and hydro compatibility (mostly the joint_tracjectory_action_server)</li>
+<li>Updated documentation.</li>
+<li>Added a button to toggle the sonar.</li>
+<li>Some stability improvements.</li>
+<li>Added a function in tf_helper to directly invert poses</li>
+</ul>
+</div>
+<div class="section" id="initial-release-1-0-2014-04-11">
+<h2>Initial Release 1.0 (2014-04-11)<a class="headerlink" href="#initial-release-1-0-2014-04-11" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>All files for a Baxter quickstart released.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="todo">
+<h1>Todo<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h1>
+<p>This section show all features (unordered) that are planned in the next releases</p>
+<ul class="simple">
+<li>Integrate the Bar/Datamatrix/QR-Code reader</li>
+<li>Cleanup baxter_scene and put objects into separate config file with more options</li>
+<li>Integrate color picker</li>
+<li>Visual servoing</li>
+<li>Integrate OpenCVHelper classes for C++ interface</li>
+<li>Integrate voice recognition</li>
+<li>Add disable safety controller to collision avoidance class</li>
+<li>Change lists to PoseStamped</li>
+<li>Add control for halo leds in DigitalIO class</li>
+<li>Add button to delete previously recorded trajectories</li>
+<li>Add kinect support that suppresses the robot (high priority)</li>
+<li>Add a calibration marker detection for a quick kinect setup</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to baxter_tasker&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#what-is-it-for">What is it for?</a></li>
+<li><a class="reference internal" href="#what-does-it-do">What does it do?</a></li>
+<li><a class="reference internal" href="#what-was-used">What was used?</a></li>
+<li><a class="reference internal" href="#dependencies-compatibility-tested-versions">Dependencies - Compatibility - Tested Versions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#id1">Setup</a><ul>
+<li><a class="reference internal" href="#planner-configuration">Planner configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li><a class="reference internal" href="#interface-description">Interface Description</a><ul>
+<li><a class="reference internal" href="#the-interface-on-the-robot">The Interface on the Robot</a></li>
+<li><a class="reference internal" href="#the-interface-on-the-workstation">The Interface on the Workstation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-reference">API Reference</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#useful-environment-configuration">Useful Environment Configuration</a></li>
+<li><a class="reference internal" href="#changelog">Changelog</a><ul>
+<li><a class="reference internal" href="#update-release-1-0-1-2014-07-21">Update Release 1.0.1 (2014-07-21)</a></li>
+<li><a class="reference internal" href="#initial-release-1-0-2014-04-11">Initial Release 1.0 (2014-04-11)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#todo">Todo</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="next chapter">scripts</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="scripts"
+             >next</a> |</li>
+        <li><a href="#">baxter_tasker documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, HumaRobotics.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

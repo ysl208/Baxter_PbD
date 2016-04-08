@@ -1,0 +1,18 @@
+Todo
+====
+
+This section show all features (unordered) that are planned in the next releases
+
+* Integrate the Bar/Datamatrix/QR-Code reader
+* Cleanup baxter_scene and put objects into separate config file with more options
+* Integrate color picker
+* Visual servoing
+* Integrate OpenCVHelper classes for C++ interface
+* Integrate voice recognition
+* Add disable safety controller to collision avoidance class
+* Change lists to PoseStamped
+* Add control for halo leds in DigitalIO class
+* Add button to delete previously recorded trajectories
+* Add kinect support that suppresses the robot (high priority) 
+* Add a calibration marker detection for a quick kinect setup
+ 

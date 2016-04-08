@@ -1,0 +1,20 @@
+Changelog
+=========
+
+Update Release 1.0.2 (2015-06-18)
+* Compatible now with indigo
+* Removed moveit dependencies, in case it should be used without moveit 
+
+Update Release 1.0.1 (2014-07-21)
+---------------------------------
+* Moved baxter independent files out of the baxter_tasker package.
+* Updated for baxter RSDK 1.0.0 and hydro compatibility (mostly the joint_tracjectory_action_server)
+* Updated documentation.
+* Added a button to toggle the sonar.
+* Some stability improvements.
+* Added a function in tf_helper to directly invert poses
+
+
+Initial Release 1.0 (2014-04-11) 
+-------------------------------- 
+* All files for a Baxter quickstart released.

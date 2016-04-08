@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="baxter_tasker" type="baxter_ui_test.py" name="baxter_ui_test" args="/joint_states:=/robot/joint_states" output="screen"/>
+<!--    <node name="ui_frontend_python_tk" pkg="ui_core" type="ui_frontend_python_tk.py" />  -->
+    <node name="ui_tcp" pkg="ui_core" type="ui_tcp.py" />
+</launch>
