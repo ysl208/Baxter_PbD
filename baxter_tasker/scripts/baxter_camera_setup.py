@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import pdb
 import rospy
 import roslib
 
@@ -38,12 +38,12 @@ class golf_setup():
         self.gripper.calibrate()
 
         # image directory
-        self.image_dir = os.getenv("HOME") + "/Golf/"
+        self.image_dir = os.getenv("HOME") + ""
 
         # start positions
         self.x     = 0.60                        # x     = front back
-        self.y     = -0.3                        # y     = left right
-        self.z     = 0.05                        # z     = up down
+        self.y     = -0.5                        # y     = left right
+        self.z     = 0.03                       # z     = up down set to 0.03 for minimum recognised
         self.roll  = -1.0 * math.pi              # roll  = horizontal
         self.pitch = 0.0 * math.pi               # pitch = vertical
         self.yaw   = 0.0 * math.pi               # yaw   = rotation
@@ -130,7 +130,7 @@ class golf_setup():
 def main():
     limb  = "right"
     setup = golf_setup(limb)
-
+#    pdb.set_trace()
     # open the gripper
     setup.gripper.open()
 
