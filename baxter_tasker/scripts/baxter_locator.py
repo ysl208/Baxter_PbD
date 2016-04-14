@@ -118,8 +118,8 @@ class BaxterLocator:
         self.publish_camera = True
 
         # required position accuracy in metres
-        self.ball_tolerance = 0.009
-        self.tray_tolerance = 0.009
+        self.ball_tolerance = 0.02
+        self.tray_tolerance = 0.02
 
         # number of balls found
         self.balls_found = 0
@@ -140,7 +140,7 @@ class BaxterLocator:
 
         # camera parameters (NB. other parameters in open_camera)
         self.cam_calib    = 0.0025                     # meters per pixel at 1 meter
-        self.cam_x_offset = 0.041                      # camera gripper offset
+        self.cam_x_offset = 0.039                      # camera gripper offset
         self.cam_y_offset = -0.02
         self.width        = 960                        # Camera resolution
         self.height       = 600
@@ -227,6 +227,9 @@ class BaxterLocator:
             self.baxter_ik_move("right", (0.25, -0.50, 0.2, math.pi, 0.0, 0.0))
         else:
             self.baxter_ik_move("left", (0.25, 0.50, 0.2, math.pi, 0.0, 0.0))
+
+        for filename in glob.glob(self.image_dir + "*.jpg"):
+			            os.remove(filename)
 
     # reset all cameras (incase cameras fail to be recognised on boot)
     def reset_cameras(self):
@@ -426,6 +429,8 @@ class BaxterLocator:
             sys.exit("ERROR - subscribe_to_camera - Invalid camera")
 
         camera_sub = rospy.Subscriber(camera_str, Image, callback)
+
+
 
     # Convert cv image to a numpy array
     def cv2array(self, im):
@@ -664,7 +669,7 @@ class BaxterLocator:
         pixel_dy    = (self.height / 2) - centre[1]
         pixel_error = math.sqrt((pixel_dx * pixel_dx) + (pixel_dy * pixel_dy))
         error       = float(pixel_error * self.cam_calib * self.block_distance)
-        pdb.set_trace()
+        #pdb.set_trace()
         x_offset = - pixel_dy * self.cam_calib * self.block_distance
         y_offset = - pixel_dx * self.cam_calib * self.block_distance
 
@@ -877,19 +882,19 @@ class BaxterLocator:
 
         # draw a bounding box arounded the detected square
         cv2.drawContours(self.cv_image, [box], -1, (0, 255, 0), 1)
-        cv2.imshow("Detected square", self.cv_image)
-        cv2.destroyAllWindows()
+        #cv2.imshow("Detected square", self.cv_image)
+        #cv2.destroyAllWindows()
         l = zip(*box)
         centroid_x = int(sum(l[0])/len(l[0]))
         centroid_y = int(sum(l[1])/len(l[1]))
 #        pdb.set_trace()
         approx = cv2.approxPolyDP(square,0.01*cv2.arcLength(square,True),True)
-        print approx
+        
         # check the detected square has the right size
         print (box[0]-box[1])[1]
         print (box[0]-box[3])[0]
-        print abs((box[0]-box[1])[1]/(box[0]-box[3])[0])#width/height should be around 1 if it is a square
-        print abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])
+        #print abs((box[0]-box[1])[1]/(box[0]-box[3])[0])#width/height should be around 1 if it is a square
+        #print abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])
         if 1 < 50: #abs(abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0]))
             colour_centre = (centroid_x,centroid_y)
             cv_image = cv.fromarray(self.cv_image)
@@ -928,10 +933,10 @@ class BaxterLocator:
        
             # show the images
             s = "Looking for colour %s" % (colour)
-            cv2.imshow(s, numpy.hstack([self.cv_image, output]))
+            #cv2.imshow(s, numpy.hstack([self.cv_image, output]))
             self.display_screen(output, s)
             cv2.waitKey(3)
-            cv2.destroyAllWindows()
+            #cv2.destroyAllWindows()
             if self.save_images:
                 cv_image = cv.fromarray(output)
                 file_name = self.image_dir + colour + "_detected_"  + str(iteration) + ".jpg"
@@ -946,7 +951,7 @@ class BaxterLocator:
         c = sorted_cnts[0]
         c_area = cv2.contourArea(c)
         print c_area
-        pdb.set_trace()
+        #pdb.set_trace()
         # check if detected area is big enough, then approach
         if c_area > self.min_area:
             colour_centre = self.detect_square(c)
@@ -973,8 +978,8 @@ class BaxterLocator:
             while error > self.tray_tolerance:
                 ok, colour_centre, error = self.ball_tray_iterate(iteration,       \
                                           colour_centre, colour)
-                pdb.set_trace()
-                #self.update_pose(0,0,-0.05) TO DO:
+                #pdb.set_trace()
+                
                 iteration              += 1
 
         baxter_centre = self.pixel_to_baxter((colour_centre[1],colour_centre[0]), self.block_distance)
@@ -1028,11 +1033,20 @@ class BaxterLocator:
         print 'pitch      = %5.4f radians %5.4f degrees' %euler[1], 180.0 * euler[1] / pi
         print 'yaw        = %5.4f radians %5.4f degrees' %euler[2], 180.0 * euler[2] / pi
 
+    def holdingObject(self):
+        """
+            Returns true if self.get_distance < 65.535 and gripper is open
+        """
+        rospy.sleep(0.2)
+        
+        return (self.get_distance(self.limb) < 65) and self.gripper.gripping()
+
+
     def approach(self):
         pdb.set_trace()
         while self.get_distance(self.limb) > 0.126:
             rospy.loginfo(self.get_distance(self.limb))
-            dist = self.pose[2] + 0.1
+            dist = self.pose[2] + 0.11
             self.update_pose(0, 0, -dist)
             #print self.get_distance(self.limb)
 
@@ -1062,14 +1076,19 @@ class BaxterLocator:
             self.approach()
             
             self.gripper.close()
-
+            cv.WaitKey(10)
             s = "Moving to block to target location"
             self.display_screen(self.cv_image, s)
             print s
             self.update_pose(0,0,0.19)
-
+            cv.WaitKey(10)
+            # check if managed to grab object
+            if not self.holdingObject():
+                self.gripper.open()
+                print "Failed to grab object"
+                break
             # speed up again
-            #self.limb_interface.set_joint_position_speed(0.5)
+            self.limb_interface.set_joint_position_speed(0.5)
 
             # display current image on head display
             self.display_screen(self.cv_image, s)
@@ -1086,7 +1105,7 @@ class BaxterLocator:
             # display current image on head display
             s = "Placing tetris block down"
             self.display_screen(self.cv_image, s)
-
+            cv.WaitKey(10)
             # open the gripper
             self.gripper.open()
 
@@ -1271,10 +1290,15 @@ class BaxterLocator:
         print self.pose
         raw_input("Pick and Place: Press Enter to continue: ")
         # move block by these coordinates/angles
-        offset_x = -0.05 
-        offset_y = -0.05
-        angle = -90
-        offset_angle = angle * (math.pi / 180)
+        rospy.loginfo("Enter the rotation for the block: (90,180,270,360)")
+        angle = sys.stdin.readline().strip()
+
+        rospy.loginfo("Enter the number of cells to the right:")
+        r = sys.stdin.readline().strip()
+        offset_x = -0.05 *float(r)
+        offset_y = -0.05*0
+        #angle = -90
+        offset_angle = float(angle) * (math.pi / 180)
         pdb.set_trace()
         self.pick_and_place(offset_x, offset_y, offset_angle)
         cv2.destroyAllWindows()
