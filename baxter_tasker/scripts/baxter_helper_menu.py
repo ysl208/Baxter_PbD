@@ -563,10 +563,9 @@ class BaxterMenuEntries:
         """
         entries = {
                    'Teach Menu': [self.__mm.loadDefaultMenu,"teachMenu"],
-                   'Locate': self.__mm.bb.locate,
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
-#                   'Show Camera': self.__mm.bb.showCamera,
+                   'Show Camera': self.__mm.bb.showCamera,
 #                   'Go To Init':self.__mm.bb.goToInit,
                    
                    } 
@@ -587,6 +586,7 @@ class BaxterMenuEntries:
                    "4. Demo Action": self.__mm.bb.demonstrate,
                    "5. Execute Action": self.__mm.bb.execute,
                    "6. Save Predicates": self.__mm.bb.savePredicates,
+                   "7. Run action sequence": self.__mm.bb.createSequence,
 #                   "Learn": self.__mm.bb.teach,
 #                   "Play" : [self.__mm.bb.executePath,False],
 #                   "Play Looped": [self.__mm.bb.executePath,True],

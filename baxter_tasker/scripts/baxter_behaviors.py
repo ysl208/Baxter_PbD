@@ -95,6 +95,8 @@ class BaxterBehaviors():
         self.bs = BaxterScenarios(baxter)
         self.bl = BaxterLearner(baxter)
         self.locator = BaxterLocator(baxter)
+        self.actionSequence = []
+        self.allActions = {}
 
       
     def changeExecutionState(self,stop=True):
@@ -164,12 +166,6 @@ class BaxterBehaviors():
 #         entries["Reset Items"] = self.bs.resetItems
         self.mm.addGenericMenu(targets,self.mm.cur_page,"Select your desired scenario", entries)
         self.mm.loadMenu(targets)
-
-    def locate(self,**kwargs):
-        """
-            Locates the blocks on the grid
-        """
-        self.locator.main()
 
     def enterPredicates(self,**kwargs):
         """
@@ -261,7 +257,7 @@ class BaxterBehaviors():
 
     def execute(self,**kwargs):
         """
-            Creates a menu of all existing actions learned in baxter_learner.py
+            Creates a menu of all existing actions learned in baxter_learner.py including the block locator
 
             .. note:: The parameters below are not the method parameters but the entries in the kwargs
             
@@ -276,14 +272,19 @@ class BaxterBehaviors():
             self.mm.neglect()
             return
 
-        members = self.bl.getAllActionNames() 
+        members = self.bl.getAllSavedActions() 
         entries={}
 
         for param in members:
             entries[str(param)] = getattr(self.bl, 'executeAction') 
-#        entries["Load from file"] = getattr(self.bl, 'loadActions') 
-        self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select your the action to execute", entries)
+#        entries["Load from file"] = getattr(self.bl, 'loadActions')
+        entries["search block"] = [getattr(self.locator, 'locate'), "yellow"]
+        entries["approach"] = getattr(self.locator, 'approach')
+        entries["retract"] = [getattr(self.locator, 'verticalMove'), 0.2]
+        self.allActions = entries
+        self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select the action to execute", entries)
         self.mm.loadMenu("executeMenu")
+
 
     def savePredicates(self,**kwargs):
         """
@@ -302,7 +303,7 @@ class BaxterBehaviors():
             self.mm.neglect()
             return
 
-        members = self.bl.getAllActionNames()
+        members = self.bl.getAllSavedActions()
         entries={}
 
         for param in members:
@@ -313,6 +314,60 @@ class BaxterBehaviors():
         self.mm.addGenericMenu("saveMenu",self.mm.cur_page,"Select the action to save the predicates to", entries)
         self.mm.loadMenu("saveMenu")
 
+
+    def createSequence(self,**kwargs):
+        """
+            Creates a menu of all existing actions learned in baxter_learner.py including the block locator and adds them to the selection
+
+            .. note:: The parameters below are not the method parameters but the entries in the kwargs
+            
+            :param side: arm to execute the trajectory
+            :type side: str
+
+        """
+
+        try:
+            side = kwargs['side']
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        members = self.bl.getAllSavedActions() 
+        entries={}
+
+        for param in members:
+            entries[str(param)] = self.addAction
+        entries["search block"] = self.addAction
+        entries["approach"] = self.addAction
+        entries["retract"] = self.addAction
+        entries["Run Sequence"] = self.runSequence
+        self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
+        self.mm.loadMenu("sequenceMenu")
+
+    def runSequence(self, **kwargs):
+        """
+            Runs actions that are saved in the actionSequence variable
+        """
+        pdb.set_trace()
+
+        for action in self.actionSequence:
+            if action == "search block": 
+                self.locator.locate(colour="yellow")
+            if action == "approach":
+                self.locator.approach()
+            if action == "retract": 
+                self.locator.verticalMove(dist=0.2)
+            else: 
+                self.bl.executeAction(fname=action)
+
+
+    def addAction(self, **kwargs):
+        try:
+            action = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+        self.actionSequence.append(str(action))
 
     def showGUI(self,**kwargs):
         """

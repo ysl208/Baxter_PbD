@@ -102,6 +102,7 @@ class BaxterLearner:
     def loadActions(self, **kwargs):
         """
             Loads the actions saved from files
+            TO DO
         """
 
 
@@ -113,7 +114,7 @@ class BaxterLearner:
             action = kwargs["fname"]
         except:
             rospy.logwarn("Could not get the current action selection")
-        pdb.set_trace()
+
         empty_params = [len(item) for sublist in self.__params.values() for item in sublist]
         if len(empty_params) == 0 or len(self.__effects) == 0 or len(self.__preconditions) == 0 or len(self.__all_actions[action]) == 0:
             self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]] = "Missing predicates or action. Please complete before saving. Press Back."
@@ -179,7 +180,7 @@ class BaxterLearner:
             self.baxter.mm.neglect()
             return
         self.__side = side
-#        self.initialiseArmDown()
+
         self.baxter.bb.teach(**{'side':side,'number':self.action_index, 'parent': 'actionMenu'})
 
 
@@ -192,11 +193,15 @@ class BaxterLearner:
         pose = self.baxter.arm[side].getPose()
         self.__watch_parameters['joint_position_x'][i] = pose
         self.__watch_parameters['gripper_free'][i] = self.baxter.gripper[side].gripped()
+        rospy.loginfo(time)
+        rospy.loginfo(self.baxter.gripper[side].gripping())
+        rospy.loginfo(self.baxter.gripper[side].gripped())
 
     def create_action(self):
         """
            Creates new action based on the before and after states of the watch parameters
         """
+
         subtasks = {}
         side = self.__side
         watch_params = self.__watch_parameters
@@ -209,24 +214,15 @@ class BaxterLearner:
         # if gripper_free didnt change, do nothing and leave it as not holding
         # pick: gripper open > close :: True > False
         # pick: suction open > close :: False > True
+
         if watch_params['gripper_free'][0] is watch_params['gripper_free'][1]:
             subtasks['gripper_free'] = ''
         else:
             subtasks['gripper_free'] = watch_params['gripper_free'][1]
         rospy.loginfo(self.__watch_parameters['gripper_free'])
         self.__all_actions[self.__action_name] = subtasks
+        self.baxter_actions[self.__action_name] = subtasks
 
-    def initialiseArmDown(self, **kwargs):
-        """
-            Creates the change motion parameter for moving the arm down to the block
-            TO DO: need to keep moving down until target hit
-        """
-	pose = Pose()
-	pose.position.x = 0
-	pose.position.y = 0
-	pose.position.z = 0.0987
-
-        self.__all_actions['arm_down'] = pose
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):
@@ -255,7 +251,7 @@ class BaxterLearner:
         try:
             action = kwargs["fname"]
         except:
-            rospy.logwarn("Could not get the current action selection")
+            action = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
 
         try:
             side = self.__all_actions[action]['side']

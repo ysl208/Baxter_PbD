@@ -15,6 +15,7 @@ from geometry_msgs.msg import ( PoseStamped,
                                 Point,
                                 Quaternion )
 from std_msgs.msg import Header
+from sensor_msgs.msg import Range
 # import std_srvs.srv
 from baxter_core_msgs.srv import ( SolvePositionIK,
                                    SolvePositionIKRequest )
@@ -42,7 +43,7 @@ class golf_setup():
 
         # start positions
         self.x     = 0.60                        # x     = front back
-        self.y     = -0.5                        # y     = left right
+        self.y     = -0.08                        # y     = left right
         self.z     = 0.03                       # z     = up down set to 0.03 for minimum recognised
         self.roll  = -1.0 * math.pi              # roll  = horizontal
         self.pitch = 0.0 * math.pi               # pitch = vertical
@@ -117,6 +118,7 @@ class golf_setup():
 
         return float(dist / 1000.0)
 
+
     # save setup values
     def save(self):
         # open setup file
@@ -130,7 +132,6 @@ class golf_setup():
 def main():
     limb  = "right"
     setup = golf_setup(limb)
-#    pdb.set_trace()
     # open the gripper
     setup.gripper.open()
 

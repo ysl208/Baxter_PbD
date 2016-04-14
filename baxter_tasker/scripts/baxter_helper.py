@@ -131,12 +131,6 @@ class BaxterRecorder():
         self._start_time = rospy.get_time()
         self.state = False
         
-        # learning variables
-        """self.gripperFree = self.baxter.gripper[side].opened # either 0 or 100 for open or close 
-        self.gripperPosition = #can also use setPosition()
-        self.objectPosition = 
-        self.gripped = self.baxter.gripper[side].gripped()
-        """
     ###### RECORD ###########
     
     def record(self,side,number=""):
