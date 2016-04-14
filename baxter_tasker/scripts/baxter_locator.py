@@ -41,7 +41,7 @@ import cv_bridge
 
 import numpy 
 import math
-import os
+import os, glob
 import sys
 import string
 import time
@@ -1265,6 +1265,7 @@ class BaxterLocator:
         return limb, distance
 
     def main(self, **kwargs):
+        pdb.set_trace()
         # get setup parameters
         limb, distance = self.get_setup()
         print "limb     = ", limb
