@@ -652,8 +652,17 @@ class BaxterLocator:
         # convert mm to m and return distance
         return float(dist / 1000.0)
 
-    # update pose in x and y direction
+    # moves the arm by the x, y, z coordinates
     def update_pose(self, dx, dy, dz):
+
+        # update self.pose to actual current pose
+        quaternion_pose = self.limb_interface.endpoint_pose()
+        position        = quaternion_pose['position']
+
+        # if working arm remember actual (x,y) position achieved
+        self.pose = [position[0], position[1],                                \
+                     position[2], self.pose[3], self.pose[4], self.pose[5]]
+
         x = self.pose[0] + dx
         y = self.pose[1] + dy
         z = self.pose[2] + dz
@@ -963,11 +972,7 @@ class BaxterLocator:
 
         return colour_centre
 
-    def locate(self, **kwargs):
-        try:
-            colour = kwargs["colour"]
-        except:
-            colour = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
+    def locate(self, colour):
         self.publish_camera = True
         self.find_tetris_block(colour)
         self.publish_camera = False
@@ -1067,14 +1072,10 @@ class BaxterLocator:
             self.update_pose(0, 0, -dist)
             #print self.get_distance(self.limb)
 
-    def verticalMove(self, **kwargs):
+    def verticalMove(self, dist):
         """
             Vertically moves the gripper by the specified distance
         """
-        try:
-            dist = kwargs["colour"]
-        except:
-            dist = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
 
         self.update_pose(0, 0, float(dist))
 

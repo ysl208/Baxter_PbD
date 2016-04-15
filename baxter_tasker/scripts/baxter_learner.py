@@ -61,8 +61,6 @@ class BaxterLearner:
         self.baxter_actions = {}
         self.current_action = BaxterAction()
         self.__watch_parameters = {'joint_position_x': ['',''], #(before,after)
-                             #'joint_position_y': ['',''],
-                             #'joint_position_z': ['',''],
                              #'gripper_orientation': ['',''],
                              #'holding': ['',''],
                              'gripper_free': ['','']
@@ -70,9 +68,8 @@ class BaxterLearner:
         self.action_index = 0
         self.__action_name = "action"
         self.__side = "right"
-        self.__all_actions = {#'arm_down':[], 'arm_up':[],
-                              'move_n':[], 'move_w':[], 'move_s':[],
-                              'move_e':[], 'rotate_cw':[], 'rotate_acw':[], 'pick':[], 'drop':[]}
+        self.__all_actions = {'move_n':[], 'move_w':[], 'move_s':[], 'move_e':[], 
+                              'rotate_cw':[], 'rotate_acw':[], 'pick':[], 'drop':[]}
 
         #Tetris predicates
         self.__current_predicate = ""
@@ -91,6 +88,10 @@ class BaxterLearner:
 
 
     def displayText(self, **kwargs):
+        """
+            Displays text on screen
+        """
+
         text = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
 
         entries = {}
@@ -193,9 +194,7 @@ class BaxterLearner:
         pose = self.baxter.arm[side].getPose()
         self.__watch_parameters['joint_position_x'][i] = pose
         self.__watch_parameters['gripper_free'][i] = self.baxter.gripper[side].gripped()
-        rospy.loginfo(time)
-        rospy.loginfo(self.baxter.gripper[side].gripping())
-        rospy.loginfo(self.baxter.gripper[side].gripped())
+
 
     def create_action(self):
         """
@@ -210,7 +209,7 @@ class BaxterLearner:
 #        diff['orientation'] = baxter_helper_abstract_limb.getDictFromPose(watch_params['joint_position_x'][0])['orientation']
         subtasks['side'] = side
         subtasks['joint_position_x'] = baxter_helper_abstract_limb.getPoseFromDict(diff)
-#        subtasks['joint_position_y'] = baxter_helper_abstract_limb.getPoseFromDict(diff)
+
         # if gripper_free didnt change, do nothing and leave it as not holding
         # pick: gripper open > close :: True > False
         # pick: suction open > close :: False > True
@@ -219,7 +218,7 @@ class BaxterLearner:
             subtasks['gripper_free'] = ''
         else:
             subtasks['gripper_free'] = watch_params['gripper_free'][1]
-        rospy.loginfo(self.__watch_parameters['gripper_free'])
+
         self.__all_actions[self.__action_name] = subtasks
         self.baxter_actions[self.__action_name] = subtasks
 
@@ -235,13 +234,6 @@ class BaxterLearner:
 
         # convert mm to m and return distance
         return float(dist / 1000.0)
-
-
-    def approach(self):
-        while self.get_distance(self.limb) > 0.12:
-            self.update_pose(0, 0, -0.05)
-            last_distance = self.get_distance(self.limb)
-            print self.get_distance(self.limb)
 
 
     def executeAction(self, **kwargs):
@@ -268,21 +260,16 @@ class BaxterLearner:
 
 	pose_change = (self.__all_actions[action]['joint_position_x'])
 	goal_pose = baxter_helper_abstract_limb.getPoseAddition(pose,pose_change)
-#        goal_pose['position'][0] = pose_dict['position'][0] #keep the x coordinate the same
-#        goal_pose['position'][2] = pose_dict['position'][2] #keep the z coordinate the same
-	rospy.loginfo("goal %s" % goal_pose['position'])
+	rospy.loginfo("goal %s" % goal_pose)
 	self.baxter.arm[side].goToPose(baxter_helper_abstract_limb.getPoseFromDict(goal_pose), speed=0.7)
 	pose = self.baxter.arm[side].getPose()
-	rospy.loginfo("end %s" % pose.position)
+	rospy.loginfo("end %s" % pose)
 
         # gripper changes
 	gripper_change = self.__all_actions[action]['gripper_free']
         if type(gripper_change) is bool:
-            if gripper_change: #move down and grip
-#                pose.position.z = -0.159
-#              	self.baxter.arm[side].goToPose(pose, speed=0.7)
+            if gripper_change:
                 self.baxter.gripper[side].grip()
-
             else: 
                 self.baxter.gripper[side].release()
 

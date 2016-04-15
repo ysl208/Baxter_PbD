@@ -425,9 +425,9 @@ class Gripper(baxter_interface.gripper.Gripper):
             :rtype: bool
         """
         #print "max open %f, max close %f, cur pos %f"%(self.open_position,self.close_position,self.position())
+        cur_pos = self.position()
         if self.type() == 'electric':
             rospy.sleep(0.1)
-            cur_pos = self.position()
             rospy.logdebug("check electric grip with epsilon at close position %f open position %f current %f"%(self.close_position+self.epsilon,self.open_position-self.epsilon,cur_pos) )
             if self.outside_grip:
                 if cur_pos > (self.close_position + self.epsilon):
@@ -441,6 +441,10 @@ class Gripper(baxter_interface.gripper.Gripper):
                     return False
         if self.type() == 'suction':
             rospy.sleep(0.2)
+            if cur_pos == 100:
+                return False
+            else:
+                return True
             return self.gripping()
         
     def grip(self,blocking = True):

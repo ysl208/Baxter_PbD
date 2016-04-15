@@ -48,6 +48,7 @@ import pdb
 """
 
 import rospy
+import time
 from threading import Lock
 from geometry_msgs.msg import (
     Pose,
@@ -70,6 +71,7 @@ from baxter_learner import BaxterLearner
 from baxter_scenarios import BaxterScenarios
 from baxter_locator import BaxterLocator
 from inspect import getmembers
+from functools import partial
 
 class BaxterBehaviors():
     """
@@ -279,8 +281,9 @@ class BaxterBehaviors():
             entries[str(param)] = getattr(self.bl, 'executeAction') 
 #        entries["Load from file"] = getattr(self.bl, 'loadActions')
         entries["search block"] = [getattr(self.locator, 'locate'), "yellow"]
-        entries["approach"] = getattr(self.locator, 'approach')
-        entries["retract"] = [getattr(self.locator, 'verticalMove'), 0.2]
+        entries["approach block"] = getattr(self.locator, 'approach')
+        entries["vertical down"] = [getattr(self.locator, 'verticalMove'), -0.2]
+        entries["vertical up"] = [getattr(self.locator, 'verticalMove'), 0.2]
         self.allActions = entries
         self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select the action to execute", entries)
         self.mm.loadMenu("executeMenu")
@@ -339,9 +342,13 @@ class BaxterBehaviors():
         for param in members:
             entries[str(param)] = self.addAction
         entries["search block"] = self.addAction
-        entries["approach"] = self.addAction
-        entries["retract"] = self.addAction
+        entries["approach block"] = self.addAction
+        entries["pick"] = self.addAction
+        entries["drop"] = self.addAction
+        entries["vertical up"] = self.addAction
+        entries["vertical down"] = self.addAction
         entries["Run Sequence"] = self.runSequence
+        entries["Reset"] = self.resetSequence
         self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
         self.mm.loadMenu("sequenceMenu")
 
@@ -349,18 +356,26 @@ class BaxterBehaviors():
         """
             Runs actions that are saved in the actionSequence variable
         """
-        pdb.set_trace()
+
+        act = {"search block": partial(self.locator.locate,"yellow"),
+               "approach block": self.locator.approach,
+               "vertical up": partial(self.locator.verticalMove, 0.2),
+               "vertical down": partial(self.locator.verticalMove, -0.2),
+               "pick": self.locator.gripper.close,
+               "drop": self.locator.gripper.open
+              }
 
         for action in self.actionSequence:
-            if action == "search block": 
-                self.locator.locate(colour="yellow")
-            if action == "approach":
-                self.locator.approach()
-            if action == "retract": 
-                self.locator.verticalMove(dist=0.2)
-            else: 
-                self.bl.executeAction(fname=action)
+            f = act.get(action, lambda:self.bl.executeAction(fname=action))
+            f()
+                
 
+    def resetSequence(self, **kwargs):
+        """
+            Resets actions that are saved in the actionSequence variable
+        """
+        self.actionSequence = []
+        self.baxter.mm.changeMenuTitle("Current sequence: %s " % str(self.actionSequence))
 
     def addAction(self, **kwargs):
         try:
@@ -368,6 +383,7 @@ class BaxterBehaviors():
         except:
             rospy.logwarn("Could not get the current action selection")
         self.actionSequence.append(str(action))
+        self.baxter.mm.changeMenuTitle("Current sequence: %s " % str(self.actionSequence))
 
     def showGUI(self,**kwargs):
         """
