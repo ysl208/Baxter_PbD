@@ -277,13 +277,12 @@ class BaxterBehaviors():
         members = self.bl.getAllSavedActions() 
         entries={}
 
-        for param in members:
-            entries[str(param)] = getattr(self.bl, 'executeAction') 
+        for action in members:
+            pose_offset = self.bl.baxter_actions[action]['joint_position']
+        # TO DO: execute single movement: current pose + pose_offset
+#            entries[str(param)] = [getattr(self.locator, 'baxter_ik_move'), side, pose_offset]
 #        entries["Load from file"] = getattr(self.bl, 'loadActions')
-        entries["search block"] = [getattr(self.locator, 'locate'), "yellow"]
-        entries["approach block"] = getattr(self.locator, 'approach')
-        entries["vertical down"] = [getattr(self.locator, 'verticalMove'), -0.2]
-        entries["vertical up"] = [getattr(self.locator, 'verticalMove'), 0.2]
+
         self.allActions = entries
         self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select the action to execute", entries)
         self.mm.loadMenu("executeMenu")
@@ -339,36 +338,72 @@ class BaxterBehaviors():
         members = self.bl.getAllSavedActions() 
         entries={}
 
+        num = len(self.actionSequence)
+        self.baxter.mm.changeMenuTitle("%f actions saved: %s" % (num, str(self.actionSequence)))
+
         for param in members:
-            entries[str(param)] = self.addAction
-        entries["search block"] = self.addAction
-        entries["approach block"] = self.addAction
-        entries["pick"] = self.addAction
-        entries["drop"] = self.addAction
-        entries["vertical up"] = self.addAction
-        entries["vertical down"] = self.addAction
+            entries[str(param)] = self.chooseBlock
+
         entries["Run Sequence"] = self.runSequence
         entries["Reset"] = self.resetSequence
         self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
         self.mm.loadMenu("sequenceMenu")
+
+
+    def loadSequence(self, **kwargs):
+        """
+            Runs action sequence saved in file
+        """
+        try:
+            side = kwargs['side']
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        if self.baxter.br.mutex[side].locked():
+            return
+        self.baxter.br.stopExecution(side,False)
+
+        try:
+            threaded = kwargs['threaded']
+        except Exception,e:
+            threaded = False
+        if threaded: 
+            actionSeq = self.baxter.br.post.readSequence(side)
+        else:
+            actionSeq = self.baxter.br.readSequence(side)
+
+        colour = "yellow"
+        act = {"search block": partial(self.locator.locate,colour, offset_pose),
+               "approach block": self.locator.approach,
+              }
+
+        for action in actionSeq:
+            self.baxter.mm.addEntriesToCurrentMenu({"Stop "+side+" Arm":self.baxter.bb.stopTeachedPath})
+            if 'block -' in action:
+                colour = action.rstrip().split(' - ')[1].rstrip()
+                act["search block"] = partial(self.locator.locate,colour)
+            else:
+                self.baxter.mm.changeMenuTitle("Current action: %s with %s block" % (str(action),str(colour)))
+                f = act.get(action, lambda:self.bl.executeAction(fname=action))
+                f()
+                rospy.sleep(0.2)
+            self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+side+" Arm"])
+        self.baxter.mm.changeMenuTitle("Action sequence completed successfully!")
 
     def runSequence(self, **kwargs):
         """
             Runs actions that are saved in the actionSequence variable
         """
 
-        act = {"search block": partial(self.locator.locate,"yellow"),
-               "approach block": self.locator.approach,
-               "vertical up": partial(self.locator.verticalMove, 0.2),
-               "vertical down": partial(self.locator.verticalMove, -0.2),
-               "pick": self.locator.gripper.close,
-               "drop": self.locator.gripper.open
-              }
+        
+        for (action,colour) in self.actionSequence:
+            #pdb.set_trace()
+            pose_offset = self.bl.baxter_actions[action]['joint_position']
 
-        for action in self.actionSequence:
-            f = act.get(action, lambda:self.bl.executeAction(fname=action))
-            f()
-                
+            self.locator.locate(colour, pose_offset)
+            rospy.sleep(0.2)
 
     def resetSequence(self, **kwargs):
         """
@@ -377,13 +412,36 @@ class BaxterBehaviors():
         self.actionSequence = []
         self.baxter.mm.changeMenuTitle("Current sequence: %s " % str(self.actionSequence))
 
-    def addAction(self, **kwargs):
+
+    def chooseBlock(self, **kwargs):
         try:
             action = kwargs["fname"]
         except:
             rospy.logwarn("Could not get the current action selection")
-        self.actionSequence.append(str(action))
-        self.baxter.mm.changeMenuTitle("Current sequence: %s " % str(self.actionSequence))
+
+        colours = self.locator.tetris_blocks.keys() 
+        entries = {}
+
+        for block in colours:
+            entries[str(block)] = [self.addAction, action]
+        self.mm.addGenericMenu("blockMenu",self.mm.cur_page,"Select the block colour for the action", entries)
+        self.mm.loadMenu("blockMenu")
+
+    def addAction(self, **kwargs):
+        try:
+            colour = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+
+        try:
+            action = kwargs['action']
+        except:
+            action = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+
+        self.actionSequence.append((str(action),str(colour)))
+
+        self.mm.loadPreviousMenu()
+
 
     def showGUI(self,**kwargs):
         """
@@ -548,13 +606,13 @@ class BaxterBehaviors():
             self.mm.neglect()
             return
         self.baxter.br.stopRecording(side)
-        self.baxter.yes() # head nod confirm
+
 
         # done with learning - go back to previous
 
         self.bl.update_watch_parameters('after')
         self.bl.create_action()
-
+        self.baxter.yes() # head nod confirm
         self.mm.loadPreviousMenu()
     
     

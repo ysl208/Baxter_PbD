@@ -54,42 +54,13 @@ from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 from std_msgs.msg import Header
 import std_srvs.srv
 from baxter_core_msgs.srv import SolvePositionIK, SolvePositionIKRequest
+from tetris_block import TetrisBlock
 
 # initialise ros node
 #rospy.init_node("pick_and_place", anonymous = True)
 
 # directory used to save analysis images
 image_directory = ""
-
-class TetrisBlock:
-    def __init__(self):
-        self.letter = "O"
-        self.colour = "yellow"
-        self.center = (0,0)
-        self.area = 34565
-        self.colour_range = [[[25, 100, 110], [135, 250, 250]]]
-
-    def getColour(self):
-        return self.colour
-
-    def setColour(self, colour):
-        self.colour = colour
-
-    def getCenter(self):
-        return self.center
-
-    def setCenter(self, center):
-        self.center = center
-
-    def getArea(self):
-        return self.area
-
-    def setArea(self, area):
-        """
-            Calculates the area in pixels depending on the height of the camera
-        """
-        self.area = area
-
 
 # locate class
 class BaxterLocator:
@@ -120,9 +91,6 @@ class BaxterLocator:
         # required position accuracy in metres - +/-5mm accuracy in specifications
         self.ball_tolerance = 0.05
         self.tray_tolerance = 0.05
-
-        # number of balls found
-        self.balls_found = 0
 
         # start positions
         self.ball_tray_x = 0.60                        # x     = front back
@@ -156,14 +124,9 @@ class BaxterLocator:
         # Canny transform parameters
         self.canny_low  = 45
         self.canny_high = 150
-
-        self.colour_boundaries = {
-                                  'red': [[[17, 15, 80], [90, 76, 200]]], 
-                                  'blue': [[[63, 31, 4], [220, 88, 50]]],
-                                  'green': [[[22, 73, 29], [53, 223, 60]]],
-                                  'yellow': [[[25, 80, 85], [135, 250, 250]]],
-                                  'gray': [[[103, 86, 65], [145, 133, 128]]]
-        }
+        self.tetris_blocks = {}
+        self.shade = 1 #multiply the colours by this number to include shade
+        self.colour_boundaries = (0,0)
 
         # minimum qr code area
         self.min_area = 1000
@@ -230,6 +193,8 @@ class BaxterLocator:
 
         for filename in glob.glob(self.image_dir + "*.jpg"):
 			            os.remove(filename)
+
+        self.initialiseBlocks()
 
     # reset all cameras (incase cameras fail to be recognised on boot)
     def reset_cameras(self):
@@ -300,66 +265,6 @@ class BaxterLocator:
           + self.pose[1] + self.cam_y_offset
 
         return (x, y)
-
-    # Not a tree walk due to python recursion limit
-    def tree_walk(self, image, x_in, y_in):
-        almost_black = (1, 1, 1)
-        pixel_list = [(x_in, y_in)]                   # first pixel is black save position
-        cv.Set2D(image, y_in, x_in, almost_black)     # set pixel to almost black
-        to_do = [(x_in, y_in - 1)]                    # add neighbours to to do list
-        to_do.append([x_in, y_in + 1])
-        to_do.append([x_in - 1, y_in])
-        to_do.append([x_in + 1, y_in])
-
-        while len(to_do) > 0:
-            x, y = to_do.pop()                             # get next pixel to test
-            if cv.Get2D(image, y, x)[0] == self.black[0]:  # if black pixel found
-                pixel_list.append([x, y])                  # save pixel position
-                cv.Set2D(image, y, x, almost_black)        # set pixel to almost black
-                to_do.append([x, y - 1])                   # add neighbours to to do list
-                to_do.append([x, y + 1])
-                to_do.append([x - 1, y])
-                to_do.append([x + 1, y])
-
-        return pixel_list
-
-    # Remove artifacts and find largest object
-    def look_for_ball_tray(self, canny):
-        width, height = cv.GetSize(canny)
-
-        centre   = (0, 0)
-        max_area = 0
-
-        # for all but edge pixels
-        for x in range(1, width - 2):
-            for y in range(1, height - 2):
-                if cv.Get2D(canny, y, x)[0] == self.black[0]:       # black pixel found
-                    pixel_list = self.tree_walk(canny, x, y)        # tree walk pixel
-                    if len(pixel_list) < self.min_area:             # if object too small
-                        for l in pixel_list:
-                            cv.Set2D(canny, l[1], l[0], self.white) # set pixel to white
-                    else:                                           # if object found
-                        n = len(pixel_list)
-                        if n > max_area:                            # if largest object found
-                            sum_x  = 0                              # find centre of object
-                            sum_y  = 0
-                            for p in pixel_list:
-                                sum_x  = sum_x + p[0]
-                                sum_y  = sum_y + p[1]
-
-                            centre = sum_x / n, sum_y / n           # save centre of object
-                            max_area = n                            # save area of object
-
-        if max_area > 0:                                            # in tray found
-            cv.Circle(canny, (centre), 9, (250, 250, 250), -1)      # mark tray centre
-
-        # display the modified canny
-        cv.ShowImage("Modified Canny", canny)
-
-        # 3ms wait
-        cv.WaitKey(3)
-
-        return centre                                        # return centre of object
 
     # flood fill edge of image to leave objects
     def flood_fill_edge(self, canny):
@@ -450,59 +355,6 @@ class BaxterLocator:
 
         return a
 
-    # find next object of interest
-    def find_next_golf_ball(self, ball_data, iteration):
-        # if only one object then object found
-        if len(ball_data) == 1:
-            return ball_data[0]
-
-        # sort objects right to left
-        od = []
-        for i in range(len(ball_data)):
-            od.append(ball_data[i])
-
-        od.sort()
-
-        # if one ball is significantly to the right of the others
-        if od[1][0] - od[0][0] > 30:       # if ball significantly to right of the others
-            return od[0]                   # return right most ball
-        elif od[1][1] < od[0][1]:          # if right most ball below second ball
-            return od[0]                   # return lower ball
-        else:                              # if second ball below right most ball
-            return od[1]                   # return lower ball
-
-    # find gripper angle to avoid nearest neighbour
-    def find_gripper_angle(self, next_ball, ball_data):
-        # if only one ball any angle will do
-        if len(ball_data) == 1:
-            return self.yaw
-
-        # find nearest neighbour
-        neighbour = (0, 0)
-        min_d2    = float(self.width * self.width + self.height * self.height)
-
-        for i in range(len(ball_data)):
-            if ball_data[i][0] != next_ball[0] or ball_data[i][1] != next_ball[1]:
-                dx = float(ball_data[i][0]) - float(next_ball[0])   # NB x and y are ushort
-                dy = float(ball_data[i][1]) - float(next_ball[1])   # float avoids error
-                d2 = (dx * dx) + (dy * dy)
-                if d2 < min_d2:
-                    neighbour = ball_data[i]
-                    min_d2    = d2
-
-        # find best angle to avoid hitting neighbour
-        dx = float(next_ball[0]) - float(neighbour[0])
-        dy = float(next_ball[1]) - float(neighbour[1])
-        if abs(dx) < 1.0:
-            angle = - (math.pi / 2.0)             # avoid divide by zero
-        else:
-            angle = math.atan(dy / dx)            # angle in radians between -pi and pi
-        angle = angle + (math.pi / 2.0)           # rotate pi / 2 radians
-        if angle > math.pi / 2.0:                 # ensure angle between -pi and pi
-            angle = angle - math.pi
-
-        return - angle                            # return best angle to grip golf ball
-
     # if ball near any of the ball tray places
     def is_near_ball_tray(self, ball):
         for i in self.ball_tray_place:
@@ -512,92 +364,6 @@ class BaxterLocator:
                return True
 
         return False
-
-    # Use Hough circles to find ball centres (Only works with round objects)
-    def hough_it(self, n_ball, iteration):
-        cv_image = cv.fromarray(self.cv_image)
-        # create gray scale image of balls
-        gray_image = cv.CreateImage((self.width, self.height), 8, 1)
-        cv.CvtColor(cv_image, gray_image, cv.CV_BGR2GRAY)
-
-        # create gray scale array of balls
-        gray_array = self.cv2array(gray_image)
-
-        # find Hough circles
-        circles = cv2.HoughCircles(gray_array, cv.CV_HOUGH_GRADIENT, 1, 40, param1=50,  \
-                  param2=self.hough_accumulator, minRadius=self.hough_min_radius,       \
-                  maxRadius=self.hough_max_radius)
-
-        # Check for at least one ball found
-        if circles is None:
-            # display no balls found message on head display
-            #self.splash_screen("no balls", "found")
-            # no point in continuing so exit with error message
-            sys.exit("ERROR - hough_it - No golf balls found")
-
-        circles = numpy.uint16(numpy.around(circles))
-
-        ball_data = {}
-        n_balls   = 0
-
-        circle_array = numpy.asarray(self.cv_image)
-
-        # check if golf ball is in ball tray
-        for i in circles[0,:]:
-            # convert to baxter coordinates
-            ball = self.pixel_to_baxter((i[0], i[1]), self.tray_distance)
-
-            if self.is_near_ball_tray(ball):
-                # draw the outer circle in red
-                cv2.circle(circle_array, (i[0], i[1]), i[2], (0, 0, 255), 2)
-                # draw the center of the circle in red
-                cv2.circle(circle_array, (i[0], i[1]), 2, (0, 0, 255), 3)
-            elif i[1] > 800:
-                # draw the outer circle in red
-                cv2.circle(circle_array, (i[0], i[1]), i[2], (0, 0, 255), 2)
-                # draw the center of the circle in red
-                cv2.circle(circle_array, (i[0], i[1]), 2, (0, 0, 255), 3)
-            else:
-                # draw the outer circle in green
-                cv2.circle(circle_array, (i[0], i[1]), i[2], (0, 255, 0), 2)
-                # draw the center of the circle in green
-                cv2.circle(circle_array, (i[0], i[1]), 2, (0, 255, 0), 3)
-
-                ball_data[n_balls]  = (i[0], i[1], i[2])
-                n_balls            += 1
-
-        circle_image = cv.fromarray(circle_array)
-
-        cv.ShowImage("Hough Circle", circle_image)
-
-        # 3ms wait
-        cv.WaitKey(3)
-
-        # display image on head monitor
-        s = "Searching for golf balls"
-        self.display_screen(circle_image, s)
-
-        if self.save_images:
-            # save image of Hough circles on raw image
-            file_name = self.image_dir                                                 \
-                      + "hough_circle_" + str(n_ball) + "_" + str(iteration) + ".jpg"
-            cv.SaveImage(file_name, circle_image)
-
-        # Check for at least one ball found
-        if n_balls == 0:                    # no balls found
-            # display no balls found message on head display
-            #self.splash_screen("no balls", "found")
-            # less than 12 balls found, no point in continuing, exit with error message
-            sys.exit("ERROR - hough_it - No golf balls found")
-
-        # select next ball and find it's position
-        next_ball = self.find_next_golf_ball(ball_data, iteration)
-
-        # find best gripper angle to avoid touching neighbouring ball
-        angle = self.find_gripper_angle(next_ball, ball_data)
-
-        # return next golf ball position and pickup angle
-        return next_ball, angle
 
     # move a limb
     def baxter_ik_move(self, limb, rpy_pose):
@@ -627,18 +393,25 @@ class BaxterLocator:
                 self.other_limb_interface.move_to_joint_positions(limb_joints)
         else:
             # display invalid move message on head display
-            #self.splash_screen("Invalid", "move")
+            self.splash_screen("Invalid", "move")
             # little point in continuing so exit with error message
-            print "requested move =", rpy_pose
-            sys.exit("ERROR - baxter_ik_move - No valid joint configuration found")
+            print "ERROR - no valid configuration found for requested move =", rpy_pose
+            #sys.exit("ERROR - baxter_ik_move - No valid joint configuration found")
+            os._exit(0)
 
         if self.limb == limb:               # if working arm
             quaternion_pose = self.limb_interface.endpoint_pose()
             position        = quaternion_pose['position']
 
+            quaternion = (quaternion_pose['orientation'].x,quaternion_pose['orientation'].y,quaternion_pose['orientation'].z,quaternion_pose['orientation'].w)
+            orientation = tf.transformations.euler_from_quaternion(quaternion)
+
+            rotation_angle = round(orientation[2]*180/math.pi,1)
+            rospy.loginfo("New rotation angle is %s" % str(rotation_angle))
+
             # if working arm remember actual (x,y) position achieved
             self.pose = [position[0], position[1],                                \
-                         position[2], self.pose[3], self.pose[4], self.pose[5]]
+                         position[2], orientation[0], orientation[1], orientation[2]]
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):
@@ -654,23 +427,19 @@ class BaxterLocator:
 
     # moves the arm by the x, y, z coordinates
     def update_pose(self, dx, dy, dz):
-
+        #pdb.set_trace()
         # update self.pose to actual current pose
         quaternion_pose = self.limb_interface.endpoint_pose()
         position        = quaternion_pose['position']
 
-        # if working arm remember actual (x,y) position achieved
-        self.pose = [position[0], position[1],                                \
-                     position[2], self.pose[3], self.pose[4], self.pose[5]]
-
-        x = self.pose[0] + dx
-        y = self.pose[1] + dy
-        z = self.pose[2] + dz
-        pose = [x, y, z, self.roll, self.pitch, self.yaw]
+        x = position[0] + dx
+        y = position[1] + dy
+        z = position[2] + dz
+        pose = [x, y, z, self.pose[3], self.pose[4], self.pose[5]]
         self.baxter_ik_move(self.limb, pose)
 
-    # used to place camera over the ball tray - ensure the focused point is in the middle
-    def ball_tray_iterate(self, iteration, centre, colour):
+    # used to place camera over the object - ensure the focused point is in the middle
+    def object_iterate(self, iteration, centre, colour):
         # print iteration number
         print "Iteration ", iteration
         # find displacement of object from centre of image
@@ -678,11 +447,12 @@ class BaxterLocator:
         pixel_dy    = (self.height / 2) - centre[1]
         pixel_error = math.sqrt((pixel_dx * pixel_dx) + (pixel_dy * pixel_dy))
         error       = float(pixel_error * self.cam_calib * self.block_distance)
-        #pdb.set_trace()
+        ##pdb.set_trace()
         x_offset = - pixel_dy * self.cam_calib * self.block_distance
         y_offset = - pixel_dx * self.cam_calib * self.block_distance
 
         rospy.loginfo(error)
+
         # if error in current position too big
         if error > self.tray_tolerance:
 
@@ -709,180 +479,6 @@ class BaxterLocator:
 
         return pose
 
-    # find the ball tray
-    def canny_it(self, iteration):
-        cv_image = cv.fromarray(self.cv_image)
-        if self.save_images:
-            # save raw image of ball tray
-            file_name = self.image_dir + "ball_tray_" + str(iteration) + ".jpg"
-            
-            cv.SaveImage(file_name, cv_image)
-        
-        # create an empty image variable, the same dimensions as our camera feed.
-        gray = cv.CreateImage((cv.GetSize(cv_image)), 8, 1)
-
-        # convert the image to a grayscale image
-        cv.CvtColor(cv_image, gray, cv.CV_BGR2GRAY)
-
-        # display image on head monitor
-        s = "Looking for ball tray"
-        self.display_screen(circle_image, s)
-
-        # create a canny edge detection map of the greyscale image
-        cv.Canny(gray, self.canny, self.canny_low, self.canny_high, 3)
-
-        # display the canny transformation
-        cv.ShowImage("Canny Edge Detection", self.canny)
-
-        if self.save_images:
-            # save Canny image of ball tray
-            file_name = self.image_dir + "canny_tray_" + str(iteration) + ".jpg"
-            cv.SaveImage(file_name, self.canny)
-
-        # flood fill edge of image to leave only objects
-        self.flood_fill_edge(self.canny)
-        ball_tray_centre = self.look_for_ball_tray(self.canny)
-
-        # 3ms wait
-        cv.WaitKey(3)
-
-        while ball_tray_centre[0] == 0:
-            if random.random() > 0.6:
-                self.baxter_ik_move(self.limb, self.dither())
-
-            ball_tray_centre = self.canny_it(iteration)
-
-        return ball_tray_centre
-
-    # find places for golf balls
-    def find_places(self, c):
-        cv_image = cv.fromarray(self.cv_image)
-        # find long side of ball tray
-        l1_sq = ((c[1][0] - c[0][0]) * (c[1][0] - c[0][0])) +           \
-                ((c[1][1] - c[0][1]) * (c[1][1] - c[0][1]))
-        l2_sq = ((c[2][0] - c[1][0]) * (c[2][0] - c[1][0])) +           \
-                ((c[2][1] - c[1][1]) * (c[2][1] - c[1][1]))
-
-        if l1_sq > l2_sq:                     # c[0] to c[1] is a long side
-            cc = [c[0], c[1], c[2], c[3]]
-        else:                                 # c[1] to c[2] is a long side
-            cc = [c[1], c[2], c[3], c[0]]
-
-        # ball tray corners in baxter coordinates
-        for i in range(4):
-            self.ball_tray_corner[i] = self.pixel_to_baxter(cc[i], self.tray_distance)
-
-        # ball tray places in pixel coordinates
-        ref_x = cc[0][0]
-        ref_y = cc[0][1]
-        dl_x  = (cc[1][0] - cc[0][0]) / 8
-        dl_y  = (cc[1][1] - cc[0][1]) / 8
-        ds_x  = (cc[2][0] - cc[1][0]) / 6
-        ds_y  = (cc[2][1] - cc[1][1]) / 6
-
-        p     = {}
-        p[0]  = (ref_x + (3 * dl_x) + (3 * ds_x), ref_y + (3 * dl_y) + (3 * ds_y))
-        p[1]  = (ref_x + (5 * dl_x) + (3 * ds_x), ref_y + (5 * dl_y) + (3 * ds_y))
-        p[2]  = (ref_x + (3 * dl_x) + (1 * ds_x), ref_y + (3 * dl_y) + (1 * ds_y))
-        p[3]  = (ref_x + (5 * dl_x) + (1 * ds_x), ref_y + (5 * dl_y) + (1 * ds_y))
-        p[4]  = (ref_x + (3 * dl_x) + (5 * ds_x), ref_y + (3 * dl_y) + (5 * ds_y))
-        p[5]  = (ref_x + (5 * dl_x) + (5 * ds_x), ref_y + (5 * dl_y) + (5 * ds_y))
-        p[6]  = (ref_x + (1 * dl_x) + (3 * ds_x), ref_y + (1 * dl_y) + (3 * ds_y))
-        p[7]  = (ref_x + (7 * dl_x) + (3 * ds_x), ref_y + (7 * dl_y) + (3 * ds_y))
-        p[8]  = (ref_x + (1 * dl_x) + (1 * ds_x), ref_y + (1 * dl_y) + (1 * ds_y))
-        p[9]  = (ref_x + (7 * dl_x) + (1 * ds_x), ref_y + (7 * dl_y) + (1 * ds_y))
-        p[10] = (ref_x + (1 * dl_x) + (5 * ds_x), ref_y + (1 * dl_y) + (5 * ds_y))
-        p[11] = (ref_x + (7 * dl_x) + (5 * ds_x), ref_y + (7 * dl_y) + (5 * ds_y))
-
-        for i in range(12):
-            # mark position of ball tray places
-            cv.Circle(cv_image, (int(p[i][0]), int(p[i][1])), 5, (0, 250, 0), -1)
-
-            # ball tray places in baxter coordinates
-            self.ball_tray_place[i] = self.pixel_to_baxter(p[i], self.tray_distance)
-
-        # display the ball tray places
-        cv.ShowImage("Egg tray", cv_image)
-
-        if self.save_images:
-            # save ball tray image with overlay of ball tray and ball positions
-            file_name = self.image_dir + "ball_tray.jpg"
-            cv.SaveImage(file_name, cv_image)
-
-        # 3ms wait
-        cv.WaitKey(3)
-
-    # find four corners of the ball tray
-    def find_corners(self, centre):
-        cv_image = cv.fromarray(self.cv_image)
-        # find bottom corner
-        max_x  = 0
-        max_y  = 0
-
-        for x in range(100, self.width - 100):
-            y = self.height - 20
-            while y > 0 and cv.Get2D(self.canny, y, x)[0] > 100:
-                y = y - 1
-            if y > 20:
-                cv.Set2D(cv_image, y, x, (0, 0, 255))
-                if y > max_y:
-                    max_x = x
-                    max_y = y
-
-        corner_1 = (max_x, max_y)
-
-        # find left corner
-        min_x  = self.width
-        min_y  = 0
-
-        for y in range(100, self.height - 100):
-            x = 20
-            while x < self.width - 1 and cv.Get2D(self.canny, y, x)[0] > 100:
-                x = x + 1
-            if x < self.width - 20:
-                cv.Set2D(cv_image, y, x, (0, 255, 0, 0))
-                if x < min_x:
-                    min_x = x
-                    min_y = y
-
-        corner_2 = (min_x, min_y)
-
-        # display corner image
-        cv.ShowImage("Corner", cv_image)
-
-        if self.save_images:
-            # save Canny image
-            file_name = self.image_dir + "egg_tray_canny.jpg"
-            cv.SaveImage(file_name, self.canny)
-
-            # mark corners and save corner image
-            cv.Circle(cv_image, corner_1, 9, (0, 250, 0), -1)
-            cv.Circle(cv_image, corner_2, 9, (0, 250, 0), -1)
-            file_name = self.image_dir + "corner.jpg"
-            cv.SaveImage(file_name, cv_image)
-
-        # 3ms wait
-        cv.WaitKey(3)
-
-        # two corners found and centre known find other two corners
-        corner_3 = ((2 * centre[0]) - corner_1[0], (2 * centre[1]) - corner_1[1])
-        corner_4 = ((2 * centre[0]) - corner_2[0], (2 * centre[1]) - corner_2[1])
-
-        # draw ball tray boundry
-        c1 = (int(corner_1[0]), int(corner_1[1]))
-        c2 = (int(corner_2[0]), int(corner_2[1]))
-        c3 = (int(corner_3[0]), int(corner_3[1]))
-        c4 = (int(corner_4[0]), int(corner_4[1]))
-
-        cv.Line(cv_image, c1, c2, (255, 0, 0), thickness=3)
-        cv.Line(cv_image, c2, c3, (255, 0, 0), thickness=3)
-        cv.Line(cv_image, c3, c4, (255, 0, 0), thickness=3)
-        cv.Line(cv_image, c4, c1, (255, 0, 0), thickness=3)
-        file_name = self.image_dir + "ball_tray_boundary.jpg"
-        cv.SaveImage(file_name, cv_image)
-
-        return True, (corner_1, corner_2, corner_3, corner_4)
-
     def detect_square(self, square):
         colour_centre = (0,0)
         # compute the rotated bounding box of the largest contour
@@ -896,7 +492,7 @@ class BaxterLocator:
         l = zip(*box)
         centroid_x = int(sum(l[0])/len(l[0]))
         centroid_y = int(sum(l[1])/len(l[1]))
-#        pdb.set_trace()
+#        #pdb.set_trace()
         approx = cv2.approxPolyDP(square,0.01*cv2.arcLength(square,True),True)
         
         # check the detected square has the right size
@@ -921,6 +517,15 @@ class BaxterLocator:
                 cv.SaveImage(file_name, cv_image)
         return colour_centre
 
+    def get_colour_boundaries(self, colour, shade = 1):
+        """
+            Returns the colour boundary for the specified tetris block
+        """
+        max_bound = [i * shade for i in self.tetris_blocks[colour].getMaxColourRange()]
+        min_bound = [i * shade for i in self.tetris_blocks[colour].getMinColourRange()]
+        return [[min_bound, max_bound]]
+
+
     def detect_colour(self, iteration, colour):
         cv_image = cv.fromarray(self.cv_image)
         colour_centre = (0,0)
@@ -928,9 +533,9 @@ class BaxterLocator:
             # save raw image of ball tray
             file_name = self.image_dir + colour + "_" + str(iteration) + ".jpg"
             cv.SaveImage(file_name, cv_image)
-
+        ##pdb.set_trace()
         # loop over the boundaries for colour detection
-        for (lower, upper) in self.colour_boundaries[colour]:
+        for (lower, upper) in self.colour_boundaries:
             # create NumPy arrays from the boundaries
             lower = numpy.array(lower, dtype = "uint8")
             upper = numpy.array(upper, dtype = "uint8")
@@ -960,7 +565,7 @@ class BaxterLocator:
         c = sorted_cnts[0]
         c_area = cv2.contourArea(c)
         print c_area
-        #pdb.set_trace()
+        ##pdb.set_trace()
         # check if detected area is big enough, then approach
         if c_area > self.min_area:
             colour_centre = self.detect_square(c)
@@ -972,27 +577,31 @@ class BaxterLocator:
 
         return colour_centre
 
-    def locate(self, colour):
-        self.publish_camera = True
-        self.find_tetris_block(colour)
-        self.publish_camera = False
 
     # find the ball tray
     def find_tetris_block(self, colour):
         ok = False
         s = "Look for block"
         self.display_screen(self.cv_image, s)
-        while not ok:
+
+        # get a better view of the board
+        if self.get_distance(self.limb) < 0.15:
+            self.update_pose(0,0,0.15)
+
+        iteration = 0
+        self.colour_boundaries = self.get_colour_boundaries(colour)
+        while not ok and iteration < 10:
             colour_centre = self.detect_colour(0, colour)
 
             error     = 2 * self.tray_tolerance
             iteration = 1
 
+            self.colour_boundaries = self.get_colour_boundaries(colour, self.shade)
+
             # iterate until arm over centre of tray
             while error > self.tray_tolerance:
-                ok, colour_centre, error = self.ball_tray_iterate(iteration,       \
+                ok, colour_centre, error = self.object_iterate(iteration,       \
                                           colour_centre, colour)
-                #pdb.set_trace()
                 
                 iteration              += 1
 
@@ -1005,7 +614,6 @@ class BaxterLocator:
         print "Found Block"
 
         
-
     # used to place camera over golf ball
     def golf_ball_iterate(self, n_ball, iteration, ball_data):
         # print iteration number
@@ -1056,8 +664,9 @@ class BaxterLocator:
             Returns true if self.get_distance < 65.535 and gripper is open
         """
         rospy.sleep(0.2)
-        
-        return (self.get_distance(self.limb) < 65) and self.gripper.gripping()
+        rospy.loginfo(self.get_distance(self.limb))
+        rospy.loginfo(self.gripper.sucking())
+        return (self.get_distance(self.limb) < 65) and self.gripper.sucking()
 
     def approach(self, **kwargs):
        self.__approach()
@@ -1066,11 +675,16 @@ class BaxterLocator:
         """
             Approaches the object until the gripper is above it
         """
-        while self.get_distance(self.limb) > 0.093:
+        i = 0
+        while self.get_distance(self.limb) > 0.094:
             rospy.loginfo(self.get_distance(self.limb))
             dist = self.pose[2] + 0.115
             self.update_pose(0, 0, -dist)
             #print self.get_distance(self.limb)
+            i += 1
+            if i > 5:
+                break
+
 
     def verticalMove(self, dist):
         """
@@ -1080,8 +694,7 @@ class BaxterLocator:
         self.update_pose(0, 0, float(dist))
 
 
-
-    # find all the golf balls and place them in the ball tray
+    # find all the blocks and place them
     def pick_and_place(self, offset_x, offset_y, offset_angle):
         n_ball = 0
         while True and n_ball < 1:              # assume no more than 12 golf balls
@@ -1103,7 +716,7 @@ class BaxterLocator:
             s = "Moving to block to target location"
             self.display_screen(self.cv_image, s)
             print s
-            self.verticalMove(0.19)
+            self.verticalMove(0.198)
             cv.WaitKey(10)
 
             # check if managed to grab object
@@ -1148,6 +761,85 @@ class BaxterLocator:
 
         # display all balls found on head display
         self.splash_screen("all balls", "found")
+
+
+    def locate(self, colour, offset_pose):
+        """
+            looks for block, approaches and picks up, applies custom movement, drops
+        """
+        # get a better view of the board
+        if self.get_distance(self.limb) < 0.15 or self.get_distance(self.limb) > 65:
+            # prepare to look for next block
+            pose = (self.ball_tray_x,
+                    self.ball_tray_y,
+                    self.ball_tray_z,
+                    self.roll,
+                    self.pitch,
+                    self.yaw)
+            self.baxter_ik_move(self.limb, pose)
+
+        self.publish_camera = True
+        s = "Pick up block"
+        self.display_screen(self.cv_image, s)
+        cv.WaitKey(3)
+
+        self.find_tetris_block(colour)
+        attempt = 1
+        while not self.holdingObject() and attempt < 3:
+
+            self.limb_interface.set_joint_position_speed(0.8)
+            self.__approach()
+            self.gripper.close()
+            self.verticalMove(0.2)
+            cv.WaitKey(3)
+            rospy.loginfo(self.holdingObject())
+            if self.holdingObject():
+                break
+            s = "Failed to grab object, retry same position"
+            rospy.loginfo(s)
+            self.display_screen(self.cv_image, s)
+            attempt += 1
+
+#            self.limb_interface.set_joint_position_speed(0.5)
+            #self.gripper.open()
+        #pdb.set_trace()
+        success = False
+        attempt = 1
+        while self.holdingObject() and attempt < 2: #
+
+            # custom movement
+            s = "Moving block to target location"
+            self.display_screen(self.cv_image, s)
+            rospy.loginfo(s)
+            rospy.loginfo(self.pose)
+            rospy.loginfo(offset_pose)
+            pose = (self.pose[0] + offset_pose[0],
+                    self.pose[1] + offset_pose[1],
+                    self.pose[2] + offset_pose[2],
+                    self.pose[3] + offset_pose[3],
+                    self.pose[4] + offset_pose[4],
+                    self.pose[5] + offset_pose[5])
+            self.baxter_ik_move(self.limb, pose)
+
+            self.verticalMove(-0.199)
+            self.gripper.open()
+            success = True
+
+            attempt += 1
+
+        self.gripper.open()
+        #pdb.set_trace()
+        if success:
+            s = "Completed movement"
+            self.baxter_ik_move(self.limb, pose)
+            self.display_screen(self.cv_image, s)
+        else:
+            s = "Failed movement"
+            self.display_screen(self.cv_image, s)
+            raw_input("Failed movement: Press Enter to restart or Ctrl+C to cancel ")
+
+            self.locate(colour, offset_pose)
+        self.publish_camera = False
 
 
     # display message on head display
@@ -1291,12 +983,19 @@ class BaxterLocator:
 
         return limb, distance
 
+    def initialiseBlocks(self):
+        self.tetris_blocks['yellow'] = TetrisBlock('O','yellow',[25, 80, 85], [135, 250, 250])
+        self.tetris_blocks['red'] = TetrisBlock('S','red',[17, 15, 80], [90, 76, 200])
+        self.tetris_blocks['blue'] = TetrisBlock('I','blue',[150, 0, 0], [255, 125, 0])
+        self.tetris_blocks['green'] = TetrisBlock('L','green',[22, 73, 29], [53, 223, 60])
+        self.tetris_blocks['gray'] = TetrisBlock('Z','gray',[103, 86, 65], [145, 133, 128])
+
     def main(self, **kwargs):
         # get setup parameters
-        limb, distance = self.get_setup()
-        print "limb     = ", limb
-        print "distance = ", distance
-
+        #limb, distance = self.get_setup()
+        #print "limb     = ", limb
+        #print "distance = ", distance
+        self.initialiseBlocks()
         # move close to the ball tray
         self.pose = (self.ball_tray_x,
                     self.ball_tray_y,
@@ -1305,7 +1004,7 @@ class BaxterLocator:
                     self.pitch,
                     self.yaw)
         self.baxter_ik_move(self.limb, self.pose)
-
+        #pdb.set_trace()
         # find block
         rospy.loginfo("Enter the colour for the block:")
         colour = sys.stdin.readline().strip()
@@ -1323,12 +1022,13 @@ class BaxterLocator:
         r = sys.stdin.readline().strip()
         offset_x = -0.05 *float(r)
         offset_y = -0.05*0
-        #angle = -90
         offset_angle = float(angle) * (math.pi / 180)
-        pdb.set_trace()
+
         self.pick_and_place(offset_x, offset_y, offset_angle)
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    main()
+    rospy.init_node("Baxter locator")
+    baxter = BaxterLocator()
+    baxter.main()
 

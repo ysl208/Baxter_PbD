@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import pdb
 
 ########################################################################### 
 # This software is graciously provided by HumaRobotics 
@@ -323,6 +323,51 @@ class BaxterRecorder():
             finally:
                 self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+side+" Arm"])
             return True
+
+    def readSequence(self,side):
+        with self.mutex[side]:
+            """
+            Loops through csv file
+    
+            :param filename: the file to play
+            :type filename: str
+            """
+            
+            rate = rospy.Rate(DEFAULT_RATE)
+            self.baxter.arm[side].set_joint_position_speed(0.3)
+            number = "01"
+
+            self.filename = "/home/cobotics/ros_ws/src/git/baxter_tasker/baxter_tasker/data/plan_01.txt"
+            rospy.loginfo("Reading action sequence: %s" % (self.filename,))
+            import os
+            if not os.path.isfile(self.filename):
+                rospy.logwarn("File to play back does not exist")
+                return 
+            with open(self.filename, 'r') as f:
+                lines = f.readlines()
+            keys = lines[0].rstrip().split(',')
+            already_error = False
+            l = 0
+
+            # If specified, repeat the file playback 'loops' number of times
+            try:
+                if len(lines) <= 1:
+                    rospy.loginfo("Action sequence is empty.")
+                    return False
+                actionSeq = []
+                for action in lines[0:]: #(loops < 1 or l < loops) and self.stopExecution(side) is False:
+                    if rospy.is_shutdown():
+                        rospy.loginfo("\n Aborting - ROS shutdown")
+                        return False
+
+                    actionSeq.append(action.rstrip())
+
+            except Exception,e:
+                rospy.loginfo("There was a problem in the action sequence of the %s arm. %s"%(side,str(e)))
+                self.baxter.hlm.stop(True)
+                return False
+            return actionSeq
+
 
 class Gripper(baxter_interface.gripper.Gripper):
     """ 
