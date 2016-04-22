@@ -40,7 +40,7 @@ import cv2;
 import cv_bridge
 
 import numpy 
-import math
+import math, operator
 import os, glob
 import sys
 import string
@@ -56,8 +56,6 @@ import std_srvs.srv
 from baxter_core_msgs.srv import SolvePositionIK, SolvePositionIKRequest
 from tetris_block import TetrisBlock
 
-# initialise ros node
-#rospy.init_node("pick_and_place", anonymous = True)
 
 # directory used to save analysis images
 image_directory = ""
@@ -66,6 +64,7 @@ image_directory = ""
 class BaxterLocator:
     def __init__(self, baxter):
         # arm ("left" or "right")
+
         arm = "right"
         distance = 0.367
         self.limb           = arm
@@ -185,7 +184,7 @@ class BaxterLocator:
         self.approach_dist = 0.155 # for small gripper
 #        self.approach_dist = 0.15 # for large gripper
 
-        # move other arm out of harms way
+        # move other arm out of the way
         if arm == "left":
             self.baxter_ik_move("right", (0.25, -0.50, 0.2, math.pi, 0.0, 0.0))
         else:
@@ -378,40 +377,32 @@ class BaxterLocator:
         try:
             rospy.wait_for_service(node, 5.0)
             ik_response = ik_service(ik_request)
+
+            if ik_response.isValid[0]:
+                print("PASS: Valid joint configuration found")
+                # convert response to joint position control dictionary
+                limb_joints = dict(zip(ik_response.joints[0].name, ik_response.joints[0].position))
+                # move limb
+                if self.limb == limb:
+                    self.limb_interface.move_to_joint_positions(limb_joints)
+                else:
+                    self.other_limb_interface.move_to_joint_positions(limb_joints)
+            else:
+                # display invalid move message on head display
+                self.splash_screen("Invalid", "move")
+                # little point in continuing so exit with error message
+                print "ERROR - no valid configuration found for requested move =", rpy_pose
+                sys.exit("ERROR - baxter_ik_move - No valid joint configuration found")
+                return False
         except (rospy.ServiceException, rospy.ROSException), error_message:
             rospy.logerr("Service request failed: %r" % (error_message,))
             sys.exit("ERROR - baxter_ik_move - Failed to append pose")
 
-        if ik_response.isValid[0]:
-            print("PASS: Valid joint configuration found")
-            # convert response to joint position control dictionary
-            limb_joints = dict(zip(ik_response.joints[0].name, ik_response.joints[0].position))
-            # move limb
-            if self.limb == limb:
-                self.limb_interface.move_to_joint_positions(limb_joints)
-            else:
-                self.other_limb_interface.move_to_joint_positions(limb_joints)
-        else:
-            # display invalid move message on head display
-            self.splash_screen("Invalid", "move")
-            # little point in continuing so exit with error message
-            print "ERROR - no valid configuration found for requested move =", rpy_pose
-            #sys.exit("ERROR - baxter_ik_move - No valid joint configuration found")
-            os._exit(0)
 
         if self.limb == limb:               # if working arm
-            quaternion_pose = self.limb_interface.endpoint_pose()
-            position        = quaternion_pose['position']
+            self.update_pose()
+        return True
 
-            quaternion = (quaternion_pose['orientation'].x,quaternion_pose['orientation'].y,quaternion_pose['orientation'].z,quaternion_pose['orientation'].w)
-            orientation = tf.transformations.euler_from_quaternion(quaternion)
-
-            rotation_angle = round(orientation[2]*180/math.pi,1)
-            rospy.loginfo("New rotation angle is %s" % str(rotation_angle))
-
-            # if working arm remember actual (x,y) position achieved
-            self.pose = [position[0], position[1],                                \
-                         position[2], orientation[0], orientation[1], orientation[2]]
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):
@@ -424,19 +415,6 @@ class BaxterLocator:
 
         # convert mm to m and return distance
         return float(dist / 1000.0)
-
-    # moves the arm by the x, y, z coordinates
-    def update_pose(self, dx, dy, dz):
-        #pdb.set_trace()
-        # update self.pose to actual current pose
-        quaternion_pose = self.limb_interface.endpoint_pose()
-        position        = quaternion_pose['position']
-
-        x = position[0] + dx
-        y = position[1] + dy
-        z = position[2] + dz
-        pose = [x, y, z, self.pose[3], self.pose[4], self.pose[5]]
-        self.baxter_ik_move(self.limb, pose)
 
     # used to place camera over the object - ensure the focused point is in the middle
     def object_iterate(self, iteration, centre, colour):
@@ -451,14 +429,14 @@ class BaxterLocator:
         x_offset = - pixel_dy * self.cam_calib * self.block_distance
         y_offset = - pixel_dx * self.cam_calib * self.block_distance
 
-        rospy.loginfo(error)
+        rospy.loginfo('object_iterate(): error = %f' % error)
 
         # if error in current position too big
         if error > self.tray_tolerance:
 
             print error
             # correct pose
-            self.update_pose(x_offset, y_offset, 0)
+            self.__moveBy(x_offset, y_offset, 0,0,0,0)
             # find new centre
             centre = self.detect_colour(iteration, colour)
 
@@ -473,9 +451,9 @@ class BaxterLocator:
     # randomly adjust a pose to dither arm position
     # used to prevent stalemate when looking for ball tray
     def dither(self):
-        x = self.ball_tray_x + (random.random() / 10.0)
-        y = self.ball_tray_y + (random.random() / 10.0)
-        pose = (x, y, self.pose[2], self.roll, self.pitch, self.yaw)
+        x = self.pose[0] + (random.random() / 10.0)
+        y = self.pose[1] + (random.random() / 10.0)
+        pose = (x, y, self.pose[2], self.pose[3], self.pose[4], self.pose[5])
 
         return pose
 
@@ -498,9 +476,8 @@ class BaxterLocator:
         # check the detected square has the right size
         print (box[0]-box[1])[1]
         print (box[0]-box[3])[0]
-        #print abs((box[0]-box[1])[1]/(box[0]-box[3])[0])#width/height should be around 1 if it is a square
-        #print abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0])
-        if 1 < 50: #abs(abs((box[0]-box[1])[1])-abs((box[0]-box[3])[0]))
+
+        if 1 < 50: 
             colour_centre = (centroid_x,centroid_y)
             cv_image = cv.fromarray(self.cv_image)
 
@@ -572,8 +549,10 @@ class BaxterLocator:
         # if detected area is not big enough, then walk around randomly
         while colour_centre[0] == 0:
             #if random.random() > 0.6:
-            self.baxter_ik_move(self.limb, self.dither())
+            if not self.baxter_ik_move(self.limb, self.dither()):
+                break
             colour_centre = self.detect_colour(iteration, colour)
+
 
         return colour_centre
 
@@ -585,8 +564,13 @@ class BaxterLocator:
         self.display_screen(self.cv_image, s)
 
         # get a better view of the board
-        if self.get_distance(self.limb) < 0.15:
-            self.update_pose(0,0,0.15)
+        self.pose = (self.ball_tray_x,
+                    self.ball_tray_y,
+                    self.ball_tray_z,
+                    self.roll,
+                    self.pitch,
+                    self.yaw)
+
 
         iteration = 0
         self.colour_boundaries = self.get_colour_boundaries(colour)
@@ -610,7 +594,7 @@ class BaxterLocator:
         print colour_centre
 
         # adjust pose for camera/gripper offsets
-        self.update_pose(self.cam_x_offset, self.cam_y_offset, 0)
+        self.__moveBy(self.cam_x_offset, self.cam_y_offset, 0,0,0,0)
         print "Found Block"
 
         
@@ -629,7 +613,7 @@ class BaxterLocator:
         y_offset = - pixel_dx * self.cam_calib * self.tray_distance
 
         # update pose and find new ball data
-        self.update_pose(x_offset, y_offset, 0)
+        self.__moveBy(x_offset, y_offset, 0,0,0,0)
         ball_data, angle = self.hough_it(n_ball, iteration)
 
         # find displacement of ball from centre of image
@@ -664,9 +648,49 @@ class BaxterLocator:
             Returns true if self.get_distance < 65.535 and gripper is open
         """
         rospy.sleep(0.2)
-        rospy.loginfo(self.get_distance(self.limb))
-        rospy.loginfo(self.gripper.sucking())
-        return (self.get_distance(self.limb) < 65) and self.gripper.sucking()
+        rospy.loginfo('holdingObject(): limb distance = %f' % self.get_distance(self.limb))
+        rospy.loginfo('holdingObject(): suction gripper activated = %s' % str(self.gripper.sucking()))
+        return (self.get_distance(self.limb) < 0.135) and self.gripper.sucking()
+
+    def moveBy(self, **kwargs):
+        """
+            Moves limb by offset pose
+        """
+        try:
+            offset_pose = kwargs['offset_pose']
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        self.__moveBy(offset_pose)
+
+
+    def __moveBy(self, offset_pose):
+        """
+            Moves limb by offset pose
+        """
+
+        # update self.pose to actual current pose
+        self.update_pose()
+
+        new_pose = tuple(map(operator.add, self.pose, offset_pose))
+        self.baxter_ik_move(self.limb, new_pose)
+
+    def update_pose(self):
+        quaternion_pose = self.limb_interface.endpoint_pose()
+        position        = quaternion_pose['position']
+
+        quaternion = (quaternion_pose['orientation'].x,quaternion_pose['orientation'].y,quaternion_pose['orientation'].z,quaternion_pose['orientation'].w)
+        orientation = tf.transformations.euler_from_quaternion(quaternion)
+
+        rotation_angle = round(orientation[2]*180/math.pi,1)
+        rospy.loginfo("update_pose:() Rotation angle is %s" % str(rotation_angle))
+
+        # if working arm remember actual (x,y) position achieved
+        self.pose = [position[0], position[1],                \
+             position[2], orientation[0], orientation[1], orientation[2]]
+
 
     def approach(self, **kwargs):
        self.__approach()
@@ -677,9 +701,9 @@ class BaxterLocator:
         """
         i = 0
         while self.get_distance(self.limb) > 0.094:
-            rospy.loginfo(self.get_distance(self.limb))
+            rospy.loginfo('approach(): limb distance = %f' % self.get_distance(self.limb))
             dist = self.pose[2] + 0.115
-            self.update_pose(0, 0, -dist)
+            self.__moveBy(0, 0, -dist,0,0,0)
             #print self.get_distance(self.limb)
             i += 1
             if i > 5:
@@ -691,7 +715,7 @@ class BaxterLocator:
             Vertically moves the gripper by the specified distance
         """
 
-        self.update_pose(0, 0, float(dist))
+        self.__moveBy(0, 0, float(dist),0,0,0)
 
 
     # find all the blocks and place them
@@ -738,7 +762,7 @@ class BaxterLocator:
                     self.pose[3],
                     self.pose[4],
                     angle + offset_angle)
-            self.baxter_ik_move(self.limb, pose)
+            self.__moveBy(self.limb, pose)
 
             # place block
             self.verticalMove(0.185)
@@ -768,7 +792,7 @@ class BaxterLocator:
             looks for block, approaches and picks up, applies custom movement, drops
         """
         # get a better view of the board
-        if self.get_distance(self.limb) < 0.15 or self.get_distance(self.limb) > 65:
+        if self.get_distance(self.limb) < 0.15 or self.get_distance(self.limb) < 75:
             # prepare to look for next block
             pose = (self.ball_tray_x,
                     self.ball_tray_y,
@@ -785,23 +809,22 @@ class BaxterLocator:
 
         self.find_tetris_block(colour)
         attempt = 1
-        while not self.holdingObject() and attempt < 3:
+        while not self.holdingObject() and attempt < 4:
 
             self.limb_interface.set_joint_position_speed(0.8)
             self.__approach()
             self.gripper.close()
             self.verticalMove(0.2)
             cv.WaitKey(3)
-            rospy.loginfo(self.holdingObject())
+            rospy.loginfo('locate(): holding object: %s ' % str(self.holdingObject()))
             if self.holdingObject():
                 break
             s = "Failed to grab object, retry same position"
             rospy.loginfo(s)
             self.display_screen(self.cv_image, s)
             attempt += 1
+            self.__moveBy(random.randint()*0.01,random.randint()*0.01,0,0,0,0)
 
-#            self.limb_interface.set_joint_position_speed(0.5)
-            #self.gripper.open()
         #pdb.set_trace()
         success = False
         attempt = 1
@@ -811,36 +834,28 @@ class BaxterLocator:
             s = "Moving block to target location"
             self.display_screen(self.cv_image, s)
             rospy.loginfo(s)
-            rospy.loginfo(self.pose)
-            rospy.loginfo(offset_pose)
-            pose = (self.pose[0] + offset_pose[0],
-                    self.pose[1] + offset_pose[1],
-                    self.pose[2] + offset_pose[2],
-                    self.pose[3] + offset_pose[3],
-                    self.pose[4] + offset_pose[4],
-                    self.pose[5] + offset_pose[5])
-            self.baxter_ik_move(self.limb, pose)
+            rospy.loginfo('locate(): offset_pose: %s' % str(self.pose))
+            rospy.loginfo('locate(): offset_pose: %s' % str(offset_pose))
+            self.__moveBy(offset_pose)
 
             self.verticalMove(-0.199)
             self.gripper.open()
             success = True
 
             attempt += 1
-
+        rospy.loginfo('Success: %s' % str(success))
         self.gripper.open()
         #pdb.set_trace()
+        self.publish_camera = False
         if success:
             s = "Completed movement"
             self.baxter_ik_move(self.limb, pose)
             self.display_screen(self.cv_image, s)
+            return True
         else:
             s = "Failed movement"
             self.display_screen(self.cv_image, s)
-            raw_input("Failed movement: Press Enter to restart or Ctrl+C to cancel ")
-
-            self.locate(colour, offset_pose)
-        self.publish_camera = False
-
+            return False
 
     # display message on head display
     def display_screen(self, cv_image, s):

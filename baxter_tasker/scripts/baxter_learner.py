@@ -65,7 +65,7 @@ class BaxterLearner:
 
         #Baxter demonstration parameters
         self.baxter_actions = {'left': {'gripper_free': '', 'joint_position': (-0.06,0.0,0.0,0,0,0),'side': 'right'},
-                               'rotate_cw': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}}
+                               'rotate': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}}
         self.current_action = BaxterAction()
         self.__watch_parameters = {'joint_position': ['',''], #(before,after)
                              #'gripper_orientation': ['',''],
@@ -77,7 +77,7 @@ class BaxterLearner:
         self.__side = "right"
         self.__all_actions = {#'move_n':[], 'move_w':[], 'move_s':[], 'move_e':[], 
                               'left':[], 'right':[], 'up':[], 'down':[], 
-                              'rotate_cw':[], 'rotate_acw':[],
+                              'rotate':[],# 'rotate_acw':[],
                               #'pick':[], 'drop':[]
                              }
 
@@ -217,9 +217,9 @@ class BaxterLearner:
         """
            Creates new action based on the before and after states of the watch parameters
         """
-        #pdb.set_trace()
+
         subtasks = {}
-        side = self.__side
+        subtasks['side'] = self.__side
         watch_params = self.__watch_parameters
         # calculate Pose difference from before and after
         diff = baxter_helper_abstract_limb.getPoseDiff(watch_params['joint_position'][1],watch_params['joint_position'][0])
@@ -237,10 +237,9 @@ class BaxterLearner:
 
         before_angles = self.getAnglesFromPose(watch_params['joint_position'][0])
         after_angles = self.getAnglesFromPose(watch_params['joint_position'][1])
-        rotation_angle = after_angles - before_angles
+        rotation_angle = round((after_angles - before_angles)/5)
         orientation = rotation_angle * (math.pi / 180)
-        subtasks['side'] = side
-#baxter_helper_abstract_limb.getPoseFromDict(diff)
+
         pose = (diff['position'][0],
                 diff['position'][1],
                 0,
@@ -248,8 +247,8 @@ class BaxterLearner:
                 0,
                 orientation)
         subtasks['joint_position'] = pose
-        rospy.loginfo("Rotation angle recorded at %s:%s" % (str(rotation_angle),str(pose)))
-        pdb.set_trace()
+        rospy.loginfo("Movement recorded at %s deg:%s" % (str(rotation_angle),str(pose)))
+
 
         # if gripper_free didnt change, do nothing and leave it as not holding
         # pick: gripper open > close :: True > False
@@ -263,7 +262,14 @@ class BaxterLearner:
         self.__all_actions[self.__action_name] = subtasks
         rospy.loginfo(subtasks)
         self.baxter_actions[self.__action_name] = subtasks
-
+        
+        # create opposite effect automatically
+        opposite = subtasks
+        opp_pose = list(opposite['joint_position'])
+        opposite['joint_position'] = tuple([-i for i in opp_pose])
+        self.__all_actions[self.__action_name + '_back'] = opposite
+        rospy.loginfo(opposite)
+        self.baxter_actions[self.__action_name + '_back'] = opposite
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):
