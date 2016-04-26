@@ -48,7 +48,7 @@ import pdb
 """
 
 import rospy
-import time
+import time,operator
 from threading import Lock
 from geometry_msgs.msg import (
     Pose,
@@ -317,7 +317,7 @@ class BaxterBehaviors():
 
     def loadSequence(self, **kwargs):
         """
-            Runs action sequence saved in file
+            Reads action sequence saved in file
         """
 
         try:
@@ -339,7 +339,7 @@ class BaxterBehaviors():
             actionSeq = self.baxter.br.post.readSequence(side)
         else:
             actionSeq = self.baxter.br.readSequence(side)
-
+        pdb.set_trace()
         for action in actionSeq:
             if 'block -' in action:
                 colour = action.rstrip().split(' - ')[1].rstrip()
@@ -353,35 +353,30 @@ class BaxterBehaviors():
             Runs actions that are saved in the actionSequence variable
         """
 
-        # TO DO: consolidate movements
-        aggregate = []
-        for (colour, action) in self.actionSequence:
-            act = (0,0,0,0,0,0)
-            #aggregate = tuple(map(operator.add, action, act))
-
         answer = 'n'        
         action_number = 0
-        self.baxter.mm.addEntriesToCurrentMenu({"Stop "+" Arm":self.baxter.bb.stopTeachedPath})
+        #self.baxter.mm.addEntriesToCurrentMenu({"Stop "+" Arm":self.baxter.bb.stopTeachedPath})
         while action_number < len(self.actionSequence):
             #pdb.set_trace()
 
-            (colour,action) = self.actionSequence[action_number]
-            rospy.loginfo('Running action %s for %s block' % (str(action), colour))
-            pose_offset = self.bl.baxter_actions[action]['joint_position']
+            (colour,pose_offset) = self.actionSequence[action_number]
+            rospy.loginfo('Running action %s for %s block' % (str(pose_offset), colour))
+#            pose_offset = self.bl.baxter_actions[action]['joint_position']
 
             success = self.locator.locate(colour, pose_offset)
-            pdb.set_trace()
+
             rospy.sleep(0.2)
-            if not success:
+            if success:
+                rospy.loginfo('Action %s executed successfully, moving to next action.' % str(pose_offset))
+            else:
                 answer = raw_input('Failed to execute action. Try again? (y/n): ')
                 if answer in ('y'):
                     action_number -= 1
                     continue
-            else:
-                rospy.loginfo('Action %s executed successfully, moving to next action.' % str(action))                
+                
             action_number += 1 
 
-        self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])
+#        self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])
         self.baxter.mm.changeMenuTitle("Action sequence completed successfully!")
 
     def resetSequence(self, **kwargs):
@@ -407,6 +402,10 @@ class BaxterBehaviors():
         self.mm.loadMenu("blockMenu")
 
     def addAction(self, **kwargs):
+        """
+            Adds action to action sequence list; if last action uses same coloured block, sum actions into one
+        """
+
         try:
             colour = kwargs["fname"]
         except:
@@ -416,8 +415,20 @@ class BaxterBehaviors():
             action = kwargs['action']
         except:
             action = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+
         if action in self.bl.getAllSavedActions():
-            self.actionSequence.append((str(colour),str(action)))
+            # if selected action modifies same block, add actions
+
+            new = self.bl.baxter_actions[action]['joint_position']
+            if len(self.actionSequence) > 0 and colour == self.actionSequence[-1][0]:
+                last_action = self.actionSequence[-1][1]
+                new_action = tuple(map(operator.add, last_action, new))
+                self.actionSequence[-1] = (colour, new_action)
+                rospy.loginfo('Updated action to %s for %s block' % (str(self.actionSequence[-1][1]), colour))
+
+            else:
+                self.actionSequence.append((str(colour),new))
+                rospy.loginfo('Added action %s for %s block' % (str(new), colour))
             self.mm.loadPreviousMenu()
         else:
             rospy.logwarn("Action does not exist. Skip action.")

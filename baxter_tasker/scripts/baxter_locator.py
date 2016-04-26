@@ -705,7 +705,7 @@ class BaxterLocator:
         while self.get_distance(self.limb) > 65:		
 	    self.__moveBy((0, 0, -0.05,0,0,0))
 
-        while self.get_distance(self.limb) > 0.09:
+        while self.get_distance(self.limb) > 0.093:
             before_pose = self.pose[2]
             rospy.loginfo('approach(): limb distance = %f' % self.get_distance(self.limb))
             dist = max(0.019,(self.get_distance(self.limb) - 0.09)*self.pose_z_to_limb_dist_ratio) #0.115
