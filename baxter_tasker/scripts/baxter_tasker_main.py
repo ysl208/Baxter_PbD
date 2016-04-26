@@ -264,7 +264,7 @@ class MainWindow:
                 self.mm.cur_mode = (self.mm.cur_mode +1)%num_modes
             else:
                 self.mm.cur_mode = (self.mm.cur_mode -1)%num_modes
-        
+        #self.mm.changeMenuTitle("%s" % (action))
         rospy.loginfo("Current mode changed to %s",self.mm.modes[self.mm.cur_mode])
         if self.baxter.menu.hidden is False:
             self.baxter.menu.select(self.mm.modes[self.mm.cur_mode])

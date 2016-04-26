@@ -580,12 +580,13 @@ class BaxterMenuEntries:
             Entries can be passed with their default values which will be saved in self.mm.default_values
         """
         entries = {
-                   "1. Enter Parameters": self.__mm.bb.enterParameters,
-                   "2. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
-                   "3. Enter Effects": [self.__mm.bb.enterPredicates,False],
-                   "4. Demo Action": self.__mm.bb.demonstrate,
-                   "5. Execute Action": self.__mm.bb.execute,
-                   "6. Save Predicates": self.__mm.bb.savePredicates,
+                   "1. Demo Action": self.__mm.bb.demonstrate,
+                   "2. Enter Parameters": self.__mm.bb.enterParameters,
+                   "3. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
+                   "4. Enter Effects": [self.__mm.bb.enterPredicates,False],
+
+#                   "5. Execute Action": self.__mm.bb.execute,
+#                   "6. Save Predicates": self.__mm.bb.savePredicates,
                    "7. Create action sequence": self.__mm.bb.createSequence,
                    "8. Load action sequence": self.__mm.bb.loadSequence,
 #                   "Learn": self.__mm.bb.teach,

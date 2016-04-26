@@ -219,9 +219,32 @@ class BaxterBehaviors():
         entries={}
 
         for param in members:
-            entries[str(param)] = getattr(self.bl, 'demoAction') # save param names in entries
-        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select your the action to demonstrate", entries)
+            entries[str(param)] = self.executeAction # save param names in entries
+#        entries['Execute existing'] = self.execute
+        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
+
         self.mm.loadMenu("actionMenu")
+    
+    def executeAction(self,**kwargs):
+        """
+            Creates a menu of learn or execute action
+        """
+        try:
+            action = kwargs["fname"]
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        entries = {}
+        if action in self.bl.getAllSavedActions():
+            pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
+            entries['Show action'] = [self.moveBy, pose_offset]
+        entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
+
+
+        self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Learn or show action",entries)
+        self.mm.loadMenu("learnMenu")
 
     def execute(self,**kwargs):
         """
@@ -330,13 +353,19 @@ class BaxterBehaviors():
             Runs actions that are saved in the actionSequence variable
         """
 
+        # TO DO: consolidate movements
+        aggregate = []
+        for (colour, action) in self.actionSequence:
+            act = (0,0,0,0,0,0)
+            #aggregate = tuple(map(operator.add, action, act))
+
         answer = 'n'        
         action_number = 0
         self.baxter.mm.addEntriesToCurrentMenu({"Stop "+" Arm":self.baxter.bb.stopTeachedPath})
         while action_number < len(self.actionSequence):
             #pdb.set_trace()
 
-            (action,colour) = self.actionSequence[action_number]
+            (colour,action) = self.actionSequence[action_number]
             rospy.loginfo('Running action %s for %s block' % (str(action), colour))
             pose_offset = self.bl.baxter_actions[action]['joint_position']
 
@@ -347,7 +376,10 @@ class BaxterBehaviors():
                 if answer in ('y'):
                     action_number -= 1
                     continue
+            else:
+                rospy.loginfo('Action % executed successfully, moving to next action.' % str(action))                
             action_number += 1 
+
         self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])
         self.baxter.mm.changeMenuTitle("Action sequence completed successfully!")
 
@@ -384,7 +416,7 @@ class BaxterBehaviors():
         except:
             action = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
         if action in self.bl.getAllSavedActions():
-            self.actionSequence.append((str(action),str(colour)))
+            self.actionSequence.append((str(colour),str(action)))
             self.mm.loadPreviousMenu()
         else:
             rospy.logwarn("Action does not exist. Skip action.")

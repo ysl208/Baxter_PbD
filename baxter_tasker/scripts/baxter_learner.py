@@ -64,10 +64,10 @@ class BaxterLearner:
         self.grid = Grid(baxter)
 
         #Baxter demonstration parameters
-        self.baxter_actions = {'left': {'gripper_free': '', 'joint_position': (-0.06,0.0,0.0,0,0,0),'side': 'right'},
+        self.baxter_actions = {'move_left': {'gripper_free': '', 'joint_position': (-0.06,0.0,0.0,0,0,0),'side': 'right'},
                                'rotate': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}}
         self.current_action = BaxterAction()
-        self.__watch_parameters = {'joint_position': ['',''], #(before,after)
+        self.__watch_parameters = {'joint_position': ['',''], #[before,after]
                              #'gripper_orientation': ['',''],
                              #'holding': ['',''],
                              'gripper_free': ['','']
@@ -76,7 +76,7 @@ class BaxterLearner:
         self.__action_name = "action"
         self.__side = "right"
         self.__all_actions = {#'move_n':[], 'move_w':[], 'move_s':[], 'move_e':[], 
-                              'left':[], 'right':[], 'up':[], 'down':[], 
+                              'move_left':[], 'move_right':[], 'move_up':[], 'move_down':[], 
                               'rotate':[],# 'rotate_acw':[],
                               #'pick':[], 'drop':[]
                              }
@@ -86,15 +86,15 @@ class BaxterLearner:
         self.__preconditions = []
         self.__effects = []
         self.__isPrecond = True
-        self.__predicates = {'gripper-at':['gripper','position'],
-                             'block-at': ['block', 'position'],
-                             'free': ['gripper'],
-                             'holding': ['gripper', 'block'],
-                             'clear': ['position']
+        self.__predicates = {#'gripper-at':['gripper','xy_position'],
+                             'block_at_position': ['block', 'xy_position'],
+                             'gripper_free': [],
+                             'gripper_holding_block': ['block'],
+                             'position_free': ['xy_position']
                              }
 
         #Tetris parameters
-        self.__params = {'position':['p0'], 'block':['b0'], 'gripper':['g0']}
+        self.__params = {'xy_position':['xy_from','xy_to'], 'block':['yellow','red','blue','green']} #, 'gripper':['g0']
 
 
     def displayText(self, **kwargs):
@@ -179,7 +179,7 @@ class BaxterLearner:
             Learns the action from the user's demonstration
         """
         try:
-            action = kwargs["fname"]
+            action = kwargs["fname"].split(' ')[1]
         except:
             rospy.logwarn("Could not get the current action selection")
         self.__action_name = action
@@ -222,7 +222,7 @@ class BaxterLearner:
         subtasks['side'] = self.__side
         watch_params = self.__watch_parameters
         # calculate Pose difference from before and after
-        diff = baxter_helper_abstract_limb.getPoseDiff(watch_params['joint_position'][1],watch_params['joint_position'][0])
+        diff = baxter_helper_abstract_limb.getPoseDiff(watch_params['joint_position'][0],watch_params['joint_position'][1])
 
         # round numbers to 2 decimal places, set to zero if change is minimal
         for idx, pos in enumerate(diff['position']):
@@ -234,10 +234,11 @@ class BaxterLearner:
         diff['position'][2] = 0 # keep the z coordinate the same
 
         # calculate Angle difference
-
+        #pdb.set_trace()
         before_angles = self.getAnglesFromPose(watch_params['joint_position'][0])
         after_angles = self.getAnglesFromPose(watch_params['joint_position'][1])
-        rotation_angle = round((after_angles - before_angles)/5)
+        angle_diff = before_angles - after_angles
+        rotation_angle = angle_diff - (angle_diff%5)
         orientation = rotation_angle * (math.pi / 180)
 
         pose = (diff['position'][0],
@@ -326,7 +327,7 @@ class BaxterLearner:
         """
             Remove all created parameters
         """
-        self.__params = {'position':[], 'block':[], 'gripper':[]}
+        self.__params = dict.fromkeys(self.__params.keys(),[])
 
     def getAllParameters(self, **kwargs):
         """
@@ -384,8 +385,10 @@ class BaxterLearner:
         """
         if self.__isPrecond:
             self.__preconditions = []
+            #self.__preconditions = dict.fromkeys(self.__preconditions.keys(),[])
         else:
             self.__effects = []
+            #self.__effects = dict.fromkeys(self.__effects.keys(),[])
 
     def predicateSelection(self, **kwargs):
         """
