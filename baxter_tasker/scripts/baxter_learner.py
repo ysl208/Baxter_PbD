@@ -268,9 +268,9 @@ class BaxterLearner:
         opposite = subtasks
         opp_pose = list(opposite['joint_position'])
         opposite['joint_position'] = tuple([-i for i in opp_pose])
-        self.__all_actions[self.__action_name + '_back'] = opposite
-        rospy.loginfo(opposite)
-        self.baxter_actions[self.__action_name + '_back'] = opposite
+#        self.__all_actions[self.__action_name + '_back'] = opposite
+#        rospy.loginfo(opposite)
+#        self.baxter_actions[self.__action_name + '_back'] = opposite
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):

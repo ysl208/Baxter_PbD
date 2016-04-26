@@ -370,6 +370,7 @@ class BaxterBehaviors():
             pose_offset = self.bl.baxter_actions[action]['joint_position']
 
             success = self.locator.locate(colour, pose_offset)
+            pdb.set_trace()
             rospy.sleep(0.2)
             if not success:
                 answer = raw_input('Failed to execute action. Try again? (y/n): ')
@@ -377,7 +378,7 @@ class BaxterBehaviors():
                     action_number -= 1
                     continue
             else:
-                rospy.loginfo('Action % executed successfully, moving to next action.' % str(action))                
+                rospy.loginfo('Action %s executed successfully, moving to next action.' % str(action))                
             action_number += 1 
 
         self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])

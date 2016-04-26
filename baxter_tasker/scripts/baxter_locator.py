@@ -689,8 +689,8 @@ class BaxterLocator:
         rospy.loginfo("update_pose:() Rotation angle is %s" % str(rotation_angle))
 
         # if working arm remember actual (x,y) position achieved
-        self.pose = [position[0], position[1],                \
-             position[2], orientation[0], orientation[1], orientation[2]]
+        self.pose = [position.x, position.y, position.z,                \
+             orientation[0], orientation[1], orientation[2]]
 
 
     def approach(self, **kwargs):
@@ -708,13 +708,13 @@ class BaxterLocator:
         while self.get_distance(self.limb) > 0.09:
             before_pose = self.pose[2]
             rospy.loginfo('approach(): limb distance = %f' % self.get_distance(self.limb))
-            dist = max(0.02,(self.get_distance(self.limb) - 0.09)*self.pose_z_to_limb_dist_ratio) #0.115
+            dist = max(0.019,(self.get_distance(self.limb) - 0.09)*self.pose_z_to_limb_dist_ratio) #0.115
             #dist = self.pose[2] + 0.115
             rospy.loginfo('approach(): self.pose.z = %f, dist = %f' % (self.pose[2],dist))
             self.__moveBy((0, 0, -dist,0,0,0))
             #print self.get_distance(self.limb)
             i += 1
-            if abs(before_pose - self.pose[2]) < 0.02:
+            if abs(before_pose - self.pose[2]) < 0.01:
 	        rospy.loginfo('approach(): limb blocked : self.pose.z = %f,  limb distance = %f' % (self.pose[2],self.get_distance(self.limb)))		
 	        break
 
@@ -832,7 +832,7 @@ class BaxterLocator:
         #pdb.set_trace()
         success = False
         attempt = 1
-        while self.holdingObject() and attempt < 2: #
+        while self.holdingObject() and attempt < 3: #
 
             # custom movement
             s = "Moving block to target location"
@@ -849,11 +849,12 @@ class BaxterLocator:
 
             attempt += 1
         rospy.loginfo('Success: %s' % str(success))
-#        self.gripper.open()
-        #pdb.set_trace()
+
         self.publish_camera = False
+        
         if success:
             s = "Completed movement"
+
             self.baxter_ik_move(self.limb, pose)
             self.display_screen(self.cv_image, s)
             return True
