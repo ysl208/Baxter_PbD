@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 
 import pdb
-########################################################################### 
-# Author: Ying Siu Liang
-# Team MAGMA, LIG
-#############################################################################
-import random
+#####################################################################################
+#                                                                                   #
+# Copyright (c) 2016                                                                #
+# All rights reserved.                                                              #
+#                                                                                   #
+# Author: Ying Siu Liang                                                            #
+# Team MAGMA, LIG                                                                   #
+#                                                                                   #
+#####################################################################################
 
+import random, math
 import rospy
+import tf
 from hr_helper.post_threading import Post
 from boxrenderer import BoxRenderer1
 import baxter_helper_abstract_limb
@@ -58,11 +64,12 @@ class BaxterLearner:
         self.grid = Grid(baxter)
 
         #Baxter demonstration parameters
-        self.baxter_actions = {}
+        self.baxter_actions = {#'move_left': {'gripper_free': '', 'joint_position': (-0.06,0.0,0.0,0,0,0),'side': 'right'},
+                               'move_block': {'gripper_free': '', 'joint_position': (0.0,0.18,0.0,0,0,0),'side': 'right'},
+                               'move_block_back': {'gripper_free': '', 'joint_position': (0.0,-0.18,0.0,0,0,0),'side': 'right'},
+                               'rotate': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}}
         self.current_action = BaxterAction()
-        self.__watch_parameters = {'joint_position_x': ['',''], #(before,after)
-                             #'joint_position_y': ['',''],
-                             #'joint_position_z': ['',''],
+        self.__watch_parameters = {'joint_position': ['',''], #[before,after]
                              #'gripper_orientation': ['',''],
                              #'holding': ['',''],
                              'gripper_free': ['','']
@@ -70,27 +77,33 @@ class BaxterLearner:
         self.action_index = 0
         self.__action_name = "action"
         self.__side = "right"
-        self.__all_actions = {#'arm_down':[], 'arm_up':[],
-                              'move_n':[], 'move_w':[], 'move_s':[],
-                              'move_e':[], 'rotate_cw':[], 'rotate_acw':[], 'pick':[], 'drop':[]}
+        self.__all_actions = {'move_block':[], #'move_w':[], 'move_s':[], 'move_e':[], 
+                              #'move_left':[], 'move_right':[], 'move_up':[], 'move_down':[], 
+                              'rotate':[],# 'rotate_acw':[],
+                              #'pick':[], 'drop':[]
+                             }
 
         #Tetris predicates
         self.__current_predicate = ""
         self.__preconditions = []
         self.__effects = []
         self.__isPrecond = True
-        self.__predicates = {'gripper-at':['gripper','position'],
-                             'block-at': ['block', 'position'],
-                             'free': ['gripper'],
-                             'holding': ['gripper', 'block'],
-                             'clear': ['position']
+        self.__predicates = {#'gripper-at':['gripper','xy_position'],
+                             'block_at_position': ['block', 'xy_position'],
+                             'gripper_free': [],
+                             'gripper_holding_block': ['block'],
+                             'position_free': ['xy_position']
                              }
 
         #Tetris parameters
-        self.__params = {'position':['p0'], 'block':['b0'], 'gripper':['g0']}
+        self.__params = {'xy_position':['xy_from','xy_to'], 'block':['yellow','red','blue','green']} #, 'gripper':['g0']
 
 
     def displayText(self, **kwargs):
+        """
+            Displays text on screen
+        """
+
         text = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
 
         entries = {}
@@ -102,6 +115,7 @@ class BaxterLearner:
     def loadActions(self, **kwargs):
         """
             Loads the actions saved from files
+            TO DO
         """
 
 
@@ -113,7 +127,7 @@ class BaxterLearner:
             action = kwargs["fname"]
         except:
             rospy.logwarn("Could not get the current action selection")
-        pdb.set_trace()
+
         empty_params = [len(item) for sublist in self.__params.values() for item in sublist]
         if len(empty_params) == 0 or len(self.__effects) == 0 or len(self.__preconditions) == 0 or len(self.__all_actions[action]) == 0:
             self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]] = "Missing predicates or action. Please complete before saving. Press Back."
@@ -167,7 +181,7 @@ class BaxterLearner:
             Learns the action from the user's demonstration
         """
         try:
-            action = kwargs["fname"]
+            action = kwargs["fname"].split(' ')[1]
         except:
             rospy.logwarn("Could not get the current action selection")
         self.__action_name = action
@@ -179,7 +193,7 @@ class BaxterLearner:
             self.baxter.mm.neglect()
             return
         self.__side = side
-#        self.initialiseArmDown()
+
         self.baxter.bb.teach(**{'side':side,'number':self.action_index, 'parent': 'actionMenu'})
 
 
@@ -190,43 +204,70 @@ class BaxterLearner:
         i = 0 if time == 'before' else 1
         side = self.__side
         pose = self.baxter.arm[side].getPose()
-        self.__watch_parameters['joint_position_x'][i] = pose
+        self.__watch_parameters['joint_position'][i] = pose
         self.__watch_parameters['gripper_free'][i] = self.baxter.gripper[side].gripped()
+
+    def getAnglesFromPose(self, pose):
+        """
+           Returns the angle of the camera around the z axis
+        """
+        temp = pose.orientation
+        orient = tf.transformations.euler_from_quaternion((temp.x,temp.y,temp.z,temp.w))
+        return orient[2]*180/math.pi
 
     def create_action(self):
         """
            Creates new action based on the before and after states of the watch parameters
         """
+
         subtasks = {}
-        side = self.__side
+        subtasks['side'] = self.__side
         watch_params = self.__watch_parameters
-        diff = baxter_helper_abstract_limb.getPoseDiff(watch_params['joint_position_x'][1],watch_params['joint_position_x'][0])
-        diff['position'][2] = 0 #keep the z coordinate the same
-#        diff['orientation'] = baxter_helper_abstract_limb.getDictFromPose(watch_params['joint_position_x'][0])['orientation']
-        subtasks['side'] = side
-        subtasks['joint_position_x'] = baxter_helper_abstract_limb.getPoseFromDict(diff)
-#        subtasks['joint_position_y'] = baxter_helper_abstract_limb.getPoseFromDict(diff)
-        # if gripper_free didnt change, do nothing and leave it as not holding
-        # pick: gripper open > close :: True > False
-        # pick: suction open > close :: False > True
+        # calculate Pose difference from before and after
+        diff = baxter_helper_abstract_limb.getPoseDiff(watch_params['joint_position'][1],watch_params['joint_position'][0])
+
+        # round numbers to 2 decimal places, set to zero if change is minimal
+        for idx, pos in enumerate(diff['position']):
+            if abs(pos) >= 0.02:
+                diff['position'][idx] = round(pos, 2)
+            else:
+                diff['position'][idx] = 0
+
+        diff['position'][2] = 0 # keep the z coordinate the same
+
+        # calculate Angle difference
+        #pdb.set_trace()
+        before_angles = self.getAnglesFromPose(watch_params['joint_position'][0])
+        after_angles = self.getAnglesFromPose(watch_params['joint_position'][1])
+        angle_diff = after_angles - before_angles 
+        rotation_angle = angle_diff - (angle_diff%5)
+        orientation = rotation_angle * (math.pi / 180)
+
+        pose = (diff['position'][0],
+                diff['position'][1],
+                0,
+                0,
+                0,
+                orientation)
+        subtasks['joint_position'] = pose
+        rospy.loginfo("Movement recorded at %s deg:%s" % (str(rotation_angle),str(pose)))
+
         if watch_params['gripper_free'][0] is watch_params['gripper_free'][1]:
             subtasks['gripper_free'] = ''
         else:
             subtasks['gripper_free'] = watch_params['gripper_free'][1]
-        rospy.loginfo(self.__watch_parameters['gripper_free'])
+
         self.__all_actions[self.__action_name] = subtasks
+        rospy.loginfo(subtasks)
+        self.baxter_actions[self.__action_name] = subtasks
+        
+        # create opposite effect automatically
+        opposite = subtasks.copy()
+        opp_pose = list(opposite['joint_position'])
+        opposite['joint_position'] = tuple([-i for i in opp_pose])
+        self.__all_actions[self.__action_name + '_back'] = opposite
+        self.baxter_actions[self.__action_name + '_back'] = opposite
 
-    def initialiseArmDown(self, **kwargs):
-        """
-            Creates the change motion parameter for moving the arm down to the block
-            TO DO: need to keep moving down until target hit
-        """
-	pose = Pose()
-	pose.position.x = 0
-	pose.position.y = 0
-	pose.position.z = 0.0987
-
-        self.__all_actions['arm_down'] = pose
 
     # find distance of limb from nearest line of sight object
     def get_distance(self, limb):
@@ -241,13 +282,6 @@ class BaxterLearner:
         return float(dist / 1000.0)
 
 
-    def approach(self):
-        while self.get_distance(self.limb) > 0.12:
-            self.update_pose(0, 0, -0.05)
-            last_distance = self.get_distance(self.limb)
-            print self.get_distance(self.limb)
-
-
     def executeAction(self, **kwargs):
         """
             Executes the selected action
@@ -255,7 +289,7 @@ class BaxterLearner:
         try:
             action = kwargs["fname"]
         except:
-            rospy.logwarn("Could not get the current action selection")
+            action = self.baxter.mm.default_values[self.baxter.mm.modes[self.baxter.mm.cur_mode]]
 
         try:
             side = self.__all_actions[action]['side']
@@ -268,25 +302,20 @@ class BaxterLearner:
         rospy.loginfo(self.baxter.gripper[side].get_distance(side))
 
 	pose_dict = baxter_helper_abstract_limb.getDictFromPose(pose)
-	rospy.loginfo("start: %s" % self.__all_actions[action])
+	rospy.loginfo("action: %s" % self.__all_actions[action])
 
-	pose_change = (self.__all_actions[action]['joint_position_x'])
+	pose_change = (self.__all_actions[action]['joint_position'])
 	goal_pose = baxter_helper_abstract_limb.getPoseAddition(pose,pose_change)
-#        goal_pose['position'][0] = pose_dict['position'][0] #keep the x coordinate the same
-#        goal_pose['position'][2] = pose_dict['position'][2] #keep the z coordinate the same
-	rospy.loginfo("goal %s" % goal_pose['position'])
+	rospy.loginfo("goal %s" % goal_pose)
 	self.baxter.arm[side].goToPose(baxter_helper_abstract_limb.getPoseFromDict(goal_pose), speed=0.7)
 	pose = self.baxter.arm[side].getPose()
-	rospy.loginfo("end %s" % pose.position)
+	rospy.loginfo("end %s" % pose)
 
         # gripper changes
 	gripper_change = self.__all_actions[action]['gripper_free']
         if type(gripper_change) is bool:
-            if gripper_change: #move down and grip
-#                pose.position.z = -0.159
-#              	self.baxter.arm[side].goToPose(pose, speed=0.7)
+            if gripper_change:
                 self.baxter.gripper[side].grip()
-
             else: 
                 self.baxter.gripper[side].release()
 
@@ -295,7 +324,7 @@ class BaxterLearner:
         """
             Remove all created parameters
         """
-        self.__params = {'position':[], 'block':[], 'gripper':[]}
+        self.__params = dict.fromkeys(self.__params.keys(),[])
 
     def getAllParameters(self, **kwargs):
         """
@@ -353,8 +382,10 @@ class BaxterLearner:
         """
         if self.__isPrecond:
             self.__preconditions = []
+            #self.__preconditions = dict.fromkeys(self.__preconditions.keys(),[])
         else:
             self.__effects = []
+            #self.__effects = dict.fromkeys(self.__effects.keys(),[])
 
     def predicateSelection(self, **kwargs):
         """
@@ -482,4 +513,18 @@ class BaxterLearner:
                 if len(param) == 0 or param not in existing_params:
                     return False
             return True
+
+    def printPDDLheader(self, **kwargs):
+        print '(define (problem Tetris-'+str(size_grid)+'-'+str(conf_blocks)+'-'+str(random.randint(0,9875232))+')\n'
+        print '(:domain tetris)\n'
+        print '   (:requirements :typing)\n'
+        print '   (:types position \n'
+        print '           gripper\n'
+        print '           block)\n'
+        print '   (:predicates (at-gripper ?g - gripper ?r - position)\n'
+        print '        (at ?b - block ?r - position)\n'
+        print '        (free ?g - gripper)\n'
+        print '        (carry ?o - block ?g - gripper)\n'
+        print '        (clear ?xy - position)\n'
+        print '   )'
 

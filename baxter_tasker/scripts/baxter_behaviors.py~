@@ -48,6 +48,7 @@ import pdb
 """
 
 import rospy
+import time,operator
 from threading import Lock
 from geometry_msgs.msg import (
     Pose,
@@ -68,7 +69,9 @@ RENDER_ERRORS=True
 
 from baxter_learner import BaxterLearner
 from baxter_scenarios import BaxterScenarios
+from baxter_locator import BaxterLocator
 from inspect import getmembers
+from functools import partial
 
 class BaxterBehaviors():
     """
@@ -93,6 +96,10 @@ class BaxterBehaviors():
         self.use_arm = {"left":True,"right":True}
         self.bs = BaxterScenarios(baxter)
         self.bl = BaxterLearner(baxter)
+        self.locator = BaxterLocator(baxter)
+        self.actionSequence = []
+        self.allActions = {}
+
       
     def changeExecutionState(self,stop=True):
         """
@@ -158,29 +165,19 @@ class BaxterBehaviors():
         entries={}
         for scenario in scenarios:
             entries[scenario[len(targets):]] = getattr(self.bs,scenario) # save scenario names in entries
-#         entries["Reset Items"] = self.bs.resetItems
         self.mm.addGenericMenu(targets,self.mm.cur_page,"Select your desired scenario", entries)
         self.mm.loadMenu(targets)
-              
+
     def enterPredicates(self,**kwargs):
         """
             Creates a menu of all functions in baxter_learner.py that are in __predicates
 
             .. note:: The parameters below are not the method parameters but the entries in the kwargs
             
-            :param side: arm to execute the trajectory
-            :type side: str
             :param precondition: selecting predicates for preconditions? If False, select for Effects
             :type precondition: bool
 
         """
-        try:
-            side = kwargs['side']
-        except Exception,e:
-            rospy.logerr("%s"%str(e))
-            self.mm.neglect()
-            return
-
         try:
             precond = kwargs['precondition']
         except:
@@ -201,19 +198,7 @@ class BaxterBehaviors():
     def enterParameters(self,**kwargs):
         """
             Creates a menu of all functions in baxter_learner.py that are in __params
-
-            .. note:: The parameters below are not the method parameters but the entries in the kwargs
-            
-            :param side: arm to execute the trajectory
-            :type side: str
-
         """
-        try:
-            side = kwargs['side']
-        except Exception,e:
-            rospy.logerr("%s"%str(e))
-            self.mm.neglect()
-            return
 
         members = self.bl.getAllParameters().keys() 
         entries={}
@@ -228,72 +213,57 @@ class BaxterBehaviors():
     def demonstrate(self,**kwargs):
         """
             Creates a menu of all atomic actions in baxter_learner.py that are in __atomic_actions
-
-            .. note:: The parameters below are not the method parameters but the entries in the kwargs
-            
-            :param side: arm to execute the trajectory
-            :type side: str
-
         """
-        try:
-            side = kwargs['side']
-        except Exception,e:
-            rospy.logerr("%s"%str(e))
-            self.mm.neglect()
-            return
 
         members = self.bl.getAllActionNames()
         entries={}
 
         for param in members:
-            entries[str(param)] = getattr(self.bl, 'demoAction') # save param names in entries
-        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select your the action to demonstrate", entries)
+            entries[str(param)] = self.executeAction # save param names in entries
+#        entries['Execute existing'] = self.execute
+        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
+
         self.mm.loadMenu("actionMenu")
-
-    def execute(self,**kwargs):
+    
+    def executeAction(self,**kwargs):
         """
-            Creates a menu of all existing actions learned in baxter_learner.py
-
-            .. note:: The parameters below are not the method parameters but the entries in the kwargs
-            
-            :param side: arm to execute the trajectory
-            :type side: str
-
+            Creates a menu of learn or execute action
         """
         try:
-            side = kwargs['side']
+            action = kwargs["fname"]
         except Exception,e:
             rospy.logerr("%s"%str(e))
             self.mm.neglect()
             return
 
-        members = self.bl.getAllActionNames() 
-        entries={}
+        entries = {}
+        pose_offset = 'empty'
+        if action in self.bl.getAllSavedActions():
+            pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
+            entries['Show action'] = [self.moveBy, pose_offset]
 
-        for param in members:
-            entries[str(param)] = getattr(self.bl, 'executeAction') 
-#        entries["Load from file"] = getattr(self.bl, 'loadActions') 
-        self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select your the action to execute", entries)
-        self.mm.loadMenu("executeMenu")
+        entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
+
+        self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Learn or show action",entries)
+        self.mm.loadMenu("learnMenu")
+
+
+    def moveBy(self, **kwargs):
+
+        try:
+            pose = kwargs['pose_offset']
+        except:
+            pose = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        rospy.loginfo('moveBy(): pose_offset = %s' % str(pose))
+        self.locator.reset_arms()
+        self.locator.moveBy(offset_pose = pose)
 
     def savePredicates(self,**kwargs):
         """
             Creates a menu of all actions in baxter_learner.py that are in __atomic_actions to save
-
-            .. note:: The parameters below are not the method parameters but the entries in the kwargs
-            
-            :param side: arm to execute the trajectory
-            :type side: str
-
         """
-        try:
-            side = kwargs['side']
-        except Exception,e:
-            rospy.logerr("%s"%str(e))
-            self.mm.neglect()
-            return
 
-        members = self.bl.getAllActionNames()
+        members = self.bl.getAllSavedActions()
         entries={}
 
         for param in members:
@@ -303,6 +273,147 @@ class BaxterBehaviors():
 
         self.mm.addGenericMenu("saveMenu",self.mm.cur_page,"Select the action to save the predicates to", entries)
         self.mm.loadMenu("saveMenu")
+
+
+    def createSequence(self,**kwargs):
+        """
+            Creates a menu of all existing actions learned in baxter_learner.py including the block locator and adds them to the selection
+        """
+        members = self.bl.getAllSavedActions() 
+        entries={}
+
+        num = len(self.actionSequence)
+        self.baxter.mm.changeMenuTitle("%f actions saved: %s" % (num, str(self.actionSequence)))
+
+        for param in members:
+            entries[str(param)] = self.chooseBlock
+
+        entries["Run Sequence"] = self.runSequence
+        entries["Reset"] = self.resetSequence
+        self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
+        self.mm.loadMenu("sequenceMenu")
+
+
+    def loadSequence(self, **kwargs):
+        """
+            Reads action sequence saved in file
+        """
+
+        try:
+            side = kwargs['side']
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        if self.baxter.br.mutex[side].locked():
+            return
+        self.baxter.br.stopExecution(side,False)
+
+        try:
+            threaded = kwargs['threaded']
+        except Exception,e:
+            threaded = False
+        if threaded: 
+            actionSeq = self.baxter.br.post.readSequence(side)
+        else:
+            actionSeq = self.baxter.br.readSequence(side)
+        #pdb.set_trace()
+        for action in actionSeq:
+            if 'block -' in action:
+                colour = action.rstrip().split(' - ')[1].rstrip()
+            else:
+                self.addAction(fname = colour, action = action)
+        self.runSequence()
+
+
+    def runSequence(self, **kwargs):
+        """
+            Runs actions that are saved in the actionSequence variable
+        """
+
+        answer = 'n'        
+        action_number = 0
+        #self.baxter.mm.addEntriesToCurrentMenu({"Stop "+" Arm":self.baxter.bb.stopTeachedPath})
+        while action_number < len(self.actionSequence):
+            #pdb.set_trace()
+
+            (colour,pose_offset) = self.actionSequence[action_number]
+            rospy.loginfo('Running action %s for %s block' % (str(pose_offset), colour))
+#            pose_offset = self.bl.baxter_actions[action]['joint_position']
+
+            success = self.locator.locate(colour, pose_offset)
+
+            rospy.sleep(0.2)
+            if success:
+                rospy.loginfo('Action %s executed successfully, moving to next action.' % str(pose_offset))
+            else:
+                answer = raw_input('Failed to execute action. Try again? (y/n): ')
+                if answer in ('y'):
+                    action_number -= 1
+                    continue
+                
+            action_number += 1 
+
+#        self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])
+        self.baxter.mm.changeMenuTitle("Action sequence completed successfully!")
+
+    def resetSequence(self, **kwargs):
+        """
+            Resets actions that are saved in the actionSequence variable
+        """
+        self.actionSequence = []
+        self.baxter.mm.changeMenuTitle("Current sequence: %s " % str(self.actionSequence))
+
+
+    def chooseBlock(self, **kwargs):
+        try:
+            action = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+
+        colours = self.locator.tetris_blocks.keys() 
+        entries = {}
+
+        for block in colours:
+            entries[str(block)] = [self.addAction, action]
+        self.mm.addGenericMenu("blockMenu",self.mm.cur_page,"Select the block colour for the action", entries)
+        self.mm.loadMenu("blockMenu")
+
+    def addAction(self, **kwargs):
+        """
+            Adds action to action sequence list; if last action uses same coloured block, sum actions into one
+        """
+
+        try:
+            colour = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+
+        try:
+            action = kwargs['action']
+        except:
+            action = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+
+        if action in self.bl.getAllSavedActions():
+            # if selected action modifies same block, add actions
+
+            new = self.bl.baxter_actions[action]['joint_position']
+            rospy.loginfo('New action is: %s' % str(new))
+            if len(self.actionSequence) > 0 and colour == self.actionSequence[-1][0]:
+                last_action = self.actionSequence[-1][1]
+                new_action = tuple(map(operator.add, last_action, new))
+                self.actionSequence[-1] = (colour, new_action)
+                rospy.loginfo('Updated action to %s for %s block' % (str(self.actionSequence[-1][1]), colour))
+
+            else:
+                self.actionSequence.append((str(colour),new))
+                rospy.loginfo('Added action %s for %s block' % (str(new), colour))
+            self.mm.loadPreviousMenu()
+        else:
+            rospy.logwarn("Action does not exist. Skip action.")
+            self.mm.neglect()
+
 
 
     def showGUI(self,**kwargs):
@@ -468,13 +579,13 @@ class BaxterBehaviors():
             self.mm.neglect()
             return
         self.baxter.br.stopRecording(side)
-        self.baxter.yes() # head nod confirm
+
 
         # done with learning - go back to previous
 
         self.bl.update_watch_parameters('after')
         self.bl.create_action()
-
+        self.baxter.yes() # head nod confirm
         self.mm.loadPreviousMenu()
     
     

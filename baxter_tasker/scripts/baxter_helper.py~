@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import pdb
 
 ########################################################################### 
 # This software is graciously provided by HumaRobotics 
@@ -131,12 +131,6 @@ class BaxterRecorder():
         self._start_time = rospy.get_time()
         self.state = False
         
-        # learning variables
-        """self.gripperFree = self.baxter.gripper[side].opened # either 0 or 100 for open or close 
-        self.gripperPosition = #can also use setPosition()
-        self.objectPosition = 
-        self.gripped = self.baxter.gripper[side].gripped()
-        """
     ###### RECORD ###########
     
     def record(self,side,number=""):
@@ -330,6 +324,51 @@ class BaxterRecorder():
                 self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+side+" Arm"])
             return True
 
+    def readSequence(self,side):
+        with self.mutex[side]:
+            """
+            Loops through csv file
+    
+            :param filename: the file to play
+            :type filename: str
+            """
+            
+            rate = rospy.Rate(DEFAULT_RATE)
+            self.baxter.arm[side].set_joint_position_speed(0.3)
+            number = "01"
+            pdb.set_trace()
+            self.filename = "/home/cobotics/ros_ws/src/git/baxter_tasker/baxter_tasker/data/plan_01.txt"
+            rospy.loginfo("Reading action sequence: %s" % (self.filename,))
+            import os
+            if not os.path.isfile(self.filename):
+                rospy.logwarn("File to play back does not exist")
+                return 
+            with open(self.filename, 'r') as f:
+                lines = f.readlines()
+            keys = lines[0].rstrip().split(',')
+            already_error = False
+            l = 0
+
+            # If specified, repeat the file playback 'loops' number of times
+            try:
+                if len(lines) <= 1:
+                    rospy.loginfo("Action sequence is empty.")
+                    return False
+                actionSeq = []
+                for action in lines[0:]: #(loops < 1 or l < loops) and self.stopExecution(side) is False:
+                    if rospy.is_shutdown():
+                        rospy.loginfo("\n Aborting - ROS shutdown")
+                        return False
+
+                    actionSeq.append(action.rstrip())
+
+            except Exception,e:
+                rospy.loginfo("There was a problem in the action sequence of the %s arm. %s"%(side,str(e)))
+                self.baxter.hlm.stop(True)
+                return False
+            return actionSeq
+
+
 class Gripper(baxter_interface.gripper.Gripper):
     """ 
         Extends baxter gripper interface with:
@@ -397,6 +436,18 @@ class Gripper(baxter_interface.gripper.Gripper):
     def setPosition(self,position,blocking = True):
         self.command_position(position,blocking)
         
+    def get_distance(self, limb):
+        if limb == "left":
+            dist = baxter_interface.analog_io.AnalogIO('left_hand_range').state()
+        elif limb == "right":
+            dist = baxter_interface.analog_io.AnalogIO('right_hand_range').state()
+        else:
+            sys.exit("ERROR - get_distance - Invalid limb")
+
+        # convert mm to m and return distance
+        return float(dist / 1000.0)
+
+
     def calibrateAdvanced(self):
         """
             Gets the farmost open and close position 
@@ -419,9 +470,9 @@ class Gripper(baxter_interface.gripper.Gripper):
             :rtype: bool
         """
         #print "max open %f, max close %f, cur pos %f"%(self.open_position,self.close_position,self.position())
+        cur_pos = self.position()
         if self.type() == 'electric':
             rospy.sleep(0.1)
-            cur_pos = self.position()
             rospy.logdebug("check electric grip with epsilon at close position %f open position %f current %f"%(self.close_position+self.epsilon,self.open_position-self.epsilon,cur_pos) )
             if self.outside_grip:
                 if cur_pos > (self.close_position + self.epsilon):
@@ -435,6 +486,10 @@ class Gripper(baxter_interface.gripper.Gripper):
                     return False
         if self.type() == 'suction':
             rospy.sleep(0.2)
+            if cur_pos == 100:
+                return False
+            else:
+                return True
             return self.gripping()
         
     def grip(self,blocking = True):

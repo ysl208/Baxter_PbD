@@ -1,0 +1,17 @@
+block - red
+search block
+approach block
+pick
+vertical up
+move_n
+vertical down
+drop
+block - yellow
+vertical up
+search block
+approach block
+pick
+vertical up
+move_n
+vertical down
+drop

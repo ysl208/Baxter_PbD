@@ -1,0 +1,8 @@
+search block,red
+approach block
+vertical down
+pick
+vertical up
+move_left
+vertical_down
+drop
