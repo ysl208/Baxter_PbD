@@ -237,38 +237,16 @@ class BaxterBehaviors():
             return
 
         entries = {}
+        pose_offset = 'empty'
         if action in self.bl.getAllSavedActions():
             pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
             entries['Show action'] = [self.moveBy, pose_offset]
+
         entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
 
-
-        self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Learn or show action",entries)
+        self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Action saved as: %s" % (str(pose_offset)),entries)
         self.mm.loadMenu("learnMenu")
 
-    def execute(self,**kwargs):
-        """
-            Creates a menu of all existing actions learned in baxter_learner.py
-        """
-        try:
-            side = kwargs['side']
-        except Exception,e:
-            rospy.logerr("%s"%str(e))
-            self.mm.neglect()
-            return
-
-        members = self.bl.getAllSavedActions() 
-        entries={}
-
-        # move to starting position
-        #self.locator.baxter_ik_move(side, self.locator.pose)
-        for action in members:
-            pose_offset = self.bl.baxter_actions[action]['joint_position']
-            entries[str(action)] = [self.moveBy, pose_offset]
-
-        self.allActions = entries
-        self.mm.addGenericMenu("executeMenu",self.mm.cur_page,"Select the action to execute", entries)
-        self.mm.loadMenu("executeMenu")
 
     def moveBy(self, **kwargs):
 
@@ -277,6 +255,7 @@ class BaxterBehaviors():
         except:
             pose = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
         rospy.loginfo('moveBy(): pose_offset = %s' % str(pose))
+        self.locator.reset_arms()
         self.locator.moveBy(offset_pose = pose)
 
     def savePredicates(self,**kwargs):
@@ -339,7 +318,7 @@ class BaxterBehaviors():
             actionSeq = self.baxter.br.post.readSequence(side)
         else:
             actionSeq = self.baxter.br.readSequence(side)
-        pdb.set_trace()
+        #pdb.set_trace()
         for action in actionSeq:
             if 'block -' in action:
                 colour = action.rstrip().split(' - ')[1].rstrip()
@@ -420,6 +399,7 @@ class BaxterBehaviors():
             # if selected action modifies same block, add actions
 
             new = self.bl.baxter_actions[action]['joint_position']
+            rospy.loginfo('New action is: %s' % str(new))
             if len(self.actionSequence) > 0 and colour == self.actionSequence[-1][0]:
                 last_action = self.actionSequence[-1][1]
                 new_action = tuple(map(operator.add, last_action, new))

@@ -65,12 +65,12 @@ class BaxterLocator:
     def __init__(self, baxter):
         # arm ("left" or "right")
 
-        arm = "right"
+        self.arm = "right"
         distance = 0.367
-        self.limb           = arm
+        self.limb           = self.arm
         self.limb_interface = baxter_interface.Limb(self.limb)
         self.baxter = baxter
-        if arm == "left":
+        if self.arm == "left":
             self.other_limb = "right"
         else:
             self.other_limb = "left"
@@ -78,7 +78,7 @@ class BaxterLocator:
         self.other_limb_interface = baxter_interface.Limb(self.other_limb)
 
         # gripper ("left" or "right")
-        self.gripper = baxter_interface.Gripper(arm)
+        self.gripper = baxter_interface.Gripper(self.arm)
 
         # image directory
         self.image_dir = os.path.dirname(os.path.abspath(__file__)) + "/"
@@ -107,8 +107,8 @@ class BaxterLocator:
 
         # camera parameters (NB. other parameters in open_camera)
         self.cam_calib    = 0.0025                     # meters per pixel at 1 meter
-        self.cam_x_offset = 0.039                      # camera gripper offset
-        self.cam_y_offset = -0.02
+        self.cam_x_offset = 0.036                      # camera gripper offset
+        self.cam_y_offset = -0.018
         self.width        = 960                        # Camera resolution
         self.height       = 600
         self.pose_z_to_limb_dist_ratio = 0.72
@@ -157,7 +157,7 @@ class BaxterLocator:
         self.pub = rospy.Publisher('/robot/xdisplay', Image)
 
         # calibrate the gripper
-        self.gripper.calibrate()
+        #self.gripper.calibrate()
 
         # display the start splash screen
         self.splash_screen("Tetris", "Blocks")
@@ -185,16 +185,32 @@ class BaxterLocator:
         self.approach_dist = 0.155 # for small gripper
 #        self.approach_dist = 0.15 # for large gripper
 
-        # move other arm out of the way
-        if arm == "left":
-            self.baxter_ik_move("right", (0.25, -0.50, 0.2, math.pi, 0.0, 0.0))
-        else:
-            self.baxter_ik_move("left", (0.25, 0.50, 0.2, math.pi, 0.0, 0.0))
-
         for filename in glob.glob(self.image_dir + "*.jpg"):
 			            os.remove(filename)
+        if self.arm == "left":
+            self.update_pose()
+            self.baxter_ik_move("right", (0.25, -0.50, 0.2, math.pi, 0.0, 0.0))
+            self.baxter_ik_move("left", (self.ball_tray_x,-self.ball_tray_y,self.ball_tray_z, -math.pi, 0.0, 0.0))
+        else:
+            self.update_pose()
+            self.baxter_ik_move("left", (0.25, 0.50, 0.2, math.pi, 0.0, 0.0))
+            self.baxter_ik_move("right", (self.ball_tray_x,self.ball_tray_y,self.ball_tray_z, -math.pi, 0.0, 0.0))
 
         self.initialiseBlocks()
+
+    # reset arm positions 
+    def reset_arms(self):
+        self.update_pose()
+        # move other arm out of the way
+        if self.arm == "left":
+
+            self.baxter_ik_move("right", (0.25, -0.50, 0.2, math.pi, 0.0, 0.0))
+            self.baxter_ik_move("left", (self.pose[0],self.pose[1],self.pose[2], -math.pi, 0.0, 0.0))
+        else:
+            self.baxter_ik_move("left", (0.25, 0.50, 0.2, math.pi, 0.0, 0.0))
+            self.baxter_ik_move("right", (self.pose[0],self.pose[1],self.pose[2], -math.pi, 0.0, 0.0))
+
+
 
     # reset all cameras (incase cameras fail to be recognised on boot)
     def reset_cameras(self):
@@ -714,6 +730,7 @@ class BaxterLocator:
             self.__moveBy((0, 0, -dist,0,0,0))
             #print self.get_distance(self.limb)
             i += 1
+            rospy.loginfo('approach(): before-after pose change = %f' % abs(before_pose - self.pose[2]))
             if abs(before_pose - self.pose[2]) < 0.01:
 	        rospy.loginfo('approach(): limb blocked : self.pose.z = %f,  limb distance = %f' % (self.pose[2],self.get_distance(self.limb)))		
 	        break
@@ -845,6 +862,7 @@ class BaxterLocator:
             self.verticalMove(-0.199)
             self.gripper.open()
             self.verticalMove(0.059)
+            cv.WaitKey(2)
             success = True
 
             attempt += 1
@@ -1008,7 +1026,7 @@ class BaxterLocator:
         self.tetris_blocks['yellow'] = TetrisBlock('O','yellow',[25, 80, 85], [135, 250, 250])
         self.tetris_blocks['red'] = TetrisBlock('S','red',[17, 15, 80], [90, 76, 200])
         self.tetris_blocks['blue'] = TetrisBlock('I','blue',[150, 0, 0], [255, 125, 0])
-        self.tetris_blocks['green'] = TetrisBlock('L','green',[22, 73, 29], [53, 223, 60])
+        self.tetris_blocks['green'] = TetrisBlock('L','green',[22, 73, 29], [160, 255, 160])
         self.tetris_blocks['gray'] = TetrisBlock('Z','gray',[103, 86, 65], [145, 133, 128])
 
     def main(self, **kwargs):
