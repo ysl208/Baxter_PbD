@@ -222,13 +222,14 @@ class BaxterBehaviors():
             Creates a menu of all atomic actions in baxter_learner.py that are in __atomic_actions
         """
 
-        members = self.bl.getAllActionNames()
+        members = self.bl.getAllSavedActions()
         entries={}
 
         for param in members:
             entries[str(param)] = self.executeAction # save param names in entries
         entries['search red'] = [self.searchBlock,'red']
         entries['search yellow'] = [self.searchBlock,'yellow']
+        entries['search green'] = [self.searchBlock,'green']
         self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
 
         self.mm.loadMenu("actionMenu")
@@ -315,7 +316,7 @@ class BaxterBehaviors():
         self.baxter.mm.changeMenuTitle("%f actions saved: %s" % (num, str(self.actionSequence)))
 
         for param in members:
-            entries[str(param)] = self.locator.find_tetris_block(colour)
+            entries[str(param)] = self.chooseBlock
 
         entries["Run Sequence"] = self.runSequence
         entries["Reset"] = self.resetSequence
