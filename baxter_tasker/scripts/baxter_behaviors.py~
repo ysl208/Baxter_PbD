@@ -222,7 +222,7 @@ class BaxterBehaviors():
             Creates a menu of all atomic actions in baxter_learner.py that are in __atomic_actions
         """
 
-        members = self.bl.getAllActionNames()
+        members = self.bl.getAllSavedActions()
         entries={}
 
         for param in members:

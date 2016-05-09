@@ -227,9 +227,11 @@ class BaxterBehaviors():
 
         for param in members:
             entries[str(param)] = self.executeAction # save param names in entries
-        entries['search red'] = [self.searchBlock,'red']
-        entries['search yellow'] = [self.searchBlock,'yellow']
-        entries['search green'] = [self.searchBlock,'green']
+
+        colours = self.locator.tetris_blocks.keys() 
+
+        for block in colours:
+            entries['search ' + str(block)] = [self.searchBlock,str(block)]
         self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
 
         self.mm.loadMenu("actionMenu")
