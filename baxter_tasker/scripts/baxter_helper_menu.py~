@@ -585,7 +585,7 @@ class BaxterMenuEntries:
                    "3. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
                    "4. Enter Effects": [self.__mm.bb.enterPredicates,False],
 
-                   "5. Execute Action": self.__mm.bb.execute,
+#                   "5. Execute Action": self.__mm.bb.execute,
 #                   "6. Save Predicates": self.__mm.bb.savePredicates,
                    "7. Create action sequence": self.__mm.bb.createSequence,
                    "8. Load action sequence": self.__mm.bb.loadSequence,

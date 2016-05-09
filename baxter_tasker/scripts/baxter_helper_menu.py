@@ -566,6 +566,7 @@ class BaxterMenuEntries:
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
                    'Show Camera': self.__mm.bb.showCamera,
+                   'Solve Tetris': self.__mm.bb.solveTetris,
 #                   'Go To Init':self.__mm.bb.goToInit,
                    
                    } 

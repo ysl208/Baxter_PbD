@@ -48,7 +48,7 @@ import pdb
 """
 
 import rospy
-import time,operator
+import time,operator,sys
 from threading import Lock
 from geometry_msgs.msg import (
     Pose,
@@ -154,7 +154,14 @@ class BaxterBehaviors():
             return
         self.hideGUI(**{'update':False})
         self.baxter.camera.startCamera(side+"_hand_camera")
-                             
+                
+    def solveTetris(self,**kwargs):
+        """
+            Moves the blocks to solve the current alignment of the tetris blocks
+        """
+        self.locator.recognise_grid()
+
+             
     def run(self,**kwargs):
         """
             Creates a menu of all functions in baxter_scenarios.py that start with the name "scenario"
@@ -220,7 +227,8 @@ class BaxterBehaviors():
 
         for param in members:
             entries[str(param)] = self.executeAction # save param names in entries
-#        entries['Execute existing'] = self.execute
+        entries['search red'] = [self.searchBlock,'red']
+        entries['search yellow'] = [self.searchBlock,'yellow']
         self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
 
         self.mm.loadMenu("actionMenu")
@@ -241,13 +249,34 @@ class BaxterBehaviors():
         if action in self.bl.getAllSavedActions():
             pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
             entries['Show action'] = [self.moveBy, pose_offset]
-
+        entries['Rename '+str(action)] = [self.renameAction, action]
         entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
 
         self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Action saved as: %s" % (str(pose_offset)),entries)
         self.mm.loadMenu("learnMenu")
 
+    
+    def renameAction(self,**kwargs):
+        """
+            Renames the selected action with the one entered in the command line
+        """
+        try:
+            old_action = kwargs["fname"].split(' ')[1]
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+        rospy.loginfo("Enter the new name of the action:")
+        action = sys.stdin.readline().strip()
+        pdb.set_trace()
+        self.bl.baxter_actions[str(action)] = self.bl.baxter_actions[str(old_action)]
+        del self.bl.baxter_actions[str(old_action)]
 
+        self.baxter.mm.changeMenuTitle("Action %s renamed to: %s" % (old_action, str(action)))
+        self.baxter.yes() # head nod confirm
+#        self.mm.loadPreviousMenu()
+
+   
     def moveBy(self, **kwargs):
 
         try:
@@ -286,13 +315,26 @@ class BaxterBehaviors():
         self.baxter.mm.changeMenuTitle("%f actions saved: %s" % (num, str(self.actionSequence)))
 
         for param in members:
-            entries[str(param)] = self.chooseBlock
+            entries[str(param)] = self.locator.find_tetris_block(colour)
 
         entries["Run Sequence"] = self.runSequence
         entries["Reset"] = self.resetSequence
         self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
         self.mm.loadMenu("sequenceMenu")
 
+    def searchBlock(self, **kwargs):
+        """
+            Searches the coloured block
+        """
+
+        try:
+            colour = kwargs["fname"].split(' ')[1]
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        self.locator.find_tetris_block(colour)
 
     def loadSequence(self, **kwargs):
         """
@@ -318,7 +360,7 @@ class BaxterBehaviors():
             actionSeq = self.baxter.br.post.readSequence(side)
         else:
             actionSeq = self.baxter.br.readSequence(side)
-        #pdb.set_trace()
+
         for action in actionSeq:
             if 'block -' in action:
                 colour = action.rstrip().split(' - ')[1].rstrip()

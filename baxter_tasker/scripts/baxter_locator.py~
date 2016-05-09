@@ -107,7 +107,7 @@ class BaxterLocator:
 
         # camera parameters (NB. other parameters in open_camera)
         self.cam_calib    = 0.0025                     # meters per pixel at 1 meter
-        self.cam_x_offset = 0.033                      # camera gripper offset
+        self.cam_x_offset = 0.036                      # camera gripper offset
         self.cam_y_offset = -0.018
         self.width        = 960                        # Camera resolution
         self.height       = 600
@@ -720,8 +720,11 @@ class BaxterLocator:
         self.update_pose()
         while self.get_distance(self.limb) > 65:		
 	    self.__moveBy((0, 0, -0.05,0,0,0))
-
-        while self.get_distance(self.limb) > 0.093:
+        
+        dist = 0.175
+        self.__moveBy((0, 0, -dist,0,0,0))
+        # generic approach function: not used when height is never changed
+        while False: #self.get_distance(self.limb) > 0.093:
             before_pose = self.pose[2]
             rospy.loginfo('approach(): limb distance = %f' % self.get_distance(self.limb))
             dist = max(0.019,(self.get_distance(self.limb) - 0.09)*self.pose_z_to_limb_dist_ratio) #0.115
@@ -835,7 +838,7 @@ class BaxterLocator:
             self.limb_interface.set_joint_position_speed(0.8)
             self.__approach()
             self.gripper.close()
-            self.verticalMove(0.2)
+            self.verticalMove(0.175)
             cv.WaitKey(3)
             rospy.loginfo('locate(): holding object: %s ' % str(self.holdingObject()))
             if self.holdingObject():
@@ -859,7 +862,7 @@ class BaxterLocator:
             rospy.loginfo('locate(): offset_pose: %s' % str(offset_pose))
             self.__moveBy(offset_pose)
 
-            self.verticalMove(-0.199)
+            self.verticalMove(-0.175)
             self.gripper.open()
             self.verticalMove(0.059)
             cv.WaitKey(2)
@@ -943,6 +946,24 @@ class BaxterLocator:
         return dict(zip(resp.joints[0].name, resp.joints[0].position))
 
 
+    def recognise_grid(self):
+        """
+           Recognises grid and object positions
+           TO DO: use hough_lines.py to recognise grid
+        """
+        # get a better view of the board
+        self.baxter_ik_move("left", (0.25, 0.50, 0.2, math.pi, 0.0, 0.0))
+
+        pose = (self.ball_tray_x,
+                    self.ball_tray_y,
+                    self.ball_tray_z+0.30,
+                    self.roll,
+                    self.pitch,
+                    self.yaw)
+        self.baxter_ik_move(self.limb, pose)
+
+
+
     def search(self,joint):
         limb = self.limb_interface
         pose = limb.endpoint_pose()
@@ -1023,11 +1044,11 @@ class BaxterLocator:
         return limb, distance
 
     def initialiseBlocks(self):
-        self.tetris_blocks['yellow'] = TetrisBlock('O','yellow',[25, 80, 85], [135, 250, 250])
-        self.tetris_blocks['red'] = TetrisBlock('S','red',[17, 15, 80], [90, 76, 200])
-        self.tetris_blocks['blue'] = TetrisBlock('I','blue',[150, 0, 0], [255, 125, 0])
+        self.tetris_blocks['yellow'] = TetrisBlock('O','yellow',[80, 120, 100], [135, 250, 250])
+        self.tetris_blocks['red'] = TetrisBlock('S','red',[17, 15, 80], [90, 80, 255])
+        self.tetris_blocks['blue'] = TetrisBlock('I','blue',[100, 50, 0], [255, 185, 255])
         self.tetris_blocks['green'] = TetrisBlock('L','green',[22, 73, 29], [160, 255, 160])
-        self.tetris_blocks['gray'] = TetrisBlock('Z','gray',[103, 86, 65], [145, 133, 128])
+        self.tetris_blocks['pink'] = TetrisBlock('T','pink',[120, 130, 140], [150, 160, 170])
 
     def main(self, **kwargs):
         # get setup parameters
@@ -1038,12 +1059,12 @@ class BaxterLocator:
         # move close to the ball tray
         self.pose = (self.ball_tray_x,
                     self.ball_tray_y,
-                    self.ball_tray_z,
+                    self.ball_tray_z + 0.05,
                     self.roll,
                     self.pitch,
                     self.yaw)
         self.baxter_ik_move(self.limb, self.pose)
-        #pdb.set_trace()
+        pdb.set_trace()
         # find block
         rospy.loginfo("Enter the colour for the block:")
         colour = sys.stdin.readline().strip()
