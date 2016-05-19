@@ -272,7 +272,7 @@ class BaxterRecorder():
             """
             
             rate = rospy.Rate(DEFAULT_RATE)
-            self.baxter.arm[side].set_joint_position_speed(0.3)
+            self.baxter.arm[side].set_joint_position_speed(0.6)
             rospy.loginfo("Playing back: %s" % (self.filename+side+str(number),))
             import os
             if not os.path.isfile(self.filename+side+str(number)):
@@ -334,7 +334,7 @@ class BaxterRecorder():
             """
             
             rate = rospy.Rate(DEFAULT_RATE)
-            self.baxter.arm[side].set_joint_position_speed(0.3)
+            self.baxter.arm[side].set_joint_position_speed(0.6)
             number = "01"
 
             self.filename = "/home/cobotics/ros_ws/src/git/baxter_tasker/baxter_tasker/data/plan_01.txt"

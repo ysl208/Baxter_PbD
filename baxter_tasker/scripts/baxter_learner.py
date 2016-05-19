@@ -65,9 +65,10 @@ class BaxterLearner:
 
         #Baxter demonstration parameters
         self.baxter_actions = {#'move_left': {'gripper_free': '', 'joint_position': (-0.06,0.0,0.0,0,0,0),'side': 'right'},
-                               'move_block': {'gripper_free': '', 'joint_position': (0.0,0.16,0.0,0,0,0),'side': 'right'},
-                               'move_block_back': {'gripper_free': '', 'joint_position': (0.0,-0.16,0.0,0,0,0),'side': 'right'},
-                               'rotate': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}}
+                               'MOVE': {'gripper_free': '', 'joint_position': (0.0,0.16,0.0,0,0,0),'side': 'right'},
+#                               'move_block_back': {'gripper_free': '', 'joint_position': (0.0,-0.16,0.0,0,0,0),'side': 'right'},
+#                               'rotate': {'gripper_free': '', 'joint_position': (0,0,0,0,0,math.pi/2),'side': 'right'}
+}
         self.current_action = BaxterAction()
         self.__watch_parameters = {'joint_position': ['',''], #[before,after]
                              #'gripper_orientation': ['',''],
@@ -265,8 +266,8 @@ class BaxterLearner:
         opposite = subtasks.copy()
         opp_pose = list(opposite['joint_position'])
         opposite['joint_position'] = tuple([-i for i in opp_pose])
-        self.__all_actions[self.__action_name + '_back'] = opposite
-        self.baxter_actions[self.__action_name + '_back'] = opposite
+#        self.__all_actions[self.__action_name + '_back'] = opposite
+#        self.baxter_actions[self.__action_name + '_back'] = opposite
 
 
     # find distance of limb from nearest line of sight object

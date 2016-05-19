@@ -88,30 +88,32 @@ class MainWindow:
         #self.position=0
         self.selected=None
         #~ Button(self.frame,text="Refresh",command=self.refresh).grid(row=0,column=0)
-        Button(self.frame,text="Add Task",command=self.addTask).grid(row=0,column=0)
-        Button(self.frame,text="Execute Task",command=self.executeTask).grid(row=1,column=0)
-        Button(self.frame,text="Enable/Disable Robot",command=self.baxter.toggleMotorState).grid(row=2,column=0)
+        #Button(self.frame,text="Add Task",command=self.addTask).grid(row=0,column=0)
+        #Button(self.frame,text="Execute Task",command=self.executeTask).grid(row=1,column=0)
+        #Button(self.frame,text="Enable/Disable Robot",command=self.baxter.toggleMotorState).grid(row=2,column=0)
         
 
-        Button(self.frame,text="Back Button",command=(lambda: self.back("left"))).grid(row=4,column=0)
-        Button(self.frame,text="Confirm Right Button",command=(lambda: self.confirm("right"))).grid(row=5,column=0)
-        Button(self.frame,text="Confirm Left Button",command=(lambda: self.confirm("left"))).grid(row=6,column=0)
-        Button(self.frame,text="Turn Wheel",command=(lambda: self.cycleMode("left"))).grid(row=7,column=0)
-        Button(self.frame,text="Round Cuff Right Button",command=(lambda: self.posButton("right"))).grid(row=8,column=0)
-        Button(self.frame,text="Round Cuff Left Button",command=(lambda: self.posButton("left"))).grid(row=9,column=0)
-        Button(self.frame,text="Oval Cuff Right Button",command=(lambda: self.gripButton("right"))).grid(row=10,column=0)
-        Button(self.frame,text="Oval Cuff Left Button",command=(lambda: self.gripButton("left"))).grid(row=11,column=0)
-        Button(self.frame,text="Set HR Logo",command=(lambda: self.bb.setHRLogo(**{}))).grid(row=12,column=0)
-        Button(self.frame,text="Create MoveIt URDF",command=(lambda: self.baxter.uc.createMoveItURDF())).grid(row=13,column=0)
+        Button(self.frame,text="Back Button",command=(lambda: self.back("left"))).grid(row=0,column=0)
+        Button(self.frame,text="Confirm Right Button",command=(lambda: self.confirm("right"))).grid(row=2,column=0)
+        #Button(self.frame,text="Confirm Left Button",command=(lambda: self.confirm("left"))).grid(row=5,column=0)
+        Button(self.frame,text="Turn Wheel Right",command=(lambda: self.cycleMode("right"))).grid(row=4,column=0)
+        Button(self.frame,text="Turn Wheel Left",command=(lambda: self.cycleMode(False))).grid(row=5,column=0)
+
+        #Button(self.frame,text="Round Cuff Right Button",command=(lambda: self.posButton("right"))).grid(row=8,column=0)
+        #Button(self.frame,text="Round Cuff Left Button",command=(lambda: self.posButton("left"))).grid(row=9,column=0)
+        Button(self.frame,text="Oval Cuff Right Button",command=(lambda: self.gripButton("right"))).grid(row=7,column=0)
+        #Button(self.frame,text="Oval Cuff Left Button",command=(lambda: self.gripButton("left"))).grid(row=11,column=0)
+        Button(self.frame,text="Set HR Logo",command=(lambda: self.bb.setHRLogo(**{}))).grid(row=3,column=1)
+        #Button(self.frame,text="Create MoveIt URDF",command=(lambda: self.baxter.uc.createMoveItURDF())).grid(row=13,column=0)
         
         
         Button(self.frame,text="STOP",command=(lambda: self.bb.changeExecutionState())).grid(row=0,column=1)
         Button(self.frame,text="Continue",command=(lambda: self.bb.changeExecutionState(False))).grid(row=1,column=1)
         Button(self.frame,text="Go to Init",command=(lambda: self.bb.goToInit(**{}))).grid(row=2,column=1)
-        Button(self.frame,text="Generate Plans",command=(lambda: self.bb.generator.generateAllPlans())).grid(row=3,column=1)
-        Button(self.frame,text="Run Scenarios",command=(lambda: self.bb.run(**{}))).grid(row=4,column=1)
+        #Button(self.frame,text="Generate Plans",command=(lambda: self.bb.generator.generateAllPlans())).grid(row=3,column=1)
+        #Button(self.frame,text="Run Scenarios",command=(lambda: self.bb.run(**{}))).grid(row=4,column=1)
         
-        
+        """
         Button(self.frame,text="Test Switch 1",command=(lambda: bs.btnPickItem())).grid(row=6,column=1)
         Button(self.frame,text="Test Switch 2",command=(lambda: bs.btnDropOff())).grid(row=7,column=1)
         Button(self.frame,text="Test Cover Small",command=(lambda: bs.btnCoverSmall())).grid(row=8,column=1)
@@ -119,18 +121,18 @@ class MainWindow:
         Button(self.frame,text="Test Tray",command=(lambda: bs.btnTray())).grid(row=10,column=1)
         Button(self.frame,text="Test Goblet Blue",command=(lambda: bs.btnGobletBlue())).grid(row=11,column=1)
         Button(self.frame,text="Test Goblet Red",command=(lambda: bs.btnGobletRed())).grid(row=12,column=1)
-        
-        Button(self.frame,text="Toggle Sonar",command=(lambda: self.bb.btnToggleSonar())).grid(row=13,column=1)
+        """
+        Button(self.frame,text="Toggle Sonar",command=(lambda: self.bb.btnToggleSonar())).grid(row=5,column=1)
         
          
         self.listTasks = Listbox(master,width=30,height=40)
-        self.listTasks.grid(row=0,column=2,rowspan=20)
-        self.listTasks.bind("<<ListboxSelect>>", self.selectTask)
-        self.listTasks.bind("<Delete>", self.deleteTask)
+        #self.listTasks.grid(row=0,column=2,rowspan=20)
+        #self.listTasks.bind("<<ListboxSelect>>", self.selectTask)
+        #self.listTasks.bind("<Delete>", self.deleteTask)
         
         self.textTask=python_text.PythonText(self.frame,width=120,height=40)
-        self.textTask.grid(row=0,column=3,rowspan=20)
-        self.textTask.bind("<KeyRelease>",self.updateTask)
+        #self.textTask.grid(row=0,column=3,rowspan=20)
+        #self.textTask.bind("<KeyRelease>",self.updateTask)
 
         self.baxter.dio["right_upper_button"].callbackOnPressed(lambda: self.gripButton("right") )
         self.baxter.dio["left_upper_button"].callbackOnPressed(lambda: self.gripButton("left") )
@@ -171,9 +173,9 @@ class MainWindow:
         root.config(menu=menubar)
         filemenu = Menu(menubar)
         menubar.add_cascade(label='File', menu=filemenu)
-        filemenu.add_command(label='Load all tasks', command=self.loadAllTasks)
-        filemenu.add_command(label='Load task ...', command=self.loadTask)
-        filemenu.add_command(label='Save tasks', command=self.saveTasks)
+        #filemenu.add_command(label='Load all tasks', command=self.loadAllTasks)
+        #filemenu.add_command(label='Load task ...', command=self.loadTask)
+        #filemenu.add_command(label='Save tasks', command=self.saveTasks)
         filemenu.add_command(label='Quit', command=self.exit)
 
             

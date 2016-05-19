@@ -58,7 +58,7 @@ class golf_setup():
         baxter_interface.RobotEnable().enable()
 
         # set speed as a ratio of maximum speed
-        self.limb_interface.set_joint_position_speed(0.5)
+        self.limb_interface.set_joint_position_speed(1)
 
         # move to start position
         self.baxter_ik_move(self.limb, self.pose)
