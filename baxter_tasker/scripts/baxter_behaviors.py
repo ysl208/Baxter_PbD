@@ -99,7 +99,7 @@ class BaxterBehaviors():
         self.locator = BaxterLocator(baxter)
         self.actionSequence = []
         self.allActions = {}
-        self.target_locations = {'A':(0.6,-0.419),'M':(0.795,-0.28),'D':(0.6, -0.018)}
+        self.target_locations = {'A':(0.6,-0.419),'M':(0.795,-0.2),'D':(0.6, -0.018)}
         self.exp_predicates = {'1. Precondition' : 'object jaune: position de depart',
                                '2. Effet': 'object jaune: position d\'arrivee'}
         self.exp_position_occupied = False
@@ -320,7 +320,7 @@ class BaxterBehaviors():
             offset_pose = (x_offset,y_offset,0,0,0,0)
             entries['move to ' + str(target)] = [self.moveBy, offset_pose]
             if target == 'D':
-                entries['move to not empty'] = [self.moveBy, offset_pose]
+                entries['move to empty'] = [self.moveBy, offset_pose]
         self.mm.addGenericMenu("moveMenu",self.mm.cur_page,"Select the target limb position", entries)
         self.mm.loadMenu("moveMenu")
 
@@ -340,7 +340,6 @@ class BaxterBehaviors():
         
         for target in self.target_locations.keys():
             entries['move to ' + str(target)] = [self.moveBlock, self.target_locations[target]]
-        entries['add empty condition'] = self.addEmptyCondition
         self.mm.addGenericMenu("moveBlockMenu",self.mm.cur_page,"Select the target position", entries)
         self.mm.loadMenu("moveBlockMenu")
 
@@ -460,9 +459,16 @@ class BaxterBehaviors():
 
         pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
         rospy.loginfo('moveBy(): pose_offset = %s' % str(pose_offset))
-        self.locator.moveBy(offset_pose=pose_offset)
+
         if 'empty' in shake:
+            self.locator.recognise_grid()
+            x_offset = self.target_locations['D'][0]-self.locator.pose[0]
+            y_offset = self.target_locations['D'][1]-self.locator.pose[1]
+            pose_offset = (x_offset,y_offset,-0.05,0,0,0)
+            self.locator.moveBy(offset_pose=pose_offset)
             self.baxter.no()
+        else:
+            self.locator.moveBy(offset_pose=pose_offset)
         self.mm.loadMenu("actionMenu")
 
     def moveTo(self, **kwargs):

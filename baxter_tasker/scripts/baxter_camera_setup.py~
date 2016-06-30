@@ -132,7 +132,6 @@ class golf_setup():
 def main():
     limb  = "right"
     setup = golf_setup(limb)
-#    pdb.set_trace()
     # open the gripper
     setup.gripper.open()
 

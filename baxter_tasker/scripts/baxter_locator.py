@@ -85,7 +85,7 @@ class BaxterLocator:
         self.image_dir = os.path.dirname(os.path.abspath(__file__)) + "/"
 
         # flag to control saving of analysis images
-        self.save_images = False
+        self.save_images = True
         self.publish_camera = False
 
         # required position accuracy in metres - +/-5mm accuracy in specifications
@@ -108,8 +108,8 @@ class BaxterLocator:
 
         # camera parameters (NB. other parameters in open_camera)
         self.cam_calib    = 0.0025                     # meters per pixel at 1 meter
-        self.cam_x_offset = 0.012                      # camera gripper offset
-        self.cam_y_offset = -0.013
+        self.cam_x_offset = 0.018                      # camera gripper offset
+        self.cam_y_offset = -0.018
         self.width        = 960                        # Camera resolution
         self.height       = 600
         self.pose_z_to_limb_dist_ratio = 0.72
@@ -151,8 +151,8 @@ class BaxterLocator:
         baxter_interface.RobotEnable().enable()
 
         # set speed as a ratio of maximum speed
-        self.limb_interface.set_joint_position_speed(1)
-        self.other_limb_interface.set_joint_position_speed(1)
+        self.limb_interface.set_joint_position_speed(2)
+        self.other_limb_interface.set_joint_position_speed(2)
 
         # create image publisher to head monitor
         self.pub = rospy.Publisher('/robot/xdisplay', Image)
@@ -178,9 +178,9 @@ class BaxterLocator:
         self.subscribe_to_camera(self.limb)
 
         # distance of arm to table and block
-        self.distance      = distance # 0.367 distance from camera to table
-        self.tray_distance = distance - 0.075
-        self.block_distance = distance - 0.064
+        self.distance      = 0.338 # 0.367 distance from camera to table
+        self.tray_distance = self.distance - 0.075
+        self.block_distance = self.distance - 0.064
         self.gripper_height      = 0.104
         self.block_height = 0.064
         self.approach_dist = 0.155 # for small gripper
@@ -296,7 +296,7 @@ class BaxterLocator:
             print e
 
         # 3ms wait
-        cv.WaitKey(3)
+        #cv.WaitKey(3)
 
     # left camera call back function
     def left_camera_callback(self, data):
@@ -481,7 +481,7 @@ class BaxterLocator:
             s = "Detected block"
             self.display_screen(cv_image, s)
             #cv2.imshow("Detected2", self.cv_image)
-            cv.WaitKey(3)
+            #cv.WaitKey(3)
             #cv2.destroyAllWindows()
             if self.save_images:
                 file_name = self.image_dir + "centre.jpg"
@@ -518,16 +518,16 @@ class BaxterLocator:
             output = cv2.bitwise_and(self.cv_image, self.cv_image, mask = mask)
        
             # show the images
-            s = "Looking for colour %s" % (colour)
+            #s = "Looking for colour %s" % (colour)
             #cv2.imshow(s, numpy.hstack([self.cv_image, output]))
-            self.display_screen(output, s)
-            cv2.waitKey(3)
+            #self.display_screen(output, s)
+            #cv2.waitKey(3)
             #cv2.destroyAllWindows()
             if self.save_images:
                 cv_image = cv.fromarray(output)
                 file_name = self.image_dir + colour + "_detected_"  + str(iteration) + ".jpg"
                 cv.SaveImage(file_name, cv_image)
-                cv.WaitKey(3)
+                #cv.WaitKey(3)
 
         # find the contours in the thresholded image, then sort the contours
         # by their area, keeping only the largest one
@@ -734,7 +734,7 @@ class BaxterLocator:
 
             s = "Pick up block"
             self.display_screen(self.cv_image, s)
-            cv.WaitKey(3)
+            #cv.WaitKey(3)
             # slow down to reduce scattering of neighbouring golf balls
             #self.limb_interface.set_joint_position_speed(0.1)
 
@@ -742,12 +742,12 @@ class BaxterLocator:
             self.__approach()
             
             self.gripper.close()
-            cv.WaitKey(10)
+            #cv.WaitKey(10)
             s = "Moving to block to target location"
             self.display_screen(self.cv_image, s)
             print s
             self.verticalMove(0.198)
-            cv.WaitKey(10)
+            #cv.WaitKey(10)
 
             # check if managed to grab object
             if not self.holdingObject():
@@ -755,7 +755,7 @@ class BaxterLocator:
                 print "Failed to grab object"
                 break
             # speed up again
-            self.limb_interface.set_joint_position_speed(1)
+            self.limb_interface.set_joint_position_speed(2)
 
             # display current image on head display
             self.display_screen(self.cv_image, s)
@@ -770,7 +770,7 @@ class BaxterLocator:
             # display current image on head display
             s = "Placing tetris block down"
             self.display_screen(self.cv_image, s)
-            cv.WaitKey(10)
+            #cv.WaitKey(10)
             # open the gripper
             self.gripper.open()
 
@@ -807,7 +807,7 @@ class BaxterLocator:
         self.publish_camera = True
         s = "Pick up block"
         self.display_screen(self.cv_image, s)
-        cv.WaitKey(3)
+        #cv.WaitKey(3)
 
         self.find_tetris_block(colour)
 
@@ -818,22 +818,26 @@ class BaxterLocator:
         attempt = 1
         while not self.holdingObject() and attempt < 4:
 
-            self.limb_interface.set_joint_position_speed(1)
+            self.limb_interface.set_joint_position_speed(2)
             self.__approach()
             self.gripper.close()
             self.verticalMove(0.165)
-            cv.WaitKey(3)
+            #cv.WaitKey(3)
             rospy.loginfo('locate(): holding object: %s ' % str(self.holdingObject()))
             if self.holdingObject():
+                rospy.loginfo('locate(): holding object: True - break')
                 break
             else:
 
                 answer = raw_input('Failed to grab object. Enter displacement x,y (e.g. -0.01,-0.01 for left, up): ')
                 if answer == '':
+                    rospy.loginfo('locate(): holding object: False, no displacement - break')
+                    self.verticalMove(-0.165)
+                    self.gripper.open()
+                    self.verticalMove(0.059)
                     break
             s = "Failed to grab object, retry with displacement:(%s)" % answer
             self.__moveBy((literal_eval(answer)[0],literal_eval(answer)[1],0,0,0,0))
-            #self.verticalMove(-0.165)
             rospy.loginfo(s)
             self.display_screen(self.cv_image, s)
             attempt += 1
@@ -856,7 +860,7 @@ class BaxterLocator:
             self.verticalMove(-0.165)
             self.gripper.open()
             self.verticalMove(0.059)
-            cv.WaitKey(2)
+            #cv.WaitKey(2)
             success = True
 
             attempt += 1

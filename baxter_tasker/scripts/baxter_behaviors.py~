@@ -99,7 +99,11 @@ class BaxterBehaviors():
         self.locator = BaxterLocator(baxter)
         self.actionSequence = []
         self.allActions = {}
-
+        self.target_locations = {'A':(0.6,-0.419),'M':(0.795,-0.2),'D':(0.6, -0.018)}
+        self.exp_predicates = {'1. Precondition' : 'object jaune: position de depart',
+                               '2. Effet': 'object jaune: position d\'arrivee'}
+        self.exp_position_occupied = False
+        self.colour = 'red'
       
     def changeExecutionState(self,stop=True):
         """
@@ -154,11 +158,13 @@ class BaxterBehaviors():
             return
         self.hideGUI(**{'update':False})
         self.baxter.camera.startCamera(side+"_hand_camera")
+        self.locator.publish_camera = True
                 
     def solveTetris(self,**kwargs):
         """
             Moves the blocks to solve the current alignment of the tetris blocks
         """
+        self.showCamera()
         self.locator.recognise_grid()
 
              
@@ -175,7 +181,77 @@ class BaxterBehaviors():
         self.mm.addGenericMenu(targets,self.mm.cur_page,"Select your desired scenario", entries)
         self.mm.loadMenu(targets)
 
-    def enterPredicates(self,**kwargs):
+    def permutation(self, **kwargs):
+        """
+            Used for experiment to permutate the positions of two blocks
+        """
+        self.locator.recognise_grid()
+        red = self.locator.detect_colour(0, 'red')
+        rospy.loginfo("permutation(): looking for red object: %s" % str(red))
+        blue = self.locator.detect_colour(0, 'blue')
+        rospy.loginfo("permutation(): looking for blue object: %s" % str(blue))
+        if red[0] < blue[0]:
+            sequence = [('red','M'),('blue','A'),('red','D')]
+        else:
+            sequence = [('red','M'),('blue','D'),('red','A')]
+
+        colours = self.locator.tetris_blocks.keys() 
+        self.target_locations['D']
+        self.target_locations['A']
+        self.target_locations['M']
+        answer = 'n'
+        action_number = 0
+        while action_number < len(sequence):
+
+            (colour,pos) = sequence[action_number]
+        
+            rospy.loginfo('permutation(): %s to position %s' % (colour,pos))
+
+            self.locator.update_pose()
+            goal_pose = self.locator.pose[:]
+            goal_pose[0:2] = self.target_locations[pos][0:2]
+            success = self.locator.locate(colour, goal_pose)
+            if not success:
+                answer = raw_input('Failed to execute action. Try again? (y/n): ')
+                if answer in ('y'):
+                    action_number -= 1
+                    continue
+                
+            action_number += 1 
+
+
+    def exp_learnedPredicates(self, **kwargs):
+        """
+            Used for experiment to show 'what preconditions and effects Baxter understood'
+        """
+
+        entries={}
+        for condition in self.exp_predicates.keys():
+            text = '%s: %s' % (condition, self.exp_predicates[condition])
+            entries[text] = self.readCommandLine
+
+        title = "Ce qu'a appris Baxter pour effectuer le deplacement" 
+        self.mm.addGenericMenu("expMenu", self.mm.cur_page, title, entries)
+        self.mm.loadMenu("expMenu")
+
+    def readCommandLine(self, **kwargs):
+        """
+            Used for experiment to show 'what preconditions and effects Baxter understood'
+        """
+        try:
+            condition = kwargs["fname"].split(':')[0]
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        # experimentation parameters
+        answer = raw_input('Change %s: %s to: ' % (condition,self.exp_predicates[condition]))
+        self.exp_predicates[condition] = answer
+        self.mm.loadMenu("teachMenu")
+
+
+    def enterPredicates(self, **kwargs):
         """
             Creates a menu of all functions in baxter_learner.py that are in __predicates
 
@@ -227,13 +303,59 @@ class BaxterBehaviors():
 
         for param in members:
             entries[str(param)] = self.executeAction # save param names in entries
-        entries['search red'] = [self.searchBlock,'red']
-        entries['search yellow'] = [self.searchBlock,'yellow']
-        entries['search green'] = [self.searchBlock,'green']
-        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
 
+#        entries['search colour for position'] = self.search_menu
+        entries['move block to position'] = self.move_block_menu
+        entries['move arm to position'] = self.move_menu
+        self.mm.addGenericMenu("actionMenu",self.mm.cur_page,"Select the action to demonstrate", entries)
         self.mm.loadMenu("actionMenu")
-    
+
+    def move_menu(self,**kwargs):
+        entries={}
+
+        for target in self.target_locations.keys():
+            self.locator.update_pose()
+            x_offset = self.target_locations[target][0]-self.locator.pose[0]
+            y_offset = self.target_locations[target][1]-self.locator.pose[1]
+            offset_pose = (x_offset,y_offset,0,0,0,0)
+            entries['move to ' + str(target)] = [self.moveBy, offset_pose]
+            if target == 'D':
+                entries['move to empty'] = [self.moveBy, offset_pose]
+        self.mm.addGenericMenu("moveMenu",self.mm.cur_page,"Select the target limb position", entries)
+        self.mm.loadMenu("moveMenu")
+
+
+    def search_menu(self,**kwargs):
+        entries={}
+        colours = self.locator.tetris_blocks.keys() 
+
+        for block in colours:
+            entries['search ' + str(block)] = [self.get_colour_position,False]
+        self.mm.addGenericMenu("searchMenu",self.mm.cur_page,"Select the target position for block", entries)
+        self.mm.loadMenu("searchMenu")
+
+
+    def move_block_menu(self,**kwargs):
+        entries={}
+        
+        for target in self.target_locations.keys():
+            entries['move to ' + str(target)] = [self.moveBlock, self.target_locations[target]]
+#        entries['add empty condition'] = self.addEmptyCondition
+        self.mm.addGenericMenu("moveBlockMenu",self.mm.cur_page,"Select the target position", entries)
+        self.mm.loadMenu("moveBlockMenu")
+
+    def addEmptyCondition(self,**kwargs):
+        """
+            Used for Experimentation:
+            adds condition that goal position needs to be empty
+        """
+        if self.exp_position_occupied:
+            self.exp_position_occupied = False
+        else:
+            self.exp_position_occupied = True
+
+        rospy.loginfo('addEmptyCondition(): new emptycondition = %s' % str(self.exp_position_occupied))
+
     def executeAction(self,**kwargs):
         """
             Creates a menu of learn or execute action
@@ -249,8 +371,10 @@ class BaxterBehaviors():
         pose_offset = 'empty'
         if action in self.bl.getAllSavedActions():
             pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
-            entries['Show action'] = [self.moveBy, pose_offset]
-        entries['Rename '+str(action)] = [self.renameAction, action]
+#            entries['Show action only'] = [self.moveBy, pose_offset]
+            entries['Show pick up action'] = [self.pickUpAction, pose_offset]
+            entries['Add condition'] = self.addEmptyCondition
+#        entries['Rename '+str(action)] = [self.renameAction, action]
         entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
 
         self.mm.addGenericMenu("learnMenu", self.mm.cur_page,"Action saved as: %s" % (str(pose_offset)),entries)
@@ -269,24 +393,111 @@ class BaxterBehaviors():
             return
         rospy.loginfo("Enter the new name of the action:")
         action = sys.stdin.readline().strip()
-        pdb.set_trace()
+
         self.bl.baxter_actions[str(action)] = self.bl.baxter_actions[str(old_action)]
         del self.bl.baxter_actions[str(old_action)]
 
         self.baxter.mm.changeMenuTitle("Action %s renamed to: %s" % (old_action, str(action)))
-        self.baxter.yes() # head nod confirm
-#        self.mm.loadPreviousMenu()
+        self.baxter.yes() 
+        self.mm.loadMenu("teachMenu")
 
-   
+    def moveBlock(self, **kwargs):
+        """
+            Moves to the target location
+        """
+        try:
+            action = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+
+        position = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        colours = self.locator.tetris_blocks.keys() 
+        entries = {}
+
+        for block in colours:
+            entries[str(block)] = [self.moveTo, position]
+
+        self.mm.addGenericMenu("colourMenu",self.mm.cur_page,"Select the block colour for %s" %action, entries)
+        self.mm.loadMenu("colourMenu")
+
+    def pickUpAction(self, **kwargs):
+        """
+            Moves object by the offset pose
+        """
+        pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        self.locator.update_pose()
+        x_offset = self.locator.pose[0] + pose_offset[0]
+        y_offset = self.locator.pose[1] + pose_offset[1]
+        goal_pose = (x_offset,y_offset,0,0,0,0)
+
+        if self.exp_position_occupied:
+            self.colour = 'blue'
+            self.baxter.no()
+        else:
+            success = self.locator.locate(self.colour, goal_pose)
+            self.mm.loadMenu("actionMenu")
+
+    def pickUpActionB(self, **kwargs):
+        """
+            Moves arm by the offset pose
+        """
+        pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+
+        self.baxter.no()
+        self.mm.loadMenu("actionMenu")
+
     def moveBy(self, **kwargs):
+        """
+            Moves arm by the offset pose
+        """
 
         try:
-            pose = kwargs['pose_offset']
-        except:
-            pose = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
-        rospy.loginfo('moveBy(): pose_offset = %s' % str(pose))
-        self.locator.reset_arms()
-        self.locator.moveBy(offset_pose = pose)
+            shake = kwargs["fname"].split(' ')
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        rospy.loginfo('moveBy(): pose_offset = %s' % str(pose_offset))
+
+        if 'empty' in shake:
+            self.locator.recognise_grid()
+            x_offset = self.target_locations['D'][0]-self.locator.pose[0]
+            y_offset = self.target_locations['D'][1]-self.locator.pose[1]
+            pose_offset = (x_offset,y_offset,-0.05,0,0,0)
+            self.locator.moveBy(offset_pose=pose_offset)
+            self.baxter.no()
+        else:
+            self.locator.moveBy(offset_pose=pose_offset)
+        self.mm.loadMenu("actionMenu")
+
+    def moveTo(self, **kwargs):
+        """
+            Moves to the target location
+        """
+
+        try:
+            colour = kwargs["fname"]
+            position = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        except Exception,e:
+            rospy.logerr("%s"%str(e))
+            self.mm.neglect()
+            return
+
+        rospy.loginfo('moveTo(): new position = %s' % str(position))
+        self.locator.update_pose()
+        goal_pose = self.locator.pose[:]
+        if self.exp_position_occupied:
+            self.baxter.no()
+            self.baxter.mm.changeMenuTitle("Goal position not empty")
+        else:
+            goal_pose[0:2] = position[0:2]
+            success = self.locator.locate(colour, goal_pose)
+        #update target position of the colour
+            if success:
+                self.target_locations[colour] = goal_pose[0:2]
+        self.mm.loadMenu("actionMenu")
 
     def savePredicates(self,**kwargs):
         """
@@ -323,19 +534,24 @@ class BaxterBehaviors():
         self.mm.addGenericMenu("sequenceMenu",self.mm.cur_page,"Select the action to add to the sequence", entries)
         self.mm.loadMenu("sequenceMenu")
 
-    def searchBlock(self, **kwargs):
+    def get_colour_position(self, **kwargs):
         """
             Searches the coloured block
         """
-
         try:
-            colour = kwargs["fname"].split(' ')[1]
+            colour = kwargs["fname"].split(' ')
         except Exception,e:
             rospy.logerr("%s"%str(e))
             self.mm.neglect()
             return
-
-        self.locator.find_tetris_block(colour)
+        if len(colour) > 1:
+            colour = colour[1]
+        else:
+            colour = colour[0]
+        self.locator.recognise_grid()
+        self.target_locations[colour] = self.locator.find_tetris_block(colour, return_center=True)
+        
+        self.mm.loadMenu("teachMenu")
 
     def loadSequence(self, **kwargs):
         """
@@ -377,14 +593,14 @@ class BaxterBehaviors():
 
         answer = 'n'        
         action_number = 0
-        #self.baxter.mm.addEntriesToCurrentMenu({"Stop "+" Arm":self.baxter.bb.stopTeachedPath})
+
         while action_number < len(self.actionSequence):
-            #pdb.set_trace()
+#            pdb.set_trace()
 
             (colour,pose_offset) = self.actionSequence[action_number]
             rospy.loginfo('Running action %s for %s block' % (str(pose_offset), colour))
 #            pose_offset = self.bl.baxter_actions[action]['joint_position']
-
+#            goal_pose = tuple(map(operator.add, self.locator.pose, pose_offset))
             success = self.locator.locate(colour, pose_offset)
 
             rospy.sleep(0.2)
@@ -398,7 +614,6 @@ class BaxterBehaviors():
                 
             action_number += 1 
 
-#        self.baxter.mm.removeEntriesFromCurrentMenu(["Stop "+" Arm"])
         self.baxter.mm.changeMenuTitle("Action sequence completed successfully!")
 
     def resetSequence(self, **kwargs):
@@ -420,6 +635,7 @@ class BaxterBehaviors():
 
         for block in colours:
             entries[str(block)] = [self.addAction, action]
+
         self.mm.addGenericMenu("blockMenu",self.mm.cur_page,"Select the block colour for the action", entries)
         self.mm.loadMenu("blockMenu")
 
@@ -440,7 +656,6 @@ class BaxterBehaviors():
 
         if action in self.bl.getAllSavedActions():
             # if selected action modifies same block, add actions
-
             new = self.bl.baxter_actions[action]['joint_position']
             rospy.loginfo('New action is: %s' % str(new))
             if len(self.actionSequence) > 0 and colour == self.actionSequence[-1][0]:
@@ -604,6 +819,7 @@ class BaxterBehaviors():
         except:
             parent = "teachMenu"
         entries = {}
+        self.baxter.yes() # head nod confirm
         entries["Stop recording"] = self.saveTeachPath
         self.mm.addGenericMenu("teach",parent,"Saving current path...", entries)
         self.mm.loadMenu("teach")

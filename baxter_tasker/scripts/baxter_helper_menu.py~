@@ -562,10 +562,11 @@ class BaxterMenuEntries:
             Creates the main menu which is very important as it is loaded on startup
         """
         entries = {
-                   'Teach Menu': [self.__mm.loadDefaultMenu,"teachMenu"],
+                   'Experimentation': [self.__mm.loadDefaultMenu,"teachMenu"],
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
-                   'Show Camera': self.__mm.bb.showCamera,
+#                   'Show Camera': self.__mm.bb.showCamera,
+#                   'Recognise Grid': self.__mm.bb.solveTetris,
 #                   'Go To Init':self.__mm.bb.goToInit,
                    
                    } 
@@ -580,15 +581,17 @@ class BaxterMenuEntries:
             Entries can be passed with their default values which will be saved in self.mm.default_values
         """
         entries = {
-                   "1. Demo Action": self.__mm.bb.demonstrate,
-                   "2. Enter Parameters": self.__mm.bb.enterParameters,
-                   "3. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
-                   "4. Enter Effects": [self.__mm.bb.enterPredicates,False],
+                   "1. Demonstration": self.__mm.bb.demonstrate,
+#                   "2. Conditions": self.__mm.bb.exp_learnedPredicates,
+#                   "2. Enter Parameters": self.__mm.bb.enterParameters,
+                   "2. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
+                   "3. Enter Effects": [self.__mm.bb.enterPredicates,False],
 
-#                   "5. Execute Action": self.__mm.bb.execute,
-#                   "6. Save Predicates": self.__mm.bb.savePredicates,
-                   "7. Create action sequence": self.__mm.bb.createSequence,
-                   "8. Load action sequence": self.__mm.bb.loadSequence,
+                   "4. Reproduce Action": self.__mm.bb.executeAction,
+                   "5. Translate to PDDL": self.__mm.bb.savePredicates,
+#                   "3. Permutation": self.__mm.bb.permutation,
+#                   "7. Create action sequence": self.__mm.bb.createSequence,
+                   "6. Load action sequence": self.__mm.bb.loadSequence,
 #                   "Learn": self.__mm.bb.teach,
 #                   "Play" : [self.__mm.bb.executePath,False],
 #                   "Play Looped": [self.__mm.bb.executePath,True],

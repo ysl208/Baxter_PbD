@@ -562,11 +562,11 @@ class BaxterMenuEntries:
             Creates the main menu which is very important as it is loaded on startup
         """
         entries = {
-                   'Experimentation': [self.__mm.loadDefaultMenu,"teachMenu"],
+                   'Teach Menu': [self.__mm.loadDefaultMenu,"teachMenu"],
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
-#                   'Show Camera': self.__mm.bb.showCamera,
-#                   'Recognise Grid': self.__mm.bb.solveTetris,
+                   'Show Camera': self.__mm.bb.showCamera,
+                   'Recognise Grid': self.__mm.bb.solveTetris,
 #                   'Go To Init':self.__mm.bb.goToInit,
                    
                    } 
