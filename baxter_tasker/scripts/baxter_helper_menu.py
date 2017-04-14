@@ -566,7 +566,7 @@ class BaxterMenuEntries:
 #                   'Run Scenarios': self.__mm.bb.run,
 #                    'Select Arms':self.__mm.bb.selectArms,
                    'Show Camera': self.__mm.bb.showCamera,
-                   'Recognise Grid': self.__mm.bb.solveTetris,
+#                   'Recognise Grid': self.__mm.bb.solveTetris,
 #                   'Go To Init':self.__mm.bb.goToInit,
                    
                    } 
@@ -582,7 +582,7 @@ class BaxterMenuEntries:
         """
         entries = {
                    "1. Demonstration": self.__mm.bb.demonstrate,
-                   "2. Conditions": self.__mm.bb.exp_learnedPredicates,
+#                   "2. Conditions": self.__mm.bb.exp_learnedPredicates,
 #                   "2. Enter Parameters": self.__mm.bb.enterParameters,
 #                   "3. Enter Preconditions": [self.__mm.bb.enterPredicates,True],
 #                   "4. Enter Effects": [self.__mm.bb.enterPredicates,False],

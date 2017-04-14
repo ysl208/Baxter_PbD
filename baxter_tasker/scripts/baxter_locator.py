@@ -557,7 +557,7 @@ class BaxterLocator:
         pixel_dy    = (self.height / 2) - centre[1]
         pixel_error = math.sqrt((pixel_dx * pixel_dx) + (pixel_dy * pixel_dy))
         error       = float(pixel_error * self.cam_calib * self.block_distance)
-        ##pdb.set_trace()
+        #pdb.set_trace()
         x_offset = - pixel_dy * self.cam_calib * self.block_distance
         y_offset = - pixel_dx * self.cam_calib * self.block_distance
         
@@ -787,7 +787,7 @@ class BaxterLocator:
         self.splash_screen("all balls", "found")
 
 
-    def locate(self, colour, goal_pose):
+    def locate(self, colour, goal_pose, offset_given=0):
         """
             looks for block, approaches and picks up, applies custom movement, drops
             TO DO: fix the break after 0,0 - should be either repeat on same position or continue with code
@@ -833,6 +833,7 @@ class BaxterLocator:
                 if answer == '':
                     rospy.loginfo('locate(): holding object: False, no displacement - break')
                     self.verticalMove(-0.165)
+                    cv.WaitKey(0.5)
                     self.gripper.open()
                     self.verticalMove(0.059)
                     break
@@ -853,7 +854,11 @@ class BaxterLocator:
             rospy.loginfo(s)
             rospy.loginfo('locate(): self.pose: %s' % str(self.pose))
             rospy.loginfo('locate(): goal_pose: %s' % str(goal_pose))
-            offset_pose = tuple(map(operator.sub, goal_pose, self.pose))
+            if (offset_given == 0):
+                offset_pose = tuple(map(operator.sub, goal_pose, self.pose))
+            else:
+                offset_pose = goal_pose
+
             rospy.loginfo('locate(): offset_pose: %s' % str(offset_pose))
             self.__moveBy((offset_pose[0],offset_pose[1],0,0,0,offset_pose[5]))
 
@@ -1068,7 +1073,7 @@ class BaxterLocator:
                     self.pitch,
                     self.yaw)
         self.baxter_ik_move(self.limb, self.pose)
-        pdb.set_trace()
+#        pdb.set_trace()
         # find block
         rospy.loginfo("Enter the colour for the block:")
         colour = sys.stdin.readline().strip()

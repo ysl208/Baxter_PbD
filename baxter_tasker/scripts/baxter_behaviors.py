@@ -164,7 +164,7 @@ class BaxterBehaviors():
         """
             Moves the blocks to solve the current alignment of the tetris blocks
         """
-        self.showCamera()
+        #self.showCamera()
         self.locator.recognise_grid()
 
              
@@ -370,9 +370,9 @@ class BaxterBehaviors():
         pose_offset = 'empty'
         if action in self.bl.getAllSavedActions():
             pose_offset = self.bl.baxter_actions[str(action)]['joint_position']
-#            entries['Show action only'] = [self.moveBy, pose_offset]
-            entries['Show pick up action'] = [self.pickUpAction, pose_offset]
-            entries['Add condition'] = self.addEmptyCondition
+            entries['Show action only'] = [self.moveBy, pose_offset]
+            entries['Show pick up action'] = [self.pickUpActionColour, pose_offset]
+#            entries['Add condition'] = self.addEmptyCondition
 #        entries['Rename '+str(action)] = [self.renameAction, action]
         entries['Learn '+str(action)] = getattr(self.bl, 'demoAction')
 
@@ -424,26 +424,62 @@ class BaxterBehaviors():
             Moves object by the offset pose
         """
         pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
-        self.locator.update_pose()
-        x_offset = self.locator.pose[0] + pose_offset[0]
-        y_offset = self.locator.pose[1] + pose_offset[1]
-        goal_pose = (x_offset,y_offset,0,0,0,0)
+        colour = kwargs["fname"]
+#        pdb.set_trace()
+        self.locator.update_pose() #get current pose of arm
+#        x_offset = self.locator.pose[0] + pose_offset[0]
+#        y_offset = self.locator.pose[1] + pose_offset[1]
+#        goal_pose = (x_offset,y_offset,0,0,0,0)
 
         if self.exp_position_occupied:
             self.colour = 'blue'
             self.baxter.no()
         else:
-            success = self.locator.locate(self.colour, goal_pose)
+            success = self.locator.locate(colour, pose_offset, 1)
             self.mm.loadMenu("actionMenu")
 
-    def pickUpActionB(self, **kwargs):
+    def pickUpActionColour(self, **kwargs):
         """
             Moves arm by the offset pose
         """
         pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
 
-        self.baxter.no()
+        try:
+            action = kwargs["fname"]
+        except:
+            rospy.logwarn("Could not get the current action selection")
+
+#        position = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        colours = self.locator.tetris_blocks.keys() 
+        entries = {}
+
+        for block in colours:
+            entries[str(block)] = [self.pickUpAction, pose_offset]
+        entries['any'] = [self.pickUpActionAny, pose_offset]
+        self.mm.addGenericMenu("colourMenu",self.mm.cur_page,"Select the block colour for %s" %action, entries)
+        self.mm.loadMenu("colourMenu")
+
+    def pickUpActionAny(self, **kwargs):
+        """
+            Moves object of any colour (red or blue) that is closer to the D position by the offset pose
+        """
+        pose_offset = self.mm.default_values[self.mm.modes[self.mm.cur_mode]]
+        colour = kwargs["fname"]
+        self.locator.recognise_grid()
+        red = self.locator.detect_colour(0, 'red')
+        rospy.loginfo("permutation(): looking for red object: %s" % str(red))
+        blue = self.locator.detect_colour(0, 'blue')
+        rospy.loginfo("permutation(): looking for blue object: %s" % str(blue))
+        if red[0] < blue[0]:
+            colour = 'blue'
+        else:
+            colour = 'red'
+
+        self.locator.update_pose() #get current pose of arm
+
+        success = self.locator.locate(colour, pose_offset, 1)
         self.mm.loadMenu("actionMenu")
+
 
     def moveBy(self, **kwargs):
         """
@@ -824,6 +860,7 @@ class BaxterBehaviors():
         self.mm.loadMenu("teach")
         self.bl.update_watch_parameters('before')
         self.baxter.br.post.record(side,str(number))
+
 
        
     def saveTeachPath(self,**kwargs):

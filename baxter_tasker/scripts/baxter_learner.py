@@ -262,6 +262,7 @@ class BaxterLearner:
         rospy.loginfo(subtasks)
         self.baxter_actions[self.__action_name] = subtasks
         
+
         # create opposite effect automatically
         opposite = subtasks.copy()
         opp_pose = list(opposite['joint_position'])
