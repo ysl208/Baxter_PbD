@@ -22,11 +22,12 @@ find_package(catkin REQUIRED COMPONENTS baxter_core_msgs baxter_interface roscpp
 #######################################
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  BlockPosition.msg
+  BlockColour.msg
+  LandmarkDistance.msg
+)
 
 ## Generate services in the 'srv' folder
 #add_service_files(
@@ -36,11 +37,13 @@ find_package(catkin REQUIRED COMPONENTS baxter_core_msgs baxter_interface roscpp
 #)
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages(
-#   DEPENDENCIES
-#   baxter_core_msgs
-#   sensor_msgs
-#)
+generate_messages(
+   DEPENDENCIES
+   geometry_msgs
+   std_msgs
+   baxter_core_msgs
+   sensor_msgs
+)
 
 
 ###################################
