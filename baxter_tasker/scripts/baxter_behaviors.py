@@ -184,6 +184,9 @@ class BaxterBehaviors():
     def permutation(self, **kwargs):
         """
             Used for experiment to permutate the positions of two blocks
+            1. First looks for position of both objects
+            2. Decide new locations to switch
+            3. Switch pieces
         """
         self.locator.recognise_grid()
         red = self.locator.detect_colour(0, 'red')

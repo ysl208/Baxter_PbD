@@ -155,7 +155,7 @@ class BaxterLocator:
         self.other_limb_interface.set_joint_position_speed(2)
 
         # create image publisher to head monitor
-        self.pub = rospy.Publisher('/robot/xdisplay', Image)
+        self.pub = rospy.Publisher('/robot/xdisplay', Image,queue_size=1)
 
         # calibrate the gripper
         #self.gripper.calibrate()
