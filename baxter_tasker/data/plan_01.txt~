@@ -1,9 +1,0 @@
-block - red
-move_block
-block - yellow
-move_block
-block - red
-move_block_back
-move_block_back
-block - yellow
-move_block
